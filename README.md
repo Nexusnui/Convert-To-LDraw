@@ -1,6 +1,6 @@
 ![Image of Custom Part](icons/stlToLDraw_icon.png)
 
-This is a simple graphical Python programm for converting a 3D printing [.stl](https://en.wikipedia.org/wiki/STL_%28file_format%29)
+This is a simple graphical Python program for converting a 3D printing [.stl](https://en.wikipedia.org/wiki/STL_%28file_format%29)
 files to LDraw format [.dat](http://www.ldraw.org/article/218) files. Then you can use the part just like any other part in
 your favorite LDraw viewer or CAD program.
 
@@ -19,7 +19,7 @@ If the output file is not specified the input file name will be used with a .dat
 
 The default colour("16") will be used if not specified. 
 Check the official LDraw Colour Definition Reference for the available colour codes.
-Only change the colour if you want create a multicolour part or if you want to use a html colour["0x2hexcolour"] that is not available as a LDraw colour.
+Only change the colour if you want create a multicolour part or if you want to use a html colour["0x2hexcolour"], that is not available as a LDraw colour.
 
 
 
