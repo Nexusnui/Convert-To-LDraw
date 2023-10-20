@@ -5,7 +5,7 @@ files to LDraw format [.dat](http://www.ldraw.org/article/218) files. Then you c
 your favorite LDraw viewer or CAD program.
 
 The Graphical Userinterface:
-![Screenshot of the GUI](graphical_userinterface.jpg)
+![Screenshot of the GUI](graphical_userinterface.png)
 
 When the input file is selected first the output file will have the same name with a .dat extension.
 
