@@ -29,12 +29,20 @@ This program has the following dependencies:
 - numpy-stl
 - customtkinter(only if you use the graphical user interface)
 
-**There is currently no installer and you have to set up a Python Environment to run this program. The Python files are in the "app" directory. To start the graphical user interface run "app.py"** 
+Run/Install:
+
+Currently there is only a Windows Version.
+Under Releases you find the current version as zip archive.
+Unpack the contained directory a save it at a convenient location.
+To launch the program open the ".exe" file in the directory.
+If have an anti-virus software installed it might warn you.
+
+Mac and Linux users have to setup a python environment with the required with dependencies.
 
 This a fork of a [python script of Hazen Babcock](https://github.com/HazenBabcock/stl-to-dat).
 These changes that where made:
 - load mesh with numpy-stl for compatability with binary stl files
-- set colour of the output file in commandline
+- set colour of the output file
 - simple graphical user interface was added for easier use
 
 
