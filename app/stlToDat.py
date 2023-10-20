@@ -20,7 +20,7 @@ def stlToDat(input_filename:str, output_filename:str, colour:str= "16"):
 
     with open(output_filename, "w", encoding="utf-8") as fp_out:
         #0: Comment or META command the first 0 line is alway the filename
-        fp_out.write(f"0 {output_filename}\n")
+        fp_out.write(f"0 FILE {os.path.basename(output_filename)}\n")
         fp_out.write("0 !LDRAW_ORG Unofficial_part\n")
         #Todo: Add License Meta command to file
         fp_out.write("0 BFC CERTIFY CCW\n")
