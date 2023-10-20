@@ -33,7 +33,7 @@ Run/Install:
 
 Currently there is only a Windows Version.
 Under Releases you find the current version as zip archive.
-Unpack the contained directory a save it at a convenient location.
+Unpack the contained directory and save it at a convenient location.
 To launch the program open the ".exe" file in the directory.
 If have an anti-virus software installed it might warn you.
 
