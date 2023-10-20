@@ -115,7 +115,7 @@ class App(customtkinter.CTk):
             for i in range(2, 9):
                 if color_code[i] not in ["A", "B", "C", "D", "E", "F"] and not color_code[i].isdigit():
                     tkMessageBox.showwarning("Invalid Color Code",
-                                             f"The provided color seems to be a Direct/HTML color, but contains a invalid charcter at position: {i-1} - '{color_code[i]}'.\n"
+                                             f"The provided color seems to be a Direct/HTML color, but contains a invalid charcter at position: {i-2} - '{color_code[i]}'.\n"
                                              f"Valid characters are 0-9 and A-F(uppercase)")
                     return
         number_triangles = stlToDat(input_file_path, output_file_path, color_code)
