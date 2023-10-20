@@ -30,7 +30,7 @@ class App(customtkinter.CTk):
                                                         command=self.get_input_file)
         self.load_file_button.grid(sticky="ew", row=1, column=2)
 
-        customtkinter.CTkLabel(self.main_frame, text="Output File").grid(sticky="w", columnspan=2, row=2, column=0)
+        customtkinter.CTkLabel(self.main_frame, text="Output File:").grid(sticky="w", columnspan=2, row=2, column=0)
         self.output_file_label = customtkinter.CTkEntry(self.main_frame, textvariable=self.output_file_Var)
         self.output_file_label.grid(sticky="ew", columnspan=2, row=3, column=0)
 
