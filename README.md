@@ -1,4 +1,4 @@
-![Image of Custom Part](icons/stlToLDraw_icon.png)
+![Image of Custom Part](AkiruDualColor.png)
 
 This is a simple graphical Python program for converting a 3D printing [.stl](https://en.wikipedia.org/wiki/STL_%28file_format%29)
 files to LDraw format [.dat](http://www.ldraw.org/article/218) files. Then you can use the part just like any other part in
@@ -21,6 +21,9 @@ The default colour("16") will be used if not specified.
 Check the official LDraw Colour Definition Reference for the available colour codes.
 Only change the colour if you want create a multicolour part or if you want to use a html colour["0x2hexcolour"], that is not available as a LDraw colour.
 
+You can create multicolour parts by combining multiple dat files in one dat file.
+You can use text a editor or another tool like Bricklink Partdesigner to combine mutiple dat files.
+
 
 
 The STL file needs to be in millimeters.
@@ -35,7 +38,7 @@ Currently there is only a Windows Version.
 Under Releases you find the current version as zip archive.
 Unpack the contained directory and save it at a convenient location.
 To launch the program open the ".exe" file in the directory.
-If have an anti-virus software installed it might warn you.
+If have an anti-virus software is installed it might warn you.
 
 Mac and Linux users have to setup a python environment with the required with dependencies.
 
