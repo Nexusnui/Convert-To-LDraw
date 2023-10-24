@@ -1,4 +1,5 @@
 from stlToDat import stlToDat
+from brickcolor import isBrickColor
 import customtkinter
 from tkinter import messagebox as tkMessageBox
 import os
@@ -81,6 +82,10 @@ class App(customtkinter.CTk):
         color_code = "16"
         if self.color_toggle_Var.get() == "on":
             color_code = self.color_code_Var.get()
+            color_check = isBrickColor(color_code)
+            if not color_check[0]:
+                tkMessageBox.showwarning(color_check[1], color_check[2])
+                return
 
         if not os.path.isfile(input_file_path):
             tkMessageBox.showwarning("invalid input file", f"'{input_file_path}' is not a valid input file")
@@ -92,32 +97,7 @@ class App(customtkinter.CTk):
             tkMessageBox.showwarning("invalid output directory",
                                      f"'{os.path.dirname(output_file_path)}' is not a valid output directory")
             return
-        elif len(color_code) < 1:
-            tkMessageBox.showwarning("No Color Code", "Apply Checkbox was toggled, but no color code provided")
-            return
-        elif not color_code.startswith("0x2"):
-            if not color_code.isdigit():
-                tkMessageBox.showwarning("Invalid Color Code",
-                                         "The provided color code is not a number.\n "
-                                         "Use a code from the LDraw Colour Definition Reference.\n"
-                                         "If you wanted to use a Direct/HTML color the format is 0x2RRGGBB "
-                                         "(R,B and G are hexadecimal).")
-                return
-        elif color_code.startswith("0x2"):
-            if len(color_code) > 9:
-                tkMessageBox.showwarning("Invalid Color Code",
-                                         "The provided color seems to be a Direct/HTML color but is to long.")
-                return
-            elif len(color_code) < 9:
-                tkMessageBox.showwarning("Invalid Color Code",
-                                         "The provided color seems to be a Direct/HTML color but is to short.")
-                return
-            for i in range(2, 9):
-                if color_code[i] not in ["A", "B", "C", "D", "E", "F"] and not color_code[i].isdigit():
-                    tkMessageBox.showwarning("Invalid Color Code",
-                                             f"The provided color seems to be a Direct/HTML color, but contains a invalid charcter at position: {i-2} - '{color_code[i]}'.\n"
-                                             f"Valid characters are 0-9 and A-F(uppercase)")
-                    return
+
         number_triangles = stlToDat(input_file_path, output_file_path, color_code)
         tkMessageBox.showwarning('Converted File', f'stl file converted to "{output_file_path}"\n'
                                                    f'Part contains {number_triangles} triangles.')
