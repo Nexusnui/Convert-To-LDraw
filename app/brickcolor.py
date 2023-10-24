@@ -22,3 +22,20 @@ def isBrickColor(color_code: str):
                                 f"but contains a invalid charcter at position: {i - 2} - '{color_code[i]}'.\n"
                                 f"Valid characters are 0-9 and A-F(uppercase)")
     return (True,)
+
+class brickcolor:
+    def __init__(self, color_code: str):
+        if not isBrickColor(color_code)[0]:
+            return None
+        self.color_code = color_code
+        if color_code.startswith("0x2"):
+            self.color_type = "Direct"
+        else:
+            self.color_type = "LDraw"
+
+    def getRGB(self):
+        if self.color_type == "Direct":
+            return self.color_code[2:]
+        else:
+            #Todo: Load Value from file
+            return None
