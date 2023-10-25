@@ -46,7 +46,7 @@ class brickcolor:
             self.material, \
             self.legoname, \
             self.legoid, \
-            self.category = colorInfoById(self.color_code)
+            self.category = getColorInfoById(self.color_code)
 
     def __str__(self):
         if self.color_type == "Direct":
@@ -61,7 +61,7 @@ class brickcolor:
         return f"brickcolor({self.color_code})"
 
 
-def colorInfoById(id: str):
+def getColorInfoById(id: str):
     found_color = [None]*10
     with open("BrickColors.csv", "r", encoding="utf-8") as source:
         # skip row with column names
@@ -79,7 +79,7 @@ def colorInfoById(id: str):
     return found_color
 
 
-def getComplementaryColor(rgb_values):
+def getComplementaryColor(rgb_values: str):
     red = '%02X' % (255 - int(rgb_values[1:3], 16))
     green = '%02X' % (255 - int(rgb_values[3:5], 16))
     blue = '%02X' % (255 - int(rgb_values[5:7], 16))
