@@ -79,6 +79,9 @@ def colorInfoById(id: str):
     return found_color
 
 
-testcolor = brickcolor("0x2F0000")
+def getComplementaryColor(rgb_values):
+    red = '%02X' % (255 - int(rgb_values[1:3], 16))
+    green = '%02X' % (255 - int(rgb_values[3:5], 16))
+    blue = '%02X' % (255 - int(rgb_values[5:7], 16))
 
-print(testcolor)
+    return f"#{''.join([red, green, blue])}"
