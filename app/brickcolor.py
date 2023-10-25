@@ -4,38 +4,81 @@ def isBrickColor(color_code: str):
     elif not color_code.startswith("0x2"):
         if not color_code.isdigit():
             return (False, "Invalid Color Code",
-                            f"The provided color code '{color_code}' is not a number.\n "
-                            f"Use a code from the LDraw Colour Definition Reference.\n"
-                            f"If you wanted to use a Direct/HTML color the format is 0x2RRGGBB "
-                            f"(R,B and G are hexadecimal).")
+                    f"The provided color code '{color_code}' is not a number.\n "
+                    f"Use a code from the LDraw Colour Definition Reference.\n"
+                    f"If you wanted to use a Direct/HTML color the format is 0x2RRGGBB "
+                    f"(R,B and G are hexadecimal).")
     elif color_code.startswith("0x2"):
         if len(color_code) > 9:
             return (False, "Invalid Color Code",
-                            f"The provided color '{color_code}' seems to be a Direct/HTML color but is to long.")
+                    f"The provided color '{color_code}' seems to be a Direct/HTML color but is to long.")
         elif len(color_code) < 9:
             return (False, "Invalid Color Code",
-                            f"The provided color '{color_code}' seems to be a Direct/HTML color but is to short.")
+                    f"The provided color '{color_code}' seems to be a Direct/HTML color but is to short.")
         for i in range(2, 9):
             if color_code[i] not in ["A", "B", "C", "D", "E", "F"] and not color_code[i].isdigit():
                 return (False, "Invalid Color Code",
-                                f"The provided color '{color_code}' seems to be a Direct/HTML color, "
-                                f"but contains a invalid charcter at position: {i - 2} - '{color_code[i]}'.\n"
-                                f"Valid characters are 0-9 and A-F(uppercase)")
-    return (True,)
+                        f"The provided color '{color_code}' seems to be a Direct/HTML color, "
+                        f"but contains a invalid charcter at position: {i - 2} - '{color_code[i]}'.\n"
+                        f"Valid characters are 0-9 and A-F(uppercase)")
+    return True,
+
 
 class brickcolor:
-    def __init__(self, color_code: str):
+    def __new__(cls, color_code: str):
         if not isBrickColor(color_code)[0]:
             return None
+        instance = super().__new__(cls)
+        return instance
+
+    def __init__(self, color_code: str):
         self.color_code = color_code
         if color_code.startswith("0x2"):
             self.color_type = "Direct"
+            self.rgb_values = f"#{self.color_code[2:]}"
         else:
             self.color_type = "LDraw"
+            self.ldrawname, _, \
+            self.rgb_values, \
+            self.rgb_edge, \
+            self.alpha, \
+            self.luminance, \
+            self.material, \
+            self.legoname, \
+            self.legoid, \
+            self.category = colorInfoById(self.color_code)
 
-    def getRGB(self):
+    def __str__(self):
         if self.color_type == "Direct":
-            return self.color_code[2:]
+            return f"Direct Color: {self.color_code}"
         else:
-            #Todo: Load Value from file
-            return None
+            if self.ldrawname is not None:
+                return f"LDraw Color {self.color_code}: {self.ldrawname}, {self.rgb_values}"
+            else:
+                return f"Unknown LDraw Color {self.color_code}"
+
+    def __repr__(self):
+        return f"brickcolor({self.color_code})"
+
+
+def colorInfoById(id: str):
+    found_color = [None]*10
+    with open("BrickColors.csv", "r", encoding="utf-8") as source:
+        # skip row with column names
+        source.readline()
+        for line in source:
+            values = line.split(";")
+            if values[1] == id:
+                for i in range(len(values)):
+                    # replace empty values with None
+                    if len(values[i]) == 0:
+                        values[i] = None
+                found_color = values
+                break
+
+    return found_color
+
+
+testcolor = brickcolor("0x2F0000")
+
+print(testcolor)

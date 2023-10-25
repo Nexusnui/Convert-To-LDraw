@@ -1,205 +1,205 @@
-LDrawName;LDrawID;Value;Edge;Alpha;Luminance;Material;LegoName;LegoID
-Black;0;#1B2A34;#808080;;;;Black;26
-Blue;1;#1E5AA8;#333333;;;;Bright Blue;23
-Green;2;#00852B;#333333;;;;Dark Green;28
-Dark_Turquoise;3;#069D9F;#333333;;;;Bright Bluish Green;107
-Red;4;#B40000;#333333;;;;Bright Red;21
-Dark_Pink;5;#D3359D;#333333;;;;Medium Reddish Violet / Bright Purple;22 / 221
-Brown;6;#543324;#1E1E1E;;;;Earth Orange;25
-Light_Grey;7;#8A928D;#333333;;;;Grey;2
-Dark_Grey;8;#545955;#333333;;;;Dark Grey;27
-Light_Blue;9;#97CBD9;#333333;;;;Light Blue;45
-Bright_Green;10;#58AB41;#333333;;;;Bright Green;37
-Light_Turquoise;11;#00AAA4;#333333;;;;Medium Bluish Green;116
-Salmon;12;#F06D61;#333333;;;;Medium Red;101
-Pink;13;#F6A9BB;#333333;;;;Light Reddish Violet;9
-Yellow;14;#FAC80A;#333333;;;;Bright Yellow;24
-White;15;#F4F4F4;#333333;;;;White;1
-Light_Green;17;#ADD9A8;#333333;;;;Light Green;6
-Light_Yellow;18;#FFD67F;#333333;;;;Light Yellow;3
-Tan;19;#B0A06F;#333333;;;;Brick Yellow;5
-Light_Violet;20;#AFBED6;#333333;;;;Light Bluish Violet;39
-Purple;22;#671F81;#333333;;;;Bright Violet;104
-Dark_Blue_Violet;23;#0E3E9A;#333333;;;;Dark Royal Blue;196
-Orange;25;#D67923;#333333;;;;Bright Orange;106
-Magenta;26;#901F76;#333333;;;;Bright Reddish Violet;124
-Lime;27;#A5CA18;#333333;;;;Bright Yellowish Green;119
-Dark_Tan;28;#897D62;#333333;;;;Sand Yellow;138
-Bright_Pink;29;#FF9ECD;#333333;;;;Light Purple;222
-Medium_Lavender;30;#A06EB9;#333333;;;;Medium Lavender;324
-Lavender;31;#CDA4DE;#333333;;;;Lavender;325
-Very_Light_Orange;68;#FDC383;#333333;;;;Light Yellowish Orange;36
-Bright_Reddish_Lilac;69;#8A12A8;#333333;;;;Bright Reddish Lilac;198
-Reddish_Brown;70;#5F3109;#808080;;;;Reddish Brown;192
-Light_Bluish_Grey;71;#969696;#333333;;;;Medium Stone Grey;194
-Dark_Bluish_Grey;72;#646464;#333333;;;;Dark Stone Grey;199
-Medium_Blue;73;#7396C8;#333333;;;;Medium Blue;102
-Medium_Green;74;#7FC475;#333333;;;;Medium Green;29
-Light_Pink;77;#FECCCF;#333333;;;;Light Pink;223
-Light_Nougat;78;#FFC995;#333333;;;;Light Nougat;283
-Medium_Nougat;84;#AA7D55;#333333;;;;Medium Nougat;312
-Medium_Lilac;85;#441A91;#333333;;;;Medium Lilac;268
-Medium_Brown;86;#7B5D41;#333333;;;;Brown;217
-Blue_Violet;89;#1C58A7;#333333;;;;Medium Royal Blue;195
-Nougat;92;#BB805A;#333333;;;;Nougat;18
-Light_Salmon;100;#F9B7A5;#333333;;;;Light Red;100
-Violet;110;#26469A;#333333;;;;Bright Bluish Violet;110
-Medium_Violet;112;#4861AC;#333333;;;;Medium Bluish Violet;112
-Medium_Lime;115;#B7D425;#333333;;;;Medium Yellowish Green;115
-Aqua;118;#9CD6CC;#333333;;;;Light Bluish Green;118
-Light_Lime;120;#DEEA92;#333333;;;;Light Yellowish Green;120
-Light_Orange;125;#F9A777;#333333;;;;Light Orange;125
-Dark_Nougat;128;#AD6140;#333333;;;;Dark Nougat;128
-Very_Light_Bluish_Grey;151;#C8C8C8;#333333;;;;Light Stone Grey;208
-Bright_Light_Orange;191;#FCAC00;#333333;;;;Flame Yellowish Orange;191
-Bright_Light_Blue;212;#9DC3F7;#333333;;;;Light Royal Blue;212
-Rust;216;#872B17;#333333;;;;Rust;216
-Reddish_Lilac;218;#8E5597;#333333;;;;Reddish Lilac;218
-Lilac;219;#564E9D;#333333;;;;Lilac;219
-Bright_Light_Yellow;226;#FFEC6C;#333333;;;;Cool Yellow;226
-Sky_Blue;232;#77C9D8;#333333;;;;Dove Blue;232
-Dark_Blue;272;#19325A;#333333;;;;Earth Blue;140
-Dark_Green;288;#00451A;#808080;;;;Earth Green;141
-Flamingo_Pink;295;#FF94C2;#333333;;;;Flamingo Pink;295
-Dark_Brown;308;#352100;#808080;;;;Dark Brown;308
-Maersk_Blue;313;#ABD9FF;#333333;;;;Pastel Blue;11
-Dark_Red;320;#720012;#333333;;;;New Dark Red;154
-Dark_Azure;321;#469BC3;#333333;;;;Dark Azur;321
-Medium_Azure;322;#68C3E2;#333333;;;;Medium Azur;322
-Light_Aqua;323;#D3F2EA;#333333;;;;Aqua;323
-Yellowish_Green;326;#E2F99A;#333333;;;;Spring Yellowish Green;326
-Olive_Green;330;#77774E;#333333;;;;Olive Green;330
-Sand_Red;335;#88605E;#333333;;;;Sand Red;153
-Medium_Dark_Pink;351;#F785B1;#333333;;;;Pink;16
-Coral;353;#FF6D77;#333333;;;;Vibrant Coral;353
-Earth_Orange;366;#D86D2C;#333333;;;;Light Orange Brown;12
-Vibrant_Yellow;368;#EDFF21;#333333;;;;Vibrant Yellow;368
-Medium_Brown;370;#755945;#333333;;;;Medium Brown;370
-Sand_Purple;373;#75657D;#333333;;;;Sand Violet;136
-Sand_Green;378;#708E7C;#333333;;;;Sand Green;151
-Sand_Blue;379;#70819A;#333333;;;;Sand Blue;135
-Fabuland_Brown;450;#D27744;#333333;;;;Brick Red;4
-Medium_Orange;462;#F58624;#333333;;;;Bright Yellowish Orange;105
-Dark_Orange;484;#91501C;#333333;;;;Dark Orange;38
-Very_Light_Grey;503;#BCB4A5;#333333;;;;Light Grey;103
-Light_Orange_Brown;507;#FA9C1C;#333333;;;;Light Orange Brown;12
-Fabuland_Red;508;#FF8014;#333333;;;;Red Orange;13
-Fabuland_Orange;509;#CF8A47;#333333;;;;Light Brown;19
-Fabuland_Pastel_Green;510;#78FC78;#333333;;;;Pastel Green;14
-Trans_Dark_Blue;33;#0020A0;#000B38;128;;;Transparent Blue;43
-Trans_Green;34;#237841;#174F2B;128;;;Transparent Green;48
-Trans_Bright_Green;35;#56E646;#27AF18;128;;;Transparent Bright Green;311
-Trans_Red;36;#C91A09;#660D05;128;;;Transparent Red;41
-Trans_Dark_Pink;37;#DF6695;#B9275F;128;;;Transparent Medium Reddish Violet;113
-Trans_Neon_Orange;38;#FF800D;#A85100;128;;;Transparent Fluorescent Reddish Orange;47
-Trans_Very_Light_Blue;39;#C1DFF0;#6FB4DC;128;;;Transparent Light Bluish Green;229
-Trans_Black;40;#635F52;#2A2823;128;;;Transparent Brown;111
-Trans_Medium_Blue;41;#559AB7;#326276;128;;;Transparent Fluorescent Blue;143
-Trans_Neon_Green;42;#C0FF00;#739900;128;;;Transparent Fluorescent Green;49
-Trans_Light_Blue;43;#AEE9EF;#59D1DE;128;;;Transparent Light Blue;42
-Trans_Bright_Reddish_Lilac;44;#96709F;#5F4365;128;;;Transparent Bright Reddish Lilac;236
-Trans_Pink;45;#FC97AC;#F9345B;128;;;Transparent Bright Pink;230
-Trans_Yellow;46;#F5CD2F;#B49208;128;;;Transparent Yellow;44
-Trans_Clear;47;#FCFCFC;#C9C9C9;128;;;Transparent;40
-Trans_Purple;52;#A5A5CB;#6464A6;128;;;Transparent Bright Bluish Violet;126
-Trans_Neon_Yellow;54;#DAB000;#755E00;128;;;Transparent Fluorescent Yellow;157
-Trans_Orange;57;#F08F1C;#9E5C0A;128;;;Trans Bright Orange;182
-Trans_Bright_Light_Green;227;#B5D96C;#86B22E;128;;;Transparent Bright Yellowish Green;227
-Trans_Bright_Light_Orange;231;#FCB76D;#FA860A;128;;;Transparent Flame Yellowish Orange;231
-Trans_Fire_Yellow;234;#FBE890;#F7D22B;128;;;Transparent Fire Yellow;234
-Trans_Reddish_Lilac;284;#C281A5;#944771;128;;;Transparent Reddish Lilac;284
-Trans_Light_Green;285;#7DC291;#46955D;128;;;Transparent Light Green;285
-Trans_Light_Blue_Violet;293;#6BABE4;#247BC6;128;;;Transparent Light Royal Blue;293
-Chrome_Antique_Brass;60;#645A4C;#665B4D;;;CHROME;;
-Chrome_Blue;61;#6C96BF;#3D638A;;;CHROME;;
-Chrome_Green;62;#3CB371;#226741;;;CHROME;;
-Chrome_Pink;63;#AA4D8E;#632C52;;;CHROME;;
-Chrome_Black;64;#1B2A34;#3D5F76;;;CHROME;;
-Chrome_Gold;334;#DFC176;#C2982E;;;CHROME;Metalized Gold;310
-Chrome_Silver;383;#CECECE;#9C9C9C;;;CHROME;Metalized Silver;309
-Metallic_Black;83;#0A1327;#333333;;;PEARLESCENT;Metallic Black;149
-Copper;134;#764D3B;#333333;;;PEARLESCENT;Copper;139
-Pearl_Light_Grey;135;#A0A0A0;#333333;;;PEARLESCENT;Cool Silver / Silver / Silver Metallic;296 / 131 / 315
-Metallic_Blue;137;#5B7590;#333333;;;PEARLESCENT;Sand Blue Metallic;145
-Pearl_Light_Gold;142;#DEAC66;#333333;;;PEARLESCENT;Gold;127
-Pearl_Dark_Grey;148;#484D48;#333333;;;PEARLESCENT;Metallic Dark Grey;148
-Pearl_Very_Light_Grey;150;#989B99;#333333;;;PEARLESCENT;Metallic Light Grey;150
-Flat_Dark_Gold;178;#83724F;#333333;;;PEARLESCENT;Metallic Sand Yellow;147
-Flat_Silver;179;#898788;#333333;;;PEARLESCENT;Silver Flip-flop;179
-Pearl_White;183;#F6F2DF;#333333;;;PEARLESCENT;Metallic White;183
-Metallic_Bright_Red;184;#D60026;#333333;;;PEARLESCENT;Metallic Bright Red;184
-Metallic_Bright_Blue;185;#0059A3;#333333;;;PEARLESCENT;Metallic Bright Blue;185
-Metallic_Dark_Green;186;#008E3C;#333333;;;PEARLESCENT;Metallic Dark Green;186
-Reddish_Gold;189;#AC8247;#333333;;;PEARLESCENT;Reddish Gold;189
-Lemon_Metallic;200;#708224;#333333;;;PEARLESCENT;Lemon Metallic;200
-Pearl_Gold;297;#AA7F2E;#333333;;;PEARLESCENT;Warm Gold;297
-Metallic_Silver;80;#767676;#333333;;;METAL;Cool Silver Drum Lacq / Silver Ink;298 / 336
-Metallic_Green;81;#C2C06F;#333333;;;METAL;;
-Metallic_Gold;82;#DBAC34;#333333;;;METAL;Warm Gold Drum Lacq / Gold Ink;299 / 335
-Metallic_Dark_Grey;87;#3E3C39;#333333;;;METAL;Titanium;337
-Metallic_Copper;300;#C27F53;#333333;;;METAL;Copper Drum Lacq / Copper Ink;300 / 334
-Metallic_Light_Blue;10045;#97CBD9;#333333;;;METAL;;
-Metallic_Pink;10046;#AD659A;#333333;;;METAL;;
-Metallic_Light_Pink;10049;#FECCCF;#333333;;;METAL;;
-Milky_White;79;#EEEEEE;#BABABA;240;;;Nature;20
-Glow_In_Dark_Opaque;21;#E0FFB0;#B8FF4D;240;15;;Phosphorescent Green;294
-Glow_In_Dark_Trans;294;#BDC6AD;#8D9D72;240;15;;Phosphorescent White;50
-Glow_In_Dark_White;329;#F5F3D7;#E0DA85;240;15;;White Glow;329
-Glitter_Trans_Dark_Pink;114;#DF6695;#B9275F;128;;MATERIAL GLITTER VALUE #B92790 FRACTION 0.17 VFRACTION 0.2 SIZE 1;Transparent Medium Reddish-Violet w. Glitter 2%;114
-Glitter_Trans_Clear;117;#EEEEEE;#BABABA;128;;MATERIAL GLITTER VALUE #FFFFFF FRACTION 0.08 VFRACTION 0.1 SIZE 1;Transparent Glitter;117
-Glitter_Trans_Purple;129;#640061;#000000;128;;MATERIAL GLITTER VALUE #8F00CC FRACTION 0.03 VFRACTION 0.4 SIZE 1;Transparent Bright Bluish Violet w. Glitter 2%;129
-Glitter_Trans_Light_Blue;302;#AEE9EF;#59D1DE;128;;MATERIAL GLITTER VALUE #59DEBF FRACTION 0.17 VFRACTION 0.2 SIZE 1;Transparent Light Blue with Glitter 2%;302
-Glitter_Trans_Neon_Green;339;#C0FF00;#739900;128;;MATERIAL GLITTER VALUE #998C00 FRACTION 0.17 VFRACTION 0.2 SIZE 1;Transparent Fluorescent Green with Glitter 2%;339
-Glitter_Trans_Orange;341;#F08F1C;#9E5C0A;128;;MATERIAL GLITTER VALUE #9E2A0A FRACTION 0.17 VFRACTION 0.2 SIZE 1;Transparent Bright Orange with Glitter 2%;341
-Opal_Trans_Clear;360;#FCFCFC;#C9C9C9;240;5;MATERIAL GLITTER VALUE #FFFFFF FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Clear Opal;360
-Opal_Trans_Light_Blue;362;#AEE9EF;#59D1DE;200;5;MATERIAL GLITTER VALUE #59DEBF FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Blue Opal;362
-Opal_Trans_Black;363;#635F52;#2A2823;200;5;MATERIAL GLITTER VALUE #292522 FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Brown Opal;363
-Opal_Trans_Dark_Pink;364;#DF6695;#B9275F;200;5;MATERIAL GLITTER VALUE #B92790 FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Medium Reddish Violet Opal;364
-Opal_Trans_Purple;365;#671F81;#441456;200;5;MATERIAL GLITTER VALUE #2F1456 FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Violet Opal;365
-Opal_Trans_Green;367;#237841;#174F2B;200;5;MATERIAL GLITTER VALUE #0B270B FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Green Opal;367
-Glitter_Trans_Bright_Green;10351;#56E646;#27AF18;128;;MATERIAL GLITTER VALUE #59AF18 FRACTION 0.17 VFRACTION 0.2 SIZE 1;Transparent Bright Green with Glitter 2%;351
-Opal_Trans_Dark_Blue;10366;#0020A0;#000B38;200;5;MATERIAL GLITTER VALUE #001D38 FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Blue Opal;366
-Speckle_Black_Copper;75;#000000;#AB6038;;;MATERIAL SPECKLE VALUE #AB6038 FRACTION 0.4 MINSIZE 1 MAXSIZE 3;;
-Speckle_Dark_Bluish_Grey_Silver;76;#635F61;#898788;;;MATERIAL SPECKLE VALUE #898788 FRACTION 0.4 MINSIZE 1 MAXSIZE 3;;
-Speckle_Black_Silver;132;#000000;#898788;;;MATERIAL SPECKLE VALUE #898788 FRACTION 0.4 MINSIZE 1 MAXSIZE 3;Black Glitter;132
-Speckle_Black_Gold;133;#000000;#DBAC34;;;MATERIAL SPECKLE VALUE #DBAC34 FRACTION 0.4 MINSIZE 1 MAXSIZE 3;;
-Rubber_Yellow;65;#FAC80A;#333333;;;RUBBER;;
-Rubber_Black;256;#1B2A34;#808080;;;RUBBER;;
-Rubber_Blue;273;#1E5AA8;#333333;;;RUBBER;;
-Rubber_Red;324;#B40000;#333333;;;RUBBER;;
-Rubber_Orange;350;#D67923;#333333;;;RUBBER;;
-Rubber_Light_Grey;375;#8A928D;#333333;;;RUBBER;;
-Rubber_Dark_Blue;406;#19325A;#333333;;;RUBBER;;
-Rubber_Purple;449;#671F81;#333333;;;RUBBER;;
-Rubber_Lime;490;#A5CA18;#333333;;;RUBBER;;
-Rubber_Light_Bluish_Grey;496;#969696;#333333;;;RUBBER;;
-Rubber_Flat_Silver;504;#898788;#333333;;;RUBBER;;
-Rubber_White;511;#F4F4F4;#333333;;;RUBBER;;
-Rubber_Green;10002;#00852B;#333333;;;RUBBER;;
-Rubber_Bright_Green;10010;#58AB41;#333333;;;RUBBER;;
-Rubber_Magenta;10026;#901F76;#333333;;;RUBBER;;
-Rubber_Medium_Lavender;10030;#A06EB9;#333333;;;RUBBER;;
-Rubber_Lavender;10031;#CDA4DE;#333333;;;RUBBER;;
-Rubber_Reddish_Brown;10070;#5F3109;#808080;;;RUBBER;;
-Rubber_Medium_Blue;10073;#7396C8;#333333;;;RUBBER;;
-Rubber_Light_Nougat;10078;#FFC995;#333333;;;RUBBER;;
-Rubber_Bright_Light_Yellow;10226;#FFEC6C;#333333;;;RUBBER;;
-Rubber_Dark_Brown;10308;#352100;#808080;;;RUBBER;;
-Rubber_Dark_Red;10320;#720012;#333333;;;RUBBER;;
-Rubber_Dark_Azure;10321;#469BC3;#333333;;;RUBBER;;
-Rubber_Medium_Azure;10322;#68C3E2;#333333;;;RUBBER;;
-Rubber_Light_Aqua;10323;#D3F2EA;#333333;;;RUBBER;;
-Rubber_Sand_Green;10378;#708E7C;#333333;;;RUBBER;;
-Rubber_Dark_Orange;10484;#91501C;#333333;;;RUBBER;;
-Rubber_Trans_Yellow;66;#F5CD2F;#B49208;128;;RUBBER;;
-Rubber_Trans_Clear;67;#FCFCFC;#C9C9C9;128;;RUBBER;;
-Rubber_Trans_Bright_Green;10035;#56E646;#27AF18;128;;RUBBER;;
-Rubber_Trans_Red;10036;#C91A09;#660D05;128;;RUBBER;;
-Rubber_Trans_Light_Blue;10043;#AEE9EF;#59D1DE;128;;RUBBER;;
-Main_Colour;16;#FFFF80;#333333;;;;;
-Edge_Colour;24;#7F7F7F;#333333;;;;;
-Trans_Black_IR_Lens;32;#000000;#333333;210;;;Black IR;109
-Magnet;493;#656761;#333333;;;METAL;;
-Electric_Contact_Alloy;494;#D0D0D0;#333333;;;METAL;;
-Electric_Contact_Copper;495;#AE7A59;#333333;;;METAL;;
-Trans_Sticker;10047;#FFFFFF;#FFFFFF;16;;;;
+LDrawName;LDrawID;Value;Edge;Alpha;Luminance;Material;LegoName;LegoID;Category
+Black;0;#1B2A34;#808080;;;;Black;26;LDraw Solid Colours
+Blue;1;#1E5AA8;#333333;;;;Bright Blue;23;LDraw Solid Colours
+Green;2;#00852B;#333333;;;;Dark Green;28;LDraw Solid Colours
+Dark_Turquoise;3;#069D9F;#333333;;;;Bright Bluish Green;107;LDraw Solid Colours
+Red;4;#B40000;#333333;;;;Bright Red;21;LDraw Solid Colours
+Dark_Pink;5;#D3359D;#333333;;;;Medium Reddish Violet / Bright Purple;22 / 221;LDraw Solid Colours
+Brown;6;#543324;#1E1E1E;;;;Earth Orange;25;LDraw Solid Colours
+Light_Grey;7;#8A928D;#333333;;;;Grey;2;LDraw Solid Colours
+Dark_Grey;8;#545955;#333333;;;;Dark Grey;27;LDraw Solid Colours
+Light_Blue;9;#97CBD9;#333333;;;;Light Blue;45;LDraw Solid Colours
+Bright_Green;10;#58AB41;#333333;;;;Bright Green;37;LDraw Solid Colours
+Light_Turquoise;11;#00AAA4;#333333;;;;Medium Bluish Green;116;LDraw Solid Colours
+Salmon;12;#F06D61;#333333;;;;Medium Red;101;LDraw Solid Colours
+Pink;13;#F6A9BB;#333333;;;;Light Reddish Violet;9;LDraw Solid Colours
+Yellow;14;#FAC80A;#333333;;;;Bright Yellow;24;LDraw Solid Colours
+White;15;#F4F4F4;#333333;;;;White;1;LDraw Solid Colours
+Light_Green;17;#ADD9A8;#333333;;;;Light Green;6;LDraw Solid Colours
+Light_Yellow;18;#FFD67F;#333333;;;;Light Yellow;3;LDraw Solid Colours
+Tan;19;#B0A06F;#333333;;;;Brick Yellow;5;LDraw Solid Colours
+Light_Violet;20;#AFBED6;#333333;;;;Light Bluish Violet;39;LDraw Solid Colours
+Purple;22;#671F81;#333333;;;;Bright Violet;104;LDraw Solid Colours
+Dark_Blue_Violet;23;#0E3E9A;#333333;;;;Dark Royal Blue;196;LDraw Solid Colours
+Orange;25;#D67923;#333333;;;;Bright Orange;106;LDraw Solid Colours
+Magenta;26;#901F76;#333333;;;;Bright Reddish Violet;124;LDraw Solid Colours
+Lime;27;#A5CA18;#333333;;;;Bright Yellowish Green;119;LDraw Solid Colours
+Dark_Tan;28;#897D62;#333333;;;;Sand Yellow;138;LDraw Solid Colours
+Bright_Pink;29;#FF9ECD;#333333;;;;Light Purple;222;LDraw Solid Colours
+Medium_Lavender;30;#A06EB9;#333333;;;;Medium Lavender;324;LDraw Solid Colours
+Lavender;31;#CDA4DE;#333333;;;;Lavender;325;LDraw Solid Colours
+Very_Light_Orange;68;#FDC383;#333333;;;;Light Yellowish Orange;36;LDraw Solid Colours
+Bright_Reddish_Lilac;69;#8A12A8;#333333;;;;Bright Reddish Lilac;198;LDraw Solid Colours
+Reddish_Brown;70;#5F3109;#808080;;;;Reddish Brown;192;LDraw Solid Colours
+Light_Bluish_Grey;71;#969696;#333333;;;;Medium Stone Grey;194;LDraw Solid Colours
+Dark_Bluish_Grey;72;#646464;#333333;;;;Dark Stone Grey;199;LDraw Solid Colours
+Medium_Blue;73;#7396C8;#333333;;;;Medium Blue;102;LDraw Solid Colours
+Medium_Green;74;#7FC475;#333333;;;;Medium Green;29;LDraw Solid Colours
+Light_Pink;77;#FECCCF;#333333;;;;Light Pink;223;LDraw Solid Colours
+Light_Nougat;78;#FFC995;#333333;;;;Light Nougat;283;LDraw Solid Colours
+Medium_Nougat;84;#AA7D55;#333333;;;;Medium Nougat;312;LDraw Solid Colours
+Medium_Lilac;85;#441A91;#333333;;;;Medium Lilac;268;LDraw Solid Colours
+Medium_Brown;86;#7B5D41;#333333;;;;Brown;217;LDraw Solid Colours
+Blue_Violet;89;#1C58A7;#333333;;;;Medium Royal Blue;195;LDraw Solid Colours
+Nougat;92;#BB805A;#333333;;;;Nougat;18;LDraw Solid Colours
+Light_Salmon;100;#F9B7A5;#333333;;;;Light Red;100;LDraw Solid Colours
+Violet;110;#26469A;#333333;;;;Bright Bluish Violet;110;LDraw Solid Colours
+Medium_Violet;112;#4861AC;#333333;;;;Medium Bluish Violet;112;LDraw Solid Colours
+Medium_Lime;115;#B7D425;#333333;;;;Medium Yellowish Green;115;LDraw Solid Colours
+Aqua;118;#9CD6CC;#333333;;;;Light Bluish Green;118;LDraw Solid Colours
+Light_Lime;120;#DEEA92;#333333;;;;Light Yellowish Green;120;LDraw Solid Colours
+Light_Orange;125;#F9A777;#333333;;;;Light Orange;125;LDraw Solid Colours
+Dark_Nougat;128;#AD6140;#333333;;;;Dark Nougat;128;LDraw Solid Colours
+Very_Light_Bluish_Grey;151;#C8C8C8;#333333;;;;Light Stone Grey;208;LDraw Solid Colours
+Bright_Light_Orange;191;#FCAC00;#333333;;;;Flame Yellowish Orange;191;LDraw Solid Colours
+Bright_Light_Blue;212;#9DC3F7;#333333;;;;Light Royal Blue;212;LDraw Solid Colours
+Rust;216;#872B17;#333333;;;;Rust;216;LDraw Solid Colours
+Reddish_Lilac;218;#8E5597;#333333;;;;Reddish Lilac;218;LDraw Solid Colours
+Lilac;219;#564E9D;#333333;;;;Lilac;219;LDraw Solid Colours
+Bright_Light_Yellow;226;#FFEC6C;#333333;;;;Cool Yellow;226;LDraw Solid Colours
+Sky_Blue;232;#77C9D8;#333333;;;;Dove Blue;232;LDraw Solid Colours
+Dark_Blue;272;#19325A;#333333;;;;Earth Blue;140;LDraw Solid Colours
+Dark_Green;288;#00451A;#808080;;;;Earth Green;141;LDraw Solid Colours
+Flamingo_Pink;295;#FF94C2;#333333;;;;Flamingo Pink;295;LDraw Solid Colours
+Dark_Brown;308;#352100;#808080;;;;Dark Brown;308;LDraw Solid Colours
+Maersk_Blue;313;#ABD9FF;#333333;;;;Pastel Blue;11;LDraw Solid Colours
+Dark_Red;320;#720012;#333333;;;;New Dark Red;154;LDraw Solid Colours
+Dark_Azure;321;#469BC3;#333333;;;;Dark Azur;321;LDraw Solid Colours
+Medium_Azure;322;#68C3E2;#333333;;;;Medium Azur;322;LDraw Solid Colours
+Light_Aqua;323;#D3F2EA;#333333;;;;Aqua;323;LDraw Solid Colours
+Yellowish_Green;326;#E2F99A;#333333;;;;Spring Yellowish Green;326;LDraw Solid Colours
+Olive_Green;330;#77774E;#333333;;;;Olive Green;330;LDraw Solid Colours
+Sand_Red;335;#88605E;#333333;;;;Sand Red;153;LDraw Solid Colours
+Medium_Dark_Pink;351;#F785B1;#333333;;;;Pink;16;LDraw Solid Colours
+Coral;353;#FF6D77;#333333;;;;Vibrant Coral;353;LDraw Solid Colours
+Earth_Orange;366;#D86D2C;#333333;;;;Light Orange Brown;12;LDraw Solid Colours
+Vibrant_Yellow;368;#EDFF21;#333333;;;;Vibrant Yellow;368;LDraw Solid Colours
+Medium_Brown;370;#755945;#333333;;;;Medium Brown;370;LDraw Solid Colours
+Sand_Purple;373;#75657D;#333333;;;;Sand Violet;136;LDraw Solid Colours
+Sand_Green;378;#708E7C;#333333;;;;Sand Green;151;LDraw Solid Colours
+Sand_Blue;379;#70819A;#333333;;;;Sand Blue;135;LDraw Solid Colours
+Fabuland_Brown;450;#D27744;#333333;;;;Brick Red;4;LDraw Solid Colours
+Medium_Orange;462;#F58624;#333333;;;;Bright Yellowish Orange;105;LDraw Solid Colours
+Dark_Orange;484;#91501C;#333333;;;;Dark Orange;38;LDraw Solid Colours
+Very_Light_Grey;503;#BCB4A5;#333333;;;;Light Grey;103;LDraw Solid Colours
+Light_Orange_Brown;507;#FA9C1C;#333333;;;;Light Orange Brown;12;LDraw Solid Colours
+Fabuland_Red;508;#FF8014;#333333;;;;Red Orange;13;LDraw Solid Colours
+Fabuland_Orange;509;#CF8A47;#333333;;;;Light Brown;19;LDraw Solid Colours
+Fabuland_Pastel_Green;510;#78FC78;#333333;;;;Pastel Green;14;LDraw Solid Colours
+Trans_Dark_Blue;33;#0020A0;#000B38;128;;;Transparent Blue;43;LDraw Transparent Colours
+Trans_Green;34;#237841;#174F2B;128;;;Transparent Green;48;LDraw Transparent Colours
+Trans_Bright_Green;35;#56E646;#27AF18;128;;;Transparent Bright Green;311;LDraw Transparent Colours
+Trans_Red;36;#C91A09;#660D05;128;;;Transparent Red;41;LDraw Transparent Colours
+Trans_Dark_Pink;37;#DF6695;#B9275F;128;;;Transparent Medium Reddish Violet;113;LDraw Transparent Colours
+Trans_Neon_Orange;38;#FF800D;#A85100;128;;;Transparent Fluorescent Reddish Orange;47;LDraw Transparent Colours
+Trans_Very_Light_Blue;39;#C1DFF0;#6FB4DC;128;;;Transparent Light Bluish Green;229;LDraw Transparent Colours
+Trans_Black;40;#635F52;#2A2823;128;;;Transparent Brown;111;LDraw Transparent Colours
+Trans_Medium_Blue;41;#559AB7;#326276;128;;;Transparent Fluorescent Blue;143;LDraw Transparent Colours
+Trans_Neon_Green;42;#C0FF00;#739900;128;;;Transparent Fluorescent Green;49;LDraw Transparent Colours
+Trans_Light_Blue;43;#AEE9EF;#59D1DE;128;;;Transparent Light Blue;42;LDraw Transparent Colours
+Trans_Bright_Reddish_Lilac;44;#96709F;#5F4365;128;;;Transparent Bright Reddish Lilac;236;LDraw Transparent Colours
+Trans_Pink;45;#FC97AC;#F9345B;128;;;Transparent Bright Pink;230;LDraw Transparent Colours
+Trans_Yellow;46;#F5CD2F;#B49208;128;;;Transparent Yellow;44;LDraw Transparent Colours
+Trans_Clear;47;#FCFCFC;#C9C9C9;128;;;Transparent;40;LDraw Transparent Colours
+Trans_Purple;52;#A5A5CB;#6464A6;128;;;Transparent Bright Bluish Violet;126;LDraw Transparent Colours
+Trans_Neon_Yellow;54;#DAB000;#755E00;128;;;Transparent Fluorescent Yellow;157;LDraw Transparent Colours
+Trans_Orange;57;#F08F1C;#9E5C0A;128;;;Trans Bright Orange;182;LDraw Transparent Colours
+Trans_Bright_Light_Green;227;#B5D96C;#86B22E;128;;;Transparent Bright Yellowish Green;227;LDraw Transparent Colours
+Trans_Bright_Light_Orange;231;#FCB76D;#FA860A;128;;;Transparent Flame Yellowish Orange;231;LDraw Transparent Colours
+Trans_Fire_Yellow;234;#FBE890;#F7D22B;128;;;Transparent Fire Yellow;234;LDraw Transparent Colours
+Trans_Reddish_Lilac;284;#C281A5;#944771;128;;;Transparent Reddish Lilac;284;LDraw Transparent Colours
+Trans_Light_Green;285;#7DC291;#46955D;128;;;Transparent Light Green;285;LDraw Transparent Colours
+Trans_Light_Blue_Violet;293;#6BABE4;#247BC6;128;;;Transparent Light Royal Blue;293;LDraw Transparent Colours
+Chrome_Antique_Brass;60;#645A4C;#665B4D;;;CHROME;;;LDraw Chrome Plated Colours
+Chrome_Blue;61;#6C96BF;#3D638A;;;CHROME;;;LDraw Chrome Plated Colours
+Chrome_Green;62;#3CB371;#226741;;;CHROME;;;LDraw Chrome Plated Colours
+Chrome_Pink;63;#AA4D8E;#632C52;;;CHROME;;;LDraw Chrome Plated Colours
+Chrome_Black;64;#1B2A34;#3D5F76;;;CHROME;;;LDraw Chrome Plated Colours
+Chrome_Gold;334;#DFC176;#C2982E;;;CHROME;Metalized Gold;310;LDraw Chrome Plated Colours
+Chrome_Silver;383;#CECECE;#9C9C9C;;;CHROME;Metalized Silver;309;LDraw Chrome Plated Colours
+Metallic_Black;83;#0A1327;#333333;;;PEARLESCENT;Metallic Black;149;LDraw Pearlescent Plastic Colours
+Copper;134;#764D3B;#333333;;;PEARLESCENT;Copper;139;LDraw Pearlescent Plastic Colours
+Pearl_Light_Grey;135;#A0A0A0;#333333;;;PEARLESCENT;Cool Silver / Silver / Silver Metallic;296 / 131 / 315;LDraw Pearlescent Plastic Colours
+Metallic_Blue;137;#5B7590;#333333;;;PEARLESCENT;Sand Blue Metallic;145;LDraw Pearlescent Plastic Colours
+Pearl_Light_Gold;142;#DEAC66;#333333;;;PEARLESCENT;Gold;127;LDraw Pearlescent Plastic Colours
+Pearl_Dark_Grey;148;#484D48;#333333;;;PEARLESCENT;Metallic Dark Grey;148;LDraw Pearlescent Plastic Colours
+Pearl_Very_Light_Grey;150;#989B99;#333333;;;PEARLESCENT;Metallic Light Grey;150;LDraw Pearlescent Plastic Colours
+Flat_Dark_Gold;178;#83724F;#333333;;;PEARLESCENT;Metallic Sand Yellow;147;LDraw Pearlescent Plastic Colours
+Flat_Silver;179;#898788;#333333;;;PEARLESCENT;Silver Flip-flop;179;LDraw Pearlescent Plastic Colours
+Pearl_White;183;#F6F2DF;#333333;;;PEARLESCENT;Metallic White;183;LDraw Pearlescent Plastic Colours
+Metallic_Bright_Red;184;#D60026;#333333;;;PEARLESCENT;Metallic Bright Red;184;LDraw Pearlescent Plastic Colours
+Metallic_Bright_Blue;185;#0059A3;#333333;;;PEARLESCENT;Metallic Bright Blue;185;LDraw Pearlescent Plastic Colours
+Metallic_Dark_Green;186;#008E3C;#333333;;;PEARLESCENT;Metallic Dark Green;186;LDraw Pearlescent Plastic Colours
+Reddish_Gold;189;#AC8247;#333333;;;PEARLESCENT;Reddish Gold;189;LDraw Pearlescent Plastic Colours
+Lemon_Metallic;200;#708224;#333333;;;PEARLESCENT;Lemon Metallic;200;LDraw Pearlescent Plastic Colours
+Pearl_Gold;297;#AA7F2E;#333333;;;PEARLESCENT;Warm Gold;297;LDraw Pearlescent Plastic Colours
+Metallic_Silver;80;#767676;#333333;;;METAL;Cool Silver Drum Lacq / Silver Ink;298 / 336;LDraw Metallic Paint Colours
+Metallic_Green;81;#C2C06F;#333333;;;METAL;;;LDraw Metallic Paint Colours
+Metallic_Gold;82;#DBAC34;#333333;;;METAL;Warm Gold Drum Lacq / Gold Ink;299 / 335;LDraw Metallic Paint Colours
+Metallic_Dark_Grey;87;#3E3C39;#333333;;;METAL;Titanium;337;LDraw Metallic Paint Colours
+Metallic_Copper;300;#C27F53;#333333;;;METAL;Copper Drum Lacq / Copper Ink;300 / 334;LDraw Metallic Paint Colours
+Metallic_Light_Blue;10045;#97CBD9;#333333;;;METAL;;;LDraw Metallic Paint Colours
+Metallic_Pink;10046;#AD659A;#333333;;;METAL;;;LDraw Metallic Paint Colours
+Metallic_Light_Pink;10049;#FECCCF;#333333;;;METAL;;;LDraw Metallic Paint Colours
+Milky_White;79;#EEEEEE;#BABABA;240;;;Nature;20;LDraw Milky Colours
+Glow_In_Dark_Opaque;21;#E0FFB0;#B8FF4D;240;15;;Phosphorescent Green;294;LDraw Milky Colours
+Glow_In_Dark_Trans;294;#BDC6AD;#8D9D72;240;15;;Phosphorescent White;50;LDraw Milky Colours
+Glow_In_Dark_White;329;#F5F3D7;#E0DA85;240;15;;White Glow;329;LDraw Milky Colours
+Glitter_Trans_Dark_Pink;114;#DF6695;#B9275F;128;;MATERIAL GLITTER VALUE #B92790 FRACTION 0.17 VFRACTION 0.2 SIZE 1;Transparent Medium Reddish-Violet w. Glitter 2%;114;LDraw Glitter Colours
+Glitter_Trans_Clear;117;#EEEEEE;#BABABA;128;;MATERIAL GLITTER VALUE #FFFFFF FRACTION 0.08 VFRACTION 0.1 SIZE 1;Transparent Glitter;117;LDraw Glitter Colours
+Glitter_Trans_Purple;129;#640061;#000000;128;;MATERIAL GLITTER VALUE #8F00CC FRACTION 0.03 VFRACTION 0.4 SIZE 1;Transparent Bright Bluish Violet w. Glitter 2%;129;LDraw Glitter Colours
+Glitter_Trans_Light_Blue;302;#AEE9EF;#59D1DE;128;;MATERIAL GLITTER VALUE #59DEBF FRACTION 0.17 VFRACTION 0.2 SIZE 1;Transparent Light Blue with Glitter 2%;302;LDraw Glitter Colours
+Glitter_Trans_Neon_Green;339;#C0FF00;#739900;128;;MATERIAL GLITTER VALUE #998C00 FRACTION 0.17 VFRACTION 0.2 SIZE 1;Transparent Fluorescent Green with Glitter 2%;339;LDraw Glitter Colours
+Glitter_Trans_Orange;341;#F08F1C;#9E5C0A;128;;MATERIAL GLITTER VALUE #9E2A0A FRACTION 0.17 VFRACTION 0.2 SIZE 1;Transparent Bright Orange with Glitter 2%;341;LDraw Glitter Colours
+Opal_Trans_Clear;360;#FCFCFC;#C9C9C9;240;5;MATERIAL GLITTER VALUE #FFFFFF FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Clear Opal;360;LDraw Glitter Colours
+Opal_Trans_Light_Blue;362;#AEE9EF;#59D1DE;200;5;MATERIAL GLITTER VALUE #59DEBF FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Blue Opal;362;LDraw Glitter Colours
+Opal_Trans_Black;363;#635F52;#2A2823;200;5;MATERIAL GLITTER VALUE #292522 FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Brown Opal;363;LDraw Glitter Colours
+Opal_Trans_Dark_Pink;364;#DF6695;#B9275F;200;5;MATERIAL GLITTER VALUE #B92790 FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Medium Reddish Violet Opal;364;LDraw Glitter Colours
+Opal_Trans_Purple;365;#671F81;#441456;200;5;MATERIAL GLITTER VALUE #2F1456 FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Violet Opal;365;LDraw Glitter Colours
+Opal_Trans_Green;367;#237841;#174F2B;200;5;MATERIAL GLITTER VALUE #0B270B FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Green Opal;367;LDraw Glitter Colours
+Glitter_Trans_Bright_Green;10351;#56E646;#27AF18;128;;MATERIAL GLITTER VALUE #59AF18 FRACTION 0.17 VFRACTION 0.2 SIZE 1;Transparent Bright Green with Glitter 2%;351;LDraw Glitter Colours
+Opal_Trans_Dark_Blue;10366;#0020A0;#000B38;200;5;MATERIAL GLITTER VALUE #001D38 FRACTION 0.8 VFRACTION 0.6 MINSIZE 0.02 MAXSIZE 0.1;Transparent Blue Opal;366;LDraw Glitter Colours
+Speckle_Black_Copper;75;#000000;#AB6038;;;MATERIAL SPECKLE VALUE #AB6038 FRACTION 0.4 MINSIZE 1 MAXSIZE 3;;;LDraw Speckle Colours
+Speckle_Dark_Bluish_Grey_Silver;76;#635F61;#898788;;;MATERIAL SPECKLE VALUE #898788 FRACTION 0.4 MINSIZE 1 MAXSIZE 3;;;LDraw Speckle Colours
+Speckle_Black_Silver;132;#000000;#898788;;;MATERIAL SPECKLE VALUE #898788 FRACTION 0.4 MINSIZE 1 MAXSIZE 3;Black Glitter;132;LDraw Speckle Colours
+Speckle_Black_Gold;133;#000000;#DBAC34;;;MATERIAL SPECKLE VALUE #DBAC34 FRACTION 0.4 MINSIZE 1 MAXSIZE 3;;;LDraw Speckle Colours
+Rubber_Yellow;65;#FAC80A;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Black;256;#1B2A34;#808080;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Blue;273;#1E5AA8;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Red;324;#B40000;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Orange;350;#D67923;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Light_Grey;375;#8A928D;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Dark_Blue;406;#19325A;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Purple;449;#671F81;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Lime;490;#A5CA18;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Light_Bluish_Grey;496;#969696;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Flat_Silver;504;#898788;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_White;511;#F4F4F4;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Green;10002;#00852B;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Bright_Green;10010;#58AB41;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Magenta;10026;#901F76;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Medium_Lavender;10030;#A06EB9;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Lavender;10031;#CDA4DE;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Reddish_Brown;10070;#5F3109;#808080;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Medium_Blue;10073;#7396C8;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Light_Nougat;10078;#FFC995;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Bright_Light_Yellow;10226;#FFEC6C;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Dark_Brown;10308;#352100;#808080;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Dark_Red;10320;#720012;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Dark_Azure;10321;#469BC3;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Medium_Azure;10322;#68C3E2;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Light_Aqua;10323;#D3F2EA;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Sand_Green;10378;#708E7C;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Dark_Orange;10484;#91501C;#333333;;;RUBBER;;;LDraw Rubber Colours
+Rubber_Trans_Yellow;66;#F5CD2F;#B49208;128;;RUBBER;;;LDraw Transparent Rubber Colours
+Rubber_Trans_Clear;67;#FCFCFC;#C9C9C9;128;;RUBBER;;;LDraw Transparent Rubber Colours
+Rubber_Trans_Bright_Green;10035;#56E646;#27AF18;128;;RUBBER;;;LDraw Transparent Rubber Colours
+Rubber_Trans_Red;10036;#C91A09;#660D05;128;;RUBBER;;;LDraw Transparent Rubber Colours
+Rubber_Trans_Light_Blue;10043;#AEE9EF;#59D1DE;128;;RUBBER;;;LDraw Transparent Rubber Colours
+Main_Colour;16;#FFFF80;#333333;;;;;;LDraw Internal Common Material Colours
+Edge_Colour;24;#7F7F7F;#333333;;;;;;LDraw Internal Common Material Colours
+Trans_Black_IR_Lens;32;#000000;#333333;210;;;Black IR;109;LDraw Internal Common Material Colours
+Magnet;493;#656761;#333333;;;METAL;;;LDraw Internal Common Material Colours
+Electric_Contact_Alloy;494;#D0D0D0;#333333;;;METAL;;;LDraw Internal Common Material Colours
+Electric_Contact_Copper;495;#AE7A59;#333333;;;METAL;;;LDraw Internal Common Material Colours
+Trans_Sticker;10047;#FFFFFF;#FFFFFF;16;;;;;LDraw Internal Common Material Colours
