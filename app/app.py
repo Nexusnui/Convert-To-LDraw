@@ -6,6 +6,7 @@ import os
 
 os.chdir(os.path.dirname(__file__))
 
+
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
@@ -47,12 +48,11 @@ class App(customtkinter.CTk):
         self.output_file_label.grid(sticky="ew", columnspan=2, row=5, column=0)
 
         self.output_file_button = customtkinter.CTkButton(self.main_frame, text="Select Output File",
-                                                        command=self.set_output_file)
+                                                          command=self.set_output_file)
         self.output_file_button.grid(sticky="ew", row=5, column=2)
 
         self.convertFileButton = customtkinter.CTkButton(self.main_frame, text="convert file", command=self.convertFile)
         self.convertFileButton.grid(sticky="ew", row=6, column=1)
-
 
     def get_input_file(self):
         input_file_path = customtkinter.filedialog.askopenfilename(filetypes=[('stl files', '*.stl')])
@@ -101,6 +101,7 @@ class App(customtkinter.CTk):
         number_triangles = stlToDat(input_file_path, output_file_path, color_code)
         tkMessageBox.showwarning('Converted File', f'stl file converted to "{output_file_path}"\n'
                                                    f'Part contains {number_triangles} triangles.')
+
 
 if __name__ == "__main__":
     app = App()
