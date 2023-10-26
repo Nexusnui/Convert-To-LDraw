@@ -36,7 +36,7 @@ class brickcolor:
         if color_code.startswith("0x2"):
             self.color_type = "Direct"
             self.rgb_values = f"#{self.color_code[3:]}"
-            self.rgb_edge = getComplementaryColor(self.rgb_values)
+            self.rgb_edge = getContrastColor(self.rgb_values)
         else:
             self.color_type = "LDraw"
             self.ldrawname, _, \
@@ -63,7 +63,7 @@ class brickcolor:
 
 
 def getColorInfoById(id: str):
-    found_color = [None]*10
+    found_color = [None] * 10
     with open("BrickColors.csv", "r", encoding="utf-8") as source:
         # skip row with column names
         source.readline()
@@ -78,6 +78,20 @@ def getColorInfoById(id: str):
                 break
 
     return found_color
+
+def getContrastColor(rgb_values: str):
+    red = hex_switch(rgb_values[1:3])
+    green = hex_switch(rgb_values[3:5])
+    blue = hex_switch(rgb_values[5:7])
+
+    return f"#{''.join([red, green, blue])}"
+
+
+def hex_switch(hex_val: str):
+    if int(hex_val, 16) < 128:
+        return "FF"
+    else:
+        return "00"
 
 
 def getComplementaryColor(rgb_values: str):

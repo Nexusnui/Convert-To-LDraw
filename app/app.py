@@ -1,5 +1,5 @@
 from stlToDat import stlToDat
-from brickcolor import isBrickColor, brickcolor, getComplementaryColor
+from brickcolor import isBrickColor, brickcolor, getContrastColor
 import customtkinter
 from tkinter import messagebox as tkMessageBox
 import os
@@ -91,7 +91,7 @@ class App(customtkinter.CTk):
             set_color = brickcolor(self.color_code_Var.get())
         if set_color is not None:
             if set_color.color_type == "LDraw" and set_color.ldrawname is not None:
-                text_color = getComplementaryColor(set_color.rgb_values)
+                text_color = getContrastColor(set_color.rgb_values)
                 self.color_preview.configure(text=set_color.ldrawname, text_color=text_color,
                                              fg_color=set_color.rgb_values)
                 return
