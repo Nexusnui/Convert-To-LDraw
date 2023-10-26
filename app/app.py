@@ -1,5 +1,5 @@
 from stlToDat import stlToDat
-from brickcolor import isBrickColor, brickcolor
+from brickcolor import isBrickColor, brickcolor, getComplementaryColor
 import customtkinter
 from tkinter import messagebox as tkMessageBox
 import os
@@ -48,8 +48,8 @@ class App(customtkinter.CTk):
 
         customtkinter.CTkLabel(self.main_frame, text="Color Preview:").grid(sticky="w", columnspan=1,
                                                                             row=4, column=0)
-        self.color_preview = customtkinter.CTkLabel(self.main_frame, text="Main_Colour", text_color="#333333",
-                                                    fg_color="#FFFF80", padx=3, corner_radius=5)
+        self.color_preview = customtkinter.CTkLabel(self.main_frame, text="Main_Colour", text_color="#00008F",
+                                                    fg_color="#FFFF80", padx=3, corner_radius=6)
         self.color_preview.grid(sticky="w", columnspan=2, row=4, column=1)
 
         customtkinter.CTkLabel(self.main_frame, text="Output File:").grid(sticky="w", columnspan=2, row=5, column=0)
@@ -91,7 +91,8 @@ class App(customtkinter.CTk):
             set_color = brickcolor(self.color_code_Var.get())
         if set_color is not None:
             if set_color.color_type == "LDraw" and set_color.ldrawname is not None:
-                self.color_preview.configure(text=set_color.ldrawname, text_color=set_color.rgb_edge,
+                text_color = getComplementaryColor(set_color.rgb_values)
+                self.color_preview.configure(text=set_color.ldrawname, text_color=text_color,
                                              fg_color=set_color.rgb_values)
                 return
             elif set_color.color_type == "Direct":
