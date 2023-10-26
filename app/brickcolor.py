@@ -1,4 +1,4 @@
-def isBrickColor(color_code: str):
+def is_brickcolor(color_code: str):
     if len(color_code) < 1:
         return False, "No Color Code", "Apply Checkbox was toggled, but no color code provided"
     elif not color_code.startswith("0x2"):
@@ -26,7 +26,7 @@ def isBrickColor(color_code: str):
 
 class brickcolor:
     def __new__(cls, color_code: str):
-        if not isBrickColor(color_code)[0]:
+        if not is_brickcolor(color_code)[0]:
             return None
         instance = super().__new__(cls)
         return instance
@@ -36,7 +36,7 @@ class brickcolor:
         if color_code.startswith("0x2"):
             self.color_type = "Direct"
             self.rgb_values = f"#{self.color_code[3:]}"
-            self.rgb_edge = getContrastColor(self.rgb_values)
+            self.rgb_edge = get_contrast_color(self.rgb_values)
         else:
             self.color_type = "LDraw"
             self.ldrawname, _, \
@@ -47,7 +47,7 @@ class brickcolor:
             self.material, \
             self.legoname, \
             self.legoid, \
-            self.category = getColorInfoById(self.color_code)
+            self.category = get_color_info_by_id(self.color_code)
 
     def __str__(self):
         if self.color_type == "Direct":
@@ -62,7 +62,7 @@ class brickcolor:
         return f"brickcolor({self.color_code})"
 
 
-def getColorInfoById(id: str):
+def get_color_info_by_id(id: str):
     found_color = [None] * 10
     with open("BrickColors.csv", "r", encoding="utf-8") as source:
         # skip row with column names
@@ -79,7 +79,7 @@ def getColorInfoById(id: str):
 
     return found_color
 
-def getContrastColor(rgb_values: str):
+def get_contrast_color(rgb_values: str):
     red = hex_switch(rgb_values[1:3])
     green = hex_switch(rgb_values[3:5])
     blue = hex_switch(rgb_values[5:7])
@@ -94,7 +94,7 @@ def hex_switch(hex_val: str):
         return "00"
 
 
-def getComplementaryColor(rgb_values: str):
+def get_complementary_color(rgb_values: str):
     red = '%02X' % (255 - int(rgb_values[1:3], 16))
     green = '%02X' % (255 - int(rgb_values[3:5], 16))
     blue = '%02X' % (255 - int(rgb_values[5:7], 16))
