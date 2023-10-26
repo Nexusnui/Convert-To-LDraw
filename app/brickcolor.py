@@ -36,6 +36,7 @@ class brickcolor:
         if color_code.startswith("0x2"):
             self.color_type = "Direct"
             self.rgb_values = f"#{self.color_code[2:]}"
+            self.rgb_edge = getComplementaryColor(self.rgb_values)
         else:
             self.color_type = "LDraw"
             self.ldrawname, _, \
