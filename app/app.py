@@ -10,7 +10,7 @@ os.chdir(os.path.dirname(__file__))
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
-        self.geometry("400x250")
+        self.geometry("400x240")
         self.iconbitmap("../icons/stlToLDraw_icon.ico")
         self.title("stl to LDraw dat file")
         self.grid_columnconfigure(0, weight=1)
@@ -52,16 +52,16 @@ class App(customtkinter.CTk):
                                                     fg_color="#FFFF80", padx=3, corner_radius=5)
         self.color_preview.grid(sticky="w", columnspan=2, row=4, column=1)
 
-        customtkinter.CTkLabel(self.main_frame, text="Output File:").grid(sticky="w", columnspan=2, row=6, column=0)
+        customtkinter.CTkLabel(self.main_frame, text="Output File:").grid(sticky="w", columnspan=2, row=5, column=0)
         self.output_file_label = customtkinter.CTkEntry(self.main_frame, textvariable=self.output_file_Var)
-        self.output_file_label.grid(sticky="ew", columnspan=2, row=7, column=0)
+        self.output_file_label.grid(sticky="ew", columnspan=2, row=6, column=0)
 
         self.output_file_button = customtkinter.CTkButton(self.main_frame, text="Select Output File",
                                                           command=self.set_output_file)
-        self.output_file_button.grid(sticky="ew", row=7, column=2)
+        self.output_file_button.grid(sticky="ew", row=6, column=2)
 
         self.convertFileButton = customtkinter.CTkButton(self.main_frame, text="convert file", command=self.convertFile)
-        self.convertFileButton.grid(sticky="ew", row=8, column=1)
+        self.convertFileButton.grid(sticky="ew", row=7, column=1)
 
     def get_input_file(self):
         input_file_path = customtkinter.filedialog.askopenfilename(filetypes=[('stl files', '*.stl')])
@@ -95,7 +95,7 @@ class App(customtkinter.CTk):
                                              fg_color=set_color.rgb_values)
                 return
             elif set_color.color_type == "Direct":
-                self.color_preview.configure(text=set_color.color_code, text_color=set_color.rgb_edge,
+                self.color_preview.configure(text=set_color.rgb_values, text_color=set_color.rgb_edge,
                                              fg_color=set_color.rgb_values)
                 return
             else:
