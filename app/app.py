@@ -1,5 +1,5 @@
 from stlToDat import stlToDat
-from brickcolor import isBrickColor
+from brickcolor import isBrickColor, brickcolor
 import customtkinter
 from tkinter import messagebox as tkMessageBox
 import os
@@ -10,7 +10,7 @@ os.chdir(os.path.dirname(__file__))
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
-        self.geometry("400x220")
+        self.geometry("400x250")
         self.iconbitmap("../icons/stlToLDraw_icon.ico")
         self.title("stl to LDraw dat file")
         self.grid_columnconfigure(0, weight=1)
@@ -25,6 +25,9 @@ class App(customtkinter.CTk):
         self.output_file_Var = customtkinter.StringVar()
         self.color_code_Var = customtkinter.StringVar()
         self.color_toggle_Var = customtkinter.StringVar(value="off")
+
+        self.color_code_Var.trace("w", self.updateColorPreview)
+        self.color_toggle_Var.trace("w", self.updateColorPreview)
 
         customtkinter.CTkLabel(self.main_frame, text="Input File:").grid(sticky="w", columnspan=2, row=0, column=0)
         self.input_file_path_label = customtkinter.CTkEntry(self.main_frame, textvariable=self.input_file_Var)
@@ -43,16 +46,22 @@ class App(customtkinter.CTk):
                                                                offvalue="off")
         self.color_toggle_checkbox.grid(sticky="ew", columnspan=2, row=3, column=2)
 
-        customtkinter.CTkLabel(self.main_frame, text="Output File:").grid(sticky="w", columnspan=2, row=4, column=0)
+        customtkinter.CTkLabel(self.main_frame, text="Color Preview:").grid(sticky="w", columnspan=1,
+                                                                            row=4, column=0)
+        self.color_preview = customtkinter.CTkLabel(self.main_frame, text="Main_Colour", text_color="#333333",
+                                                    fg_color="#FFFF80", padx=3, corner_radius=5)
+        self.color_preview.grid(sticky="w", columnspan=2, row=4, column=1)
+
+        customtkinter.CTkLabel(self.main_frame, text="Output File:").grid(sticky="w", columnspan=2, row=6, column=0)
         self.output_file_label = customtkinter.CTkEntry(self.main_frame, textvariable=self.output_file_Var)
-        self.output_file_label.grid(sticky="ew", columnspan=2, row=5, column=0)
+        self.output_file_label.grid(sticky="ew", columnspan=2, row=7, column=0)
 
         self.output_file_button = customtkinter.CTkButton(self.main_frame, text="Select Output File",
                                                           command=self.set_output_file)
-        self.output_file_button.grid(sticky="ew", row=5, column=2)
+        self.output_file_button.grid(sticky="ew", row=7, column=2)
 
         self.convertFileButton = customtkinter.CTkButton(self.main_frame, text="convert file", command=self.convertFile)
-        self.convertFileButton.grid(sticky="ew", row=6, column=1)
+        self.convertFileButton.grid(sticky="ew", row=8, column=1)
 
     def get_input_file(self):
         input_file_path = customtkinter.filedialog.askopenfilename(filetypes=[('stl files', '*.stl')])
@@ -75,6 +84,28 @@ class App(customtkinter.CTk):
                                                                       filetypes=[('dat files', '*.dat')])
         if len(output_file_path) > 0:
             self.output_file_Var.set(output_file_path)
+
+    def updateColorPreview(self, *args):
+        set_color = brickcolor("16")
+        if self.color_toggle_Var.get() == "on":
+            set_color = brickcolor(self.color_code_Var.get())
+        if set_color is not None:
+            if set_color.color_type == "LDraw" and set_color.ldrawname is not None:
+                self.color_preview.configure(text=set_color.ldrawname, text_color=set_color.rgb_edge,
+                                             fg_color=set_color.rgb_values)
+                return
+            elif set_color.color_type == "Direct":
+                self.color_preview.configure(text=set_color.color_code, text_color=set_color.rgb_edge,
+                                             fg_color=set_color.rgb_values)
+                return
+            else:
+                self.color_preview.configure(text="Unknown or invalid color", text_color="#FFFFFF",
+                                             fg_color="#000000")
+        elif len(self.color_code_Var.get()) == 0:
+            self.color_preview.configure(text="", fg_color="transparent")
+            return
+        else:
+            self.color_preview.configure(text="Unknown or invalid color", text_color="#FFFFFF", fg_color="#000000")
 
     def convertFile(self):
         input_file_path = self.input_file_Var.get()
