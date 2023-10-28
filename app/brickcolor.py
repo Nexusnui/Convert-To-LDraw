@@ -80,18 +80,13 @@ def get_color_info_by_id(id: str):
     return found_color
 
 def get_contrast_color(rgb_values: str):
-    red = hex_switch(rgb_values[1:3])
-    green = hex_switch(rgb_values[3:5])
-    blue = hex_switch(rgb_values[5:7])
-
-    return f"#{''.join([red, green, blue])}"
-
-
-def hex_switch(hex_val: str):
-    if int(hex_val, 16) < 128:
-        return "FF"
+    r = 0 if int(rgb_values[1:3], 16) < 128 else 1
+    g = 0 if int(rgb_values[3:5], 16) < 128 else 1
+    b = 0 if int(rgb_values[5:7], 16) < 128 else 1
+    if r+g+b < 2:
+        return "#FFFFFF"
     else:
-        return "00"
+        return "#000000"
 
 
 def get_complementary_color(rgb_values: str):
