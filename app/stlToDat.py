@@ -11,13 +11,13 @@ import sys
 from stl import mesh
 
 
-def stlToDat(input_filename: str, output_filename: str, colour: str = "16"):
+def stl_to_dat(input_filename: str, output_filename: str, colour: str = "16"):
     mm_to_ldu = 1.0 / 0.4
-    inputMesh = mesh.Mesh.from_file(input_filename)
+    input_mesh = mesh.Mesh.from_file(input_filename)
 
-    inputMesh.x *= mm_to_ldu
-    inputMesh.y *= mm_to_ldu
-    inputMesh.z *= mm_to_ldu
+    input_mesh.x *= mm_to_ldu
+    input_mesh.y *= mm_to_ldu
+    input_mesh.z *= mm_to_ldu
 
     with open(output_filename, "w", encoding="utf-8") as fp_out:
         # 0: Comment or META command the first 0 line is alway the filename
@@ -26,12 +26,12 @@ def stlToDat(input_filename: str, output_filename: str, colour: str = "16"):
         # Todo: Add License Meta command to file
         fp_out.write("0 BFC CERTIFY CCW\n")
 
-        for index, triangle in enumerate(inputMesh):
-            # 3:filled triangle, 16:Default color
+        for index, triangle in enumerate(input_mesh):
+            # 3:filled triangle, 16:Default colour
             fp_out.write(f"3 {colour} {' '.join(map(lambda a: str(a), triangle))}\n")
 
     # return number of triangles
-    return len(inputMesh)
+    return len(input_mesh)
 
 
 if __name__ == '__main__':
@@ -59,4 +59,4 @@ if __name__ == '__main__':
         elif sys.argv[4] == "-c":
             colour = sys.argv[5]
 
-    print(f"Part contains {stlToDat(input_filename, output_filename, colour)} triangles.")
+    print(f"Part contains {stl_to_dat(input_filename, output_filename, colour)} triangles.")
