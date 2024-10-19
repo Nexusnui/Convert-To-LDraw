@@ -1,3 +1,4 @@
+On this branch the conversion part of the tool will be rewritten.
 ![Image of Custom Part](AkiruDualColor.png)
 
 This is a simple graphical Python program for converting a 3D printing [.stl](https://en.wikipedia.org/wiki/STL_%28file_format%29)
