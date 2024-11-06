@@ -2,7 +2,7 @@ import trimesh
 import os
 
 
-class ldraw_object():
+class LdrawObject:
     def __init__(self, filepath: str, name="", bricklinknumber="", author=""):
         self.__load_scene(filepath)
         self.scene.apply_scale(2.5)
