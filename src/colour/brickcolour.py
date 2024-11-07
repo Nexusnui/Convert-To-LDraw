@@ -45,8 +45,8 @@ class Brickcolour:
             self.alpha, \
             self.luminance, \
             self.material, \
+            self.legoids, \
             self.legoname, \
-            self.legoid, \
             self.category = get_colour_info_by_id(self.colour_code)
 
     def __str__(self):
@@ -64,7 +64,7 @@ class Brickcolour:
 
 def get_colour_info_by_id(id: str):
     found_colour = [None] * 10
-    with open("BrickColours.csv", "r", encoding="utf-8") as source:
+    with open("colour_definitions.csv", "r", encoding="utf-8") as source:
         # skip row with column names
         source.readline()
         for line in source:
