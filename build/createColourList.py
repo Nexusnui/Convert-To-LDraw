@@ -1,4 +1,4 @@
-#This File is intended for updating the colour list src/colour/colour_definitions.csv
+#This File is intended for updating the colour list src/brick_data/colour_definitions.csv
 
 # Parse the LDraw Colour Config to a List of Colours
 def parse_ldraw_colour_config(configPath):
@@ -101,5 +101,5 @@ if __name__ == "__main__":
     # Change this to the current version
     bl_studio_custom_color_definition = "C:/Program Files/Studio 2.0/data/CustomColors/CustomColorDefinition_2_1_9.txt"
     bl_studio_colours = parse_bl_studio_color_definition(bl_studio_custom_color_definition)
-    color_definitions_csv = f"{__file__.split("build")[0]}src\\colour\\colour_definitions.csv"
+    color_definitions_csv = f"{__file__.split("build")[0]}src\\brick_data\\colour_definitions.csv"
     colourlists_to_csv([ldraw_colours, bl_studio_colours], color_definitions_csv)

@@ -1,5 +1,6 @@
 import trimesh
 import os
+from brickcolour import Brickcolour
 
 
 class LdrawObject:
@@ -9,6 +10,7 @@ class LdrawObject:
         self.name = name
         self.bricklinknumber = bricklinknumber
         self.author = author
+        self.main_colour = Brickcolour("16")
 
     def __load_scene(self, filepath):
         scene = trimesh.load_mesh(filepath)
@@ -31,4 +33,7 @@ class LdrawObject:
                 coordinate_a = ' '.join(map(str, part.vertices[face[0]]))
                 coordinate_b = ' '.join(map(str, part.vertices[face[1]]))
                 coordinate_c = ' '.join(map(str, part.vertices[face[2]]))
-                file.write(f"3 16 {coordinate_a} {coordinate_b} {coordinate_c}\n")
+                file.write(f"3 {self.main_colour.colour_code} {coordinate_a} {coordinate_b} {coordinate_c}\n")
+
+    def set_main_colour(self, colour: Brickcolour):
+        self.main_colour = colour

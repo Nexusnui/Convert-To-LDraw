@@ -1,5 +1,5 @@
 from stlToDat import stl_to_dat
-from src.colour.brickcolour import is_brickcolour, Brickcolour, get_contrast_colour
+from src.brick_data.brickcolour import is_brickcolour, Brickcolour, get_contrast_colour
 import customtkinter
 from tkinter import messagebox as tkMessageBox
 import os
