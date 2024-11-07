@@ -24,7 +24,7 @@ def is_brickcolour(colour_code: str):
     return True,
 
 
-class brickcolour:
+class Brickcolour:
     def __new__(cls, colour_code: str):
         if not is_brickcolour(colour_code)[0]:
             return None

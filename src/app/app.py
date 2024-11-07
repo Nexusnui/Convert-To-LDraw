@@ -1,5 +1,5 @@
 from stlToDat import stl_to_dat
-from src.colour.brickcolour import is_brickcolour, brickcolour, get_contrast_colour
+from src.colour.brickcolour import is_brickcolour, Brickcolour, get_contrast_colour
 import customtkinter
 from tkinter import messagebox as tkMessageBox
 import os
@@ -86,9 +86,9 @@ class App(customtkinter.CTk):
             self.output_file_Var.set(output_file_path)
 
     def update_colour_preview(self, *args):
-        set_colour = brickcolour("16")
+        set_colour = Brickcolour("16")
         if self.colour_toggle_Var.get() == "on":
-            set_colour = brickcolour(self.colour_code_Var.get())
+            set_colour = Brickcolour(self.colour_code_Var.get())
         if set_colour is not None:
             if set_colour.colour_type == "LDraw" and set_colour.ldrawname is not None:
                 text_colour = get_contrast_colour(set_colour.rgb_values)
