@@ -1,6 +1,6 @@
 import trimesh
 import os
-from brickcolour import Brickcolour
+from src.brick_data.brickcolour import Brickcolour
 
 
 class LdrawObject:
@@ -14,7 +14,7 @@ class LdrawObject:
 
     def __load_scene(self, filepath):
         scene = trimesh.load_mesh(filepath)
-        if type(scene) != trimesh.Scene:
+        if not isinstance(scene, trimesh.Scene):
             scene = trimesh.scene.scene.Scene(scene)
         self.scene = scene
 
