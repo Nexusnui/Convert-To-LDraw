@@ -1,7 +1,7 @@
 import trimesh
 import os
 from src.brick_data.brickcolour import Brickcolour
-
+import numpy as np
 
 class LdrawObject:
     def __init__(self, filepath: str, name="", bricklinknumber="", author=""):
@@ -10,7 +10,7 @@ class LdrawObject:
         self.name = name
         self.bricklinknumber = bricklinknumber
         self.author = author
-        self.main_colour = Brickcolour("16")
+        self.set_main_colour(Brickcolour("16"))
 
     def __load_scene(self, filepath):
         scene = trimesh.load_mesh(filepath)
@@ -37,3 +37,6 @@ class LdrawObject:
 
     def set_main_colour(self, colour: Brickcolour):
         self.main_colour = colour
+        for id, geometry in self.scene.geometry.items():
+            print(geometry)
+            geometry.visual.face_colors[0:] = np.array(self.main_colour.get_int_rgba())
