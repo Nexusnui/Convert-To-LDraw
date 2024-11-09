@@ -1,3 +1,8 @@
+import os
+
+basedir = os.path.dirname(__file__)
+
+
 def is_brickcolour(colour_code: str):
     if len(colour_code) < 1:
         return False, "No Colour Code", "Apply Checkbox was toggled, but no colour code provided"
@@ -61,10 +66,21 @@ class Brickcolour:
     def __repr__(self):
         return f"brickcolour({self.colour_code})"
 
+    def get_hex_rgba(self):
+        if not hasattr(self, "hex_rgba"):
+            self.hex_rgba = self.rgb_values + hex(int(self.alpha)).lstrip("0x")
+        return self.hex_rgba
+
+    def get_int_rgba(self):
+        r = int(self.rgb_values[1:3], 16)
+        g = int(self.rgb_values[3:5], 16)
+        b = int(self.rgb_values[5:7], 16)
+        return (r, g, b, int(self.alpha))
+
 
 def get_colour_info_by_id(id: str):
     found_colour = [None] * 10
-    with open("colour_definitions.csv", "r", encoding="utf-8") as source:
+    with open(os.path.join(basedir, "colour_definitions.csv"), "r", encoding="utf-8") as source:
         # skip row with column names
         source.readline()
         for line in source:
@@ -79,11 +95,12 @@ def get_colour_info_by_id(id: str):
 
     return found_colour
 
+
 def get_contrast_colour(rgb_values: str):
     r = 0 if int(rgb_values[1:3], 16) < 128 else 1
     g = 0 if int(rgb_values[3:5], 16) < 128 else 1
     b = 0 if int(rgb_values[5:7], 16) < 128 else 1
-    if r+g+b < 2:
+    if r + g + b < 2:
         return "#FFFFFF"
     else:
         return "#000000"
