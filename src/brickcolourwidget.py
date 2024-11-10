@@ -1,7 +1,10 @@
 from brick_data.brickcolour import Brickcolour, get_contrast_colour, is_brickcolour
 from PyQt6.QtWidgets import QWidget, QPushButton, QHBoxLayout, QLabel, QLineEdit, QApplication
+from PyQt6.QtCore import pyqtSignal
+
 
 class BrickcolourWidget(QWidget):
+    colour_changed = pyqtSignal(Brickcolour)
     def __init__(self, labeltext: str = "Brick Colour", colour: Brickcolour = Brickcolour("16")):
         super().__init__()
 
@@ -40,16 +43,19 @@ class BrickcolourWidget(QWidget):
 
     def changecolour(self, colour: str | Brickcolour):
         if isinstance(colour, str):
-            if is_brickcolour(colour):
+            if is_brickcolour(colour)[0]:
                 self.colour = Brickcolour(colour)
+                self.colour_changed.emit(self.colour)
             else:
                 self.colour = None
         elif isinstance(colour, Brickcolour):
             self.colour = colour
+            self.colour_changed.emit(self.colour)
         self.__update_preview()
 
 
 #Todo: Add Colordialog
+
 
 if __name__ == "__main__":
     app = QApplication([])
