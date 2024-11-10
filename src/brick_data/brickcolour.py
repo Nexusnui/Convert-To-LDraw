@@ -79,7 +79,7 @@ class Brickcolour:
 
 
 def get_colour_info_by_id(id: str):
-    found_colour = [None] * 10
+    found_colour = ["Undefined", id, "#FFFFFF", "000000", "", "", "", "", "", ""]
     with open(os.path.join(basedir, "colour_definitions.csv"), "r", encoding="utf-8") as source:
         # skip row with column names
         source.readline()
