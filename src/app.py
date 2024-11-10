@@ -13,8 +13,11 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QFrame,
     QCheckBox,
+    QFileDialog,
+    QMessageBox,
 )
 from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import Qt
 from brickcolourwidget import BrickcolourWidget
 
 basedir = os.path.dirname(__file__)
@@ -33,6 +36,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        self.ldraw_object = None
+
         self.setWindowTitle("Convert To LDraw")
         self.main_layout = QVBoxLayout()
 
@@ -40,7 +45,9 @@ class MainWindow(QMainWindow):
 
         #File Selection Area:
         file_select_area = QVBoxLayout()
-        file_select_area.addWidget(QLabel("File Selection"))
+        file_select_label = QLabel("File Selection")
+        file_select_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        file_select_area.addWidget(file_select_label)
 
         file_select_inputs = QVBoxLayout()
         file_select_frame = QFrame()
@@ -48,20 +55,26 @@ class MainWindow(QMainWindow):
         file_select_frame.setLayout(file_select_inputs)
         file_select_area.addWidget(file_select_frame)
 
-        file_select_inputs.addWidget(QLabel("Input File"))
+        input_label = QLabel("Input File")
+        input_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        file_select_inputs.addWidget(input_label)
         input_layout = QHBoxLayout()
 
         self.input_file_line = QLineEdit()
         self.input_file_line.setPlaceholderText("Select file to load")
+        self.input_file_line.setReadOnly(True)
         input_layout.addWidget(self.input_file_line)
 
-        select_input_button = QPushButton("Select")
-        input_layout.addWidget(select_input_button)
-        #Todo: connect to Fileselection Dialog
+        load_input_button = QPushButton("Load File")
+        input_layout.addWidget(load_input_button)
+        load_input_button.clicked.connect(self.load_file)
+
 
         file_select_inputs.addLayout(input_layout)
 
-        file_select_inputs.addWidget(QLabel("Output File"))
+        output_label = QLabel("Output File")
+        output_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        file_select_inputs.addWidget(output_label)
         output_layout = QHBoxLayout()
 
         self.output_file_line = QLineEdit()
@@ -70,7 +83,7 @@ class MainWindow(QMainWindow):
 
         select_output_button = QPushButton("Select")
         output_layout.addWidget(select_output_button)
-        # Todo: connect to Fileselection Dialog
+        select_output_button.clicked.connect(self.select_output_file)
 
         file_select_inputs.addLayout(output_layout)
 
@@ -80,7 +93,9 @@ class MainWindow(QMainWindow):
 
         #Part settings area:
         part_settings_area = QVBoxLayout()
-        part_settings_area.addWidget(QLabel("Part Settings"))
+        part_settings_label = QLabel("Part Settings")
+        part_settings_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        part_settings_area.addWidget(part_settings_label)
 
         part_settings_inputs = QVBoxLayout()
         part_settings_frame = QFrame()
@@ -113,18 +128,65 @@ class MainWindow(QMainWindow):
         apply_color_layout.addWidget(QLabel("Apply Custom Color"))
         self.apply_color_check = QCheckBox()
         apply_color_layout.addWidget(self.apply_color_check)
+        apply_color_layout.setAlignment(Qt.AlignmentFlag.AlignBottom)
         part_settings_inputs.addLayout(apply_color_layout)
-        #Todo: Connect Checkbox to enable colour selection
+        #Todo: Connect Checkbox to enable/disable colour selection
 
         self.custom_color_input = BrickcolourWidget("Custom Color")
+        self.custom_color_input.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         part_settings_inputs.addWidget(self.custom_color_input)
 
+        #Preview Button
+        preview_button = QPushButton("Show Preview")
+        #Todo: Create and Connect to show preview function
+
+        #Add Elements to Main Layout
         top_layout.addLayout(part_settings_area)
         top_layout.addLayout(file_select_area)
         self.main_layout.addLayout(top_layout)
+        self.main_layout.addWidget(preview_button)
         widget = QWidget()
         widget.setLayout(self.main_layout)
         self.setCentralWidget(widget)
+
+    def load_file(self):
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+        dialog.setNameFilter("3D File (*.stl  *.3mf *.obj);;Any File (*.*)")
+        # Todo: add more file extensions of known compatible file formats'''
+        dialog.setViewMode(QFileDialog.ViewMode.Detail)
+        if dialog.exec():
+            filepath = dialog.selectedFiles()[0]
+            if filepath:
+                try:
+                    loaded_part = LdrawObject(filepath)
+                except Exception:
+                    dlg = QMessageBox(self)
+                    dlg.setWindowTitle("Failed to load file")
+                    dlg.setText("File was not a 3D object or the format is unsupported")
+                    dlg.setIcon(QMessageBox.Icon.Critical)
+                    dlg.exec()
+                else:
+                    self.ldraw_object = loaded_part
+                    self.input_file_line.setText(filepath)
+                    filename = os.path.basename(filepath)
+                    name = ".".join(filename.split(".")[:-1])
+                    filedir = os.path.dirname(filepath)
+                    self.partname_line.setText(name)
+                    self.output_file_line.setText(f"{filedir}/{name}.dat")
+
+    def select_output_file(self):
+        current_path = self.output_file_line.text()
+        current_filename = os.path.basename(current_path)
+        current_base_dir = os.path.dirname(current_path)
+        default_filename = ""
+        if len(current_path) > 0 and os.path.isdir(current_base_dir):
+            default_filename = current_path
+        filepath, _ = QFileDialog.getSaveFileName(
+            self, "part save location", default_filename, "LDraw Part (*.dat)"
+        )
+        if filepath:
+            self.output_file_line.setText(filepath)
 
 
 if __name__ == "__main__":
