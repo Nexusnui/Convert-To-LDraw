@@ -41,5 +41,4 @@ class LdrawObject:
     def set_main_colour(self, colour: Brickcolour):
         self.main_colour = colour
         for id, geometry in self.scene.geometry.items():
-            print(geometry)
             geometry.visual.face_colors[0:] = np.array(self.main_colour.get_int_rgba())
