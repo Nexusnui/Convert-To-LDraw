@@ -19,13 +19,13 @@ class BrickcolourWidget(QWidget):
         self.colourinput = QLineEdit()
         self.colourinput.setText(self.colour.colour_code)
         self.colourinput.textChanged.connect(self.changecolour)
-        selectbutton = QPushButton("Select")
+        self.selectbutton = QPushButton("Select")
         #Todo connect to color dialog
 
         self.layout.addWidget(QLabel(labeltext))
         self.layout.addWidget(self.preview)
         self.layout.addWidget(self.colourinput)
-        self.layout.addWidget(selectbutton)
+        self.layout.addWidget(self.selectbutton)
 
         self.setLayout(self.layout)
 
@@ -52,6 +52,10 @@ class BrickcolourWidget(QWidget):
             self.colour = colour
             self.colour_changed.emit(self.colour)
         self.__update_preview()
+
+    def setDisabled(self, a0):
+        self.colourinput.setDisabled(a0)
+        self.selectbutton.setDisabled(a0)
 
 
 #Todo: Add Colordialog
