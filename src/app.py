@@ -72,18 +72,21 @@ class MainWindow(QMainWindow):
 
         file_select_inputs.addLayout(input_layout)
 
+        #Todo: Disable File Output before file is loaded
         output_label = QLabel("Output File")
         output_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
         file_select_inputs.addWidget(output_label)
         output_layout = QHBoxLayout()
 
         self.output_file_line = QLineEdit()
+        self.output_file_line.setReadOnly(True)
         self.output_file_line.setPlaceholderText("Select output file")
         output_layout.addWidget(self.output_file_line)
 
-        select_output_button = QPushButton("Select")
-        output_layout.addWidget(select_output_button)
-        select_output_button.clicked.connect(self.select_output_file)
+        self.select_output_button = QPushButton("Select")
+        self.select_output_button.setDisabled(True)
+        output_layout.addWidget(self.select_output_button)
+        self.select_output_button.clicked.connect(self.select_output_file)
 
         file_select_inputs.addLayout(output_layout)
 
@@ -134,6 +137,7 @@ class MainWindow(QMainWindow):
 
         self.custom_color_input = BrickcolourWidget("Custom Color")
         self.custom_color_input.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.custom_color_input.colour_changed.connect(self.update_custom_colour)
         part_settings_inputs.addWidget(self.custom_color_input)
 
         #Preview Button
@@ -174,6 +178,8 @@ class MainWindow(QMainWindow):
                     filedir = os.path.dirname(filepath)
                     self.partname_line.setText(name)
                     self.output_file_line.setText(f"{filedir}/{name}.dat")
+                    self.output_file_line.setReadOnly(False)
+                    self.select_output_button.setDisabled(False)
 
     def select_output_file(self):
         current_path = self.output_file_line.text()
@@ -187,6 +193,9 @@ class MainWindow(QMainWindow):
         )
         if filepath:
             self.output_file_line.setText(filepath)
+
+    def update_custom_colour(self, colour: Brickcolour):
+        print(colour)
 
 
 if __name__ == "__main__":
