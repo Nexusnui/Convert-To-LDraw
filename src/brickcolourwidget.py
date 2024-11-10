@@ -5,7 +5,7 @@ class BrickcolourWidget(QWidget):
     def __init__(self, labeltext: str = "Brick Colour", colour: Brickcolour = Brickcolour("16")):
         super().__init__()
 
-        layout = QHBoxLayout()
+        self.layout = QHBoxLayout()
 
         self.colour = colour
 
@@ -19,12 +19,12 @@ class BrickcolourWidget(QWidget):
         selectbutton = QPushButton("Select")
         #Todo connect to color dialog
 
-        layout.addWidget(QLabel(labeltext))
-        layout.addWidget(self.preview)
-        layout.addWidget(self.colourinput)
-        layout.addWidget(selectbutton)
+        self.layout.addWidget(QLabel(labeltext))
+        self.layout.addWidget(self.preview)
+        self.layout.addWidget(self.colourinput)
+        self.layout.addWidget(selectbutton)
 
-        self.setLayout(layout)
+        self.setLayout(self.layout)
 
     def __update_preview(self):
         if self.colour is None:
@@ -34,7 +34,7 @@ class BrickcolourWidget(QWidget):
         if self.colour.colour_type == "LDraw":
             self.preview.setText(self.colour.ldrawname)
         elif self.colour.colour_type == "Direct":
-            self.preview.setText(self.colour.ldrawname)
+            self.preview.setText(self.colour.colour_code)
         text_colour = get_contrast_colour(self.colour.rgb_values)
         self.preview.setStyleSheet(f"background-color : {self.colour.rgb_values}; color : {text_colour};")
 
