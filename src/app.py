@@ -1,7 +1,8 @@
 import os
 import platform
-from brick_data.brickcolour import Brickcolour, is_brickcolour
-from brick_data.ldrawObject import LdrawObject
+
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -16,8 +17,9 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QMessageBox,
 )
-from PyQt6.QtGui import QIcon
-from PyQt6.QtCore import Qt
+
+from brick_data.brickcolour import Brickcolour
+from brick_data.ldrawObject import LdrawObject
 from brickcolourwidget import BrickcolourWidget
 
 basedir = os.path.dirname(__file__)
@@ -72,7 +74,6 @@ class MainWindow(QMainWindow):
 
         file_select_inputs.addLayout(input_layout)
 
-        #Todo: Disable File Output before file is loaded
         output_label = QLabel("Output File")
         output_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
         file_select_inputs.addWidget(output_label)
@@ -130,15 +131,18 @@ class MainWindow(QMainWindow):
         apply_color_layout = QHBoxLayout()
         apply_color_layout.addWidget(QLabel("Apply Custom Color"))
         self.apply_color_check = QCheckBox()
+        self.apply_color_check.setDisabled(True)
         apply_color_layout.addWidget(self.apply_color_check)
         apply_color_layout.setAlignment(Qt.AlignmentFlag.AlignBottom)
         part_settings_inputs.addLayout(apply_color_layout)
-        #Todo: Connect Checkbox to enable/disable colour selection
+
 
         self.custom_color_input = BrickcolourWidget("Custom Color")
         self.custom_color_input.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.custom_color_input.setDisabled(True)
         self.custom_color_input.colour_changed.connect(self.update_custom_colour)
         part_settings_inputs.addWidget(self.custom_color_input)
+        self.apply_color_check.stateChanged.connect(self.disable_custom_colour)
 
         #Preview Button
         preview_button = QPushButton("Show Preview")
@@ -180,6 +184,7 @@ class MainWindow(QMainWindow):
                     self.output_file_line.setText(f"{filedir}/{name}.dat")
                     self.output_file_line.setReadOnly(False)
                     self.select_output_button.setDisabled(False)
+                    self.apply_color_check.setDisabled(False)
 
     def select_output_file(self):
         current_path = self.output_file_line.text()
@@ -196,6 +201,16 @@ class MainWindow(QMainWindow):
 
     def update_custom_colour(self, colour: Brickcolour):
         print(colour)
+        self.ldraw_object.set_main_colour(colour)
+
+    def disable_custom_colour(self, s):
+        if self.custom_color_input.colour is None or s == Qt.CheckState.Unchecked.value:
+            if self.ldraw_object.main_colour.colour_code != "16":
+                self.update_custom_colour(Brickcolour("16"))
+        elif self.custom_color_input.colour.colour_code != "16":
+            self.update_custom_colour(self.custom_color_input.colour)
+        self.custom_color_input.setDisabled(
+            s != Qt.CheckState.Checked.value)
 
 
 if __name__ == "__main__":
