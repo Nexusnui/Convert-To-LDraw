@@ -20,11 +20,14 @@ class LdrawObject:
 
     def convert_to_dat_file(self, filepath):
         filename = os.path.basename(filepath)
+        bricklinknumberline = ""
+        if len(self.bricklinknumber>0):
+            bricklinknumberline = f"0 BL_Item_No {self.bricklinknumber}\n"
         header = (f"0 FILE {filename}\n"
                   f"0 {self.name}\n"
                   f"0 Name:  {filename}\n"
                   f"0 Author:  {self.author}\n"
-                  f"0 BL_Item_No {self.bricklinknumber}\n"
+                  f"{bricklinknumberline}"
                   f"0 BFC CERTIFY CCW\n")
         part = self.scene.to_geometry()
         with open(filepath, "w", encoding="utf-8") as file:
