@@ -6,12 +6,12 @@ basedir = os.path.dirname(__file__)
 def is_brickcolour(colour_code: str):
     if len(colour_code) < 1:
         return False, "No Colour Code", "Apply Checkbox was toggled, but no colour code provided"
-    elif not colour_code.startswith("0x2"):
+    elif not colour_code.startswith("0x2") and not colour_code.startswith("#"):
         if not colour_code.isdigit():
             return (False, "Invalid Colour Code",
                     f"The provided colour code '{colour_code}' is not a number.\n "
                     f"Use a code from the LDraw Colour Definition Reference.\n"
-                    f"If you wanted to use a Direct/HTML colour the format is 0x2RRGGBB "
+                    f"If you wanted to use a Direct/HTML colour the format is 0x2RRGGBB or #RRGGBB"
                     f"(R,B and G are hexadecimal).")
     elif colour_code.startswith("0x2"):
         if len(colour_code) > 9:
@@ -21,6 +21,19 @@ def is_brickcolour(colour_code: str):
             return (False, "Invalid Colour Code",
                     f"The provided colour '{colour_code}' seems to be a Direct/HTML colour but is to short.")
         for i in range(2, 9):
+            if colour_code[i] not in ["A", "B", "C", "D", "E", "F"] and not colour_code[i].isdigit():
+                return (False, "Invalid Colour Code",
+                        f"The provided colour '{colour_code}' seems to be a Direct/HTML colour, "
+                        f"but contains a invalid charcter at position: {i - 2} - '{colour_code[i]}'.\n"
+                        f"Valid characters are 0-9 and A-F(uppercase)")
+    elif colour_code.startswith("#"):
+        if len(colour_code) > 7:
+            return (False, "Invalid Colour Code",
+                    f"The provided colour '{colour_code}' seems to be a Direct/HTML colour but is to long.")
+        elif len(colour_code) < 7:
+            return (False, "Invalid Colour Code",
+                    f"The provided colour '{colour_code}' seems to be a Direct/HTML colour but is to short.")
+        for i in range(1, 7):
             if colour_code[i] not in ["A", "B", "C", "D", "E", "F"] and not colour_code[i].isdigit():
                 return (False, "Invalid Colour Code",
                         f"The provided colour '{colour_code}' seems to be a Direct/HTML colour, "
@@ -41,6 +54,11 @@ class Brickcolour:
         if colour_code.startswith("0x2"):
             self.colour_type = "Direct"
             self.rgb_values = f"#{self.colour_code[3:]}"
+            self.rgb_edge = get_contrast_colour(self.rgb_values)
+        elif colour_code.startswith("#"):
+            self.colour_type = "Direct"
+            self.rgb_values = colour_code
+            self.colour_code = f"0x2{colour_code[1:]}"
             self.rgb_edge = get_contrast_colour(self.rgb_values)
         else:
             self.colour_type = "LDraw"
