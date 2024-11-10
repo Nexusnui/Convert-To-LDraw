@@ -55,11 +55,13 @@ class Brickcolour:
             self.colour_type = "Direct"
             self.rgb_values = f"#{self.colour_code[3:]}"
             self.rgb_edge = get_contrast_colour(self.rgb_values)
+            self.alpha = "255"
         elif colour_code.startswith("#"):
             self.colour_type = "Direct"
             self.rgb_values = colour_code
             self.colour_code = f"0x2{colour_code[1:]}"
             self.rgb_edge = get_contrast_colour(self.rgb_values)
+            self.alpha = "255"
         else:
             self.colour_type = "LDraw"
             self.ldrawname, _, \
@@ -97,7 +99,7 @@ class Brickcolour:
 
 
 def get_colour_info_by_id(id: str):
-    found_colour = ["Undefined", id, "#FFFFFF", "000000", "", "", "", "", "", ""]
+    found_colour = ["Undefined", id, "#FFFFFF", "000000", "255", "", "", "", "", ""]
     with open(os.path.join(basedir, "colour_definitions.csv"), "r", encoding="utf-8") as source:
         # skip row with column names
         source.readline()
