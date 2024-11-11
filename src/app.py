@@ -145,16 +145,22 @@ class MainWindow(QMainWindow):
         part_settings_inputs.addWidget(self.custom_color_input)
         self.apply_color_check.stateChanged.connect(self.disable_custom_colour)
 
-        #Preview Button
+        #Preview Area
+        preview_area = QHBoxLayout()
+
         self.preview_button = QPushButton("Show Preview")
         self.preview_button.clicked.connect(self.show_preview)
         self.preview_button.setDisabled(True)
+        preview_area.addWidget(self.preview_button)
+
+        self.loaded_file_status_label = QLabel("No File loaded")
+        preview_area.addWidget(self.loaded_file_status_label)
 
         #Add Elements to Main Layout
         top_layout.addLayout(part_settings_area)
         top_layout.addLayout(file_select_area)
         self.main_layout.addLayout(top_layout)
-        self.main_layout.addWidget(self.preview_button)
+        self.main_layout.addLayout(preview_area)
         widget = QWidget()
         widget.setLayout(self.main_layout)
         self.setCentralWidget(widget)
@@ -165,9 +171,17 @@ class MainWindow(QMainWindow):
         dialog.setNameFilter("3D File (*.stl  *.3mf *.obj *.brep *.stp *.step *.igs *.iges *.bdf *.msh *.inp *.diff *.mesh);;Any File (*.*)")
         # Todo: add more file extensions of known compatible file formats(all gmsh formats are already added)
         dialog.setViewMode(QFileDialog.ViewMode.Detail)
+        self.output_file_line.setReadOnly(True)
+        self.select_output_button.setDisabled(True)
+        self.apply_color_check.setDisabled(True)
+        self.preview_button.setDisabled(True)
+        self.reset_part_settings()
+        self.loaded_file_status_label.setText(f"Loading File")
+
         if dialog.exec():
             filepath = dialog.selectedFiles()[0]
             if filepath:
+                filename = os.path.basename(filepath)
                 try:
                     loaded_part = LdrawObject(filepath)
                 except Exception:
@@ -176,19 +190,22 @@ class MainWindow(QMainWindow):
                     dlg.setText("File was not a 3D object or the format is unsupported")
                     dlg.setIcon(QMessageBox.Icon.Critical)
                     dlg.exec()
+                    self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
                 else:
                     self.ldraw_object = loaded_part
                     self.input_file_line.setText(filepath)
-                    filename = os.path.basename(filepath)
                     name = ".".join(filename.split(".")[:-1])
                     filedir = os.path.dirname(filepath)
                     self.partname_line.setText(name)
                     self.output_file_line.setText(f"{filedir}/{name}.dat")
+
+                    self.output_file_line.setReadOnly(False)
+                    self.select_output_button.setDisabled(False)
+                    self.apply_color_check.setDisabled(False)
+                    self.preview_button.setDisabled(False)
+                    self.loaded_file_status_label.setText(f"Current Model: {filename}")
+
                     if not self.file_loaded:
-                        self.output_file_line.setReadOnly(False)
-                        self.select_output_button.setDisabled(False)
-                        self.apply_color_check.setDisabled(False)
-                        self.preview_button.setDisabled(False)
                         self.file_loaded = True
                     elif (self.custom_color_input.colour is not None
                           and self.apply_color_check.checkState() == Qt.CheckState.Checked):
@@ -222,6 +239,13 @@ class MainWindow(QMainWindow):
 
     def show_preview(self):
         self.ldraw_object.scene.show(resolution=(900, 600))
+
+    def reset_part_settings(self):
+        self.partname_line.clear()
+        self.bl_number_line.clear()
+        self.author_line.clear()
+        self.apply_color_check.setChecked(False)
+        self.custom_color_input.changecolour(Brickcolour("16"), False)
 
 
 if __name__ == "__main__":

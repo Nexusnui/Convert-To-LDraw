@@ -18,7 +18,7 @@ class BrickcolourWidget(QWidget):
 
         self.colourinput = QLineEdit()
         self.colourinput.setText(self.colour.colour_code)
-        self.colourinput.textChanged.connect(self.changecolour)
+        self.colourinput.textEdited.connect(self.changecolour)
         self.selectbutton = QPushButton("Select")
         #Todo connect to color dialog
 
@@ -41,16 +41,20 @@ class BrickcolourWidget(QWidget):
         text_colour = get_contrast_colour(self.colour.rgb_values)
         self.preview.setStyleSheet(f"background-color : {self.colour.rgb_values}; color : {text_colour};")
 
-    def changecolour(self, colour: str | Brickcolour):
+    def changecolour(self, colour: str | Brickcolour, send_emit=True):
         if isinstance(colour, str):
             if is_brickcolour(colour)[0]:
                 self.colour = Brickcolour(colour)
-                self.colour_changed.emit(self.colour)
+                if send_emit:
+                    self.colour_changed.emit(self.colour)
             else:
                 self.colour = None
         elif isinstance(colour, Brickcolour):
             self.colour = colour
-            self.colour_changed.emit(self.colour)
+            if send_emit:
+                self.colour_changed.emit(self.colour)
+        if not send_emit:
+            self.colourinput.setText(self.colour.colour_code)
         self.__update_preview()
 
     def setDisabled(self, a0):
