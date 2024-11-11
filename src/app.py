@@ -162,8 +162,8 @@ class MainWindow(QMainWindow):
     def load_file(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
-        dialog.setNameFilter("3D File (*.stl  *.3mf *.obj);;Any File (*.*)")
-        # Todo: add more file extensions of known compatible file formats'''
+        dialog.setNameFilter("3D File (*.stl  *.3mf *.obj *.brep *.stp *.step *.igs *.iges *.bdf *.msh *.inp *.diff *.mesh);;Any File (*.*)")
+        # Todo: add more file extensions of known compatible file formats(all gmsh formats are already added)
         dialog.setViewMode(QFileDialog.ViewMode.Detail)
         if dialog.exec():
             filepath = dialog.selectedFiles()[0]

@@ -13,7 +13,12 @@ class LdrawObject:
         self.set_main_colour(Brickcolour("16"))
 
     def __load_scene(self, filepath):
-        scene = trimesh.load_mesh(filepath)
+        _, file_extension = os.path.splitext(filepath)
+        if file_extension in [".brep", ".stp", ".step", ".igs", ".iges", ".bdf", ".msh", ".inp", ".diff", ".mesh"]:
+            scene = trimesh.Trimesh(**trimesh.interfaces.gmsh.load_gmsh(filepath))
+        else:
+            scene = trimesh.load_mesh(filepath)
+
         if not isinstance(scene, trimesh.Scene):
             scene = trimesh.scene.scene.Scene(scene)
         self.scene = scene
