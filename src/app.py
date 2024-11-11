@@ -238,7 +238,11 @@ class MainWindow(QMainWindow):
             s != Qt.CheckState.Checked.value)
 
     def show_preview(self):
-        self.ldraw_object.scene.show(resolution=(900, 600))
+        hex_bg_color = self.palette().window().color().name()
+        r = int(hex_bg_color[1:3], 16)
+        g = int(hex_bg_color[3:5], 16)
+        b = int(hex_bg_color[5:7], 16)
+        self.ldraw_object.scene.show(resolution=(900, 900), caption="Part Preview", background=(r, g, b, 255))
 
     def reset_part_settings(self):
         self.partname_line.clear()
