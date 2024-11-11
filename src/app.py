@@ -39,6 +39,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         self.ldraw_object = None
+        self.file_loaded = False
 
         self.setWindowTitle("Convert To LDraw")
         self.main_layout = QVBoxLayout()
@@ -145,14 +146,15 @@ class MainWindow(QMainWindow):
         self.apply_color_check.stateChanged.connect(self.disable_custom_colour)
 
         #Preview Button
-        preview_button = QPushButton("Show Preview")
-        #Todo: Create and Connect to show preview function
+        self.preview_button = QPushButton("Show Preview")
+        self.preview_button.clicked.connect(self.show_preview)
+        self.preview_button.setDisabled(True)
 
         #Add Elements to Main Layout
         top_layout.addLayout(part_settings_area)
         top_layout.addLayout(file_select_area)
         self.main_layout.addLayout(top_layout)
-        self.main_layout.addWidget(preview_button)
+        self.main_layout.addWidget(self.preview_button)
         widget = QWidget()
         widget.setLayout(self.main_layout)
         self.setCentralWidget(widget)
@@ -182,9 +184,16 @@ class MainWindow(QMainWindow):
                     filedir = os.path.dirname(filepath)
                     self.partname_line.setText(name)
                     self.output_file_line.setText(f"{filedir}/{name}.dat")
-                    self.output_file_line.setReadOnly(False)
-                    self.select_output_button.setDisabled(False)
-                    self.apply_color_check.setDisabled(False)
+                    if not self.file_loaded:
+                        self.output_file_line.setReadOnly(False)
+                        self.select_output_button.setDisabled(False)
+                        self.apply_color_check.setDisabled(False)
+                        self.preview_button.setDisabled(False)
+                        self.file_loaded = True
+                    elif (self.custom_color_input.colour is not None
+                          and self.apply_color_check.checkState() == Qt.CheckState.Checked):
+                        self.update_custom_colour(self.custom_color_input.colour)
+
 
     def select_output_file(self):
         current_path = self.output_file_line.text()
@@ -200,7 +209,6 @@ class MainWindow(QMainWindow):
             self.output_file_line.setText(filepath)
 
     def update_custom_colour(self, colour: Brickcolour):
-        print(colour)
         self.ldraw_object.set_main_colour(colour)
 
     def disable_custom_colour(self, s):
@@ -211,6 +219,9 @@ class MainWindow(QMainWindow):
             self.update_custom_colour(self.custom_color_input.colour)
         self.custom_color_input.setDisabled(
             s != Qt.CheckState.Checked.value)
+
+    def show_preview(self):
+        self.ldraw_object.scene.show(resolution=(900, 600))
 
 
 if __name__ == "__main__":
