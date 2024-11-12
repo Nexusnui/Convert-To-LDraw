@@ -27,6 +27,7 @@ def is_brickcolour(colour_code: str):
                         f"but contains a invalid charcter at position: {i - 2} - '{colour_code[i]}'.\n"
                         f"Valid characters are 0-9 and A-F(uppercase)")
     elif colour_code.startswith("#"):
+        colour_code = colour_code.upper()
         if len(colour_code) > 7:
             return (False, "Invalid Colour Code",
                     f"The provided colour '{colour_code}' seems to be a Direct/HTML colour but is to long.")
@@ -57,6 +58,7 @@ class Brickcolour:
             self.rgb_edge = get_contrast_colour(self.rgb_values)
             self.alpha = "255"
         elif colour_code.startswith("#"):
+            colour_code = colour_code.upper()
             self.colour_type = "Direct"
             self.rgb_values = colour_code
             self.colour_code = f"0x2{colour_code[1:]}"
@@ -73,6 +75,28 @@ class Brickcolour:
             self.legoids, \
             self.legoname, \
             self.category = get_colour_info_by_id(self.colour_code)
+
+    def __getitem__(self, key):
+        if key == 0:
+            return self.ldrawname
+        elif key == 1:
+            return self.colour_code
+        elif key == 2:
+            return self.rgb_values
+        elif key == 3:
+            return self.rgb_edge
+        elif key == 4:
+            return self.alpha
+        elif key == 5:
+            return self.luminance
+        elif key == 6:
+            return self.material
+        elif key == 7:
+            return self.legoids
+        elif key == 8:
+            return self.legoname
+        elif key == 9:
+            return self.category
 
     def __str__(self):
         if self.colour_type == "Direct":
@@ -114,6 +138,17 @@ def get_colour_info_by_id(id: str):
                 break
 
     return found_colour
+
+
+def get_all_brickcolours():
+    colour_list = []
+    with open(os.path.join(basedir, "colour_definitions.csv"), "r", encoding="utf-8") as source:
+        # skip row with column names
+        source.readline()
+        for line in source:
+            values = line.split(";")
+            colour_list.append(Brickcolour(values[1]))
+    return colour_list
 
 
 def get_contrast_colour(rgb_values: str):
