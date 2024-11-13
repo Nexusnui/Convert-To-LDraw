@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
 
         convert_button = QPushButton("Convert File")
         file_select_area.addWidget(convert_button)
-        # Todo: connect to convert function
+        convert_button.clicked.connect(self.convert_file)
 
         #Part settings area:
         part_settings_area = QVBoxLayout()
@@ -169,7 +169,6 @@ class MainWindow(QMainWindow):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
         dialog.setNameFilter("3D File (*.stl  *.3mf *.obj *.off *.ply *.gltf *.glb *.xaml *.brep *.stp *.step *.igs *.iges *.bdf *.msh *.inp *.diff *.mesh);;Any File (*.*)")
-        # Todo: add more file extensions of known compatible file formats(all gmsh formats are already added)
         dialog.setViewMode(QFileDialog.ViewMode.Detail)
         self.output_file_line.setReadOnly(True)
         self.select_output_button.setDisabled(True)
@@ -250,6 +249,76 @@ class MainWindow(QMainWindow):
         self.author_line.clear()
         self.apply_color_check.setChecked(False)
         self.custom_color_input.changecolour(Brickcolour("16"), False)
+
+    def convert_file(self):
+        print("Start Conversion")
+        partname = self.partname_line.text()
+        if len(partname) == 0:
+            partname = "UntitledModel"
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("No Partname")
+            dlg.setText(f"No partname was set.\nWant to save as 'UntitledModel'")
+            dlg.setIcon(QMessageBox.Icon.Warning)
+            dlg.setStandardButtons(
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+            answer = dlg.exec()
+            if answer == QMessageBox.StandardButton.No:
+                return
+        bl_number = self.bl_number_line.text()
+        author = self.author_line.text()
+        self.ldraw_object.name = partname
+        self.ldraw_object.author = author
+        self.ldraw_object.bricklinknumber = bl_number
+        filepath = self.output_file_line.text()
+        print([partname, bl_number, author, filepath])
+        if os.path.isfile(filepath):
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("File already Exists")
+            dlg.setText(f"There is already a file with the same name:\n{filepath}\nOverride?")
+            dlg.setIcon(QMessageBox.Icon.Warning)
+            dlg.setStandardButtons(
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+            answer = dlg.exec()
+            if answer == QMessageBox.StandardButton.No:
+                return
+        elif len(os.path.basename(filepath)) == 0:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("No Outputfile")
+            dlg.setText("No output file specified")
+            dlg.setIcon(QMessageBox.Icon.Warning)
+            dlg.exec()
+            return
+        elif not os.path.isdir(os.path.dirname(filepath)):
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Invalid output directory")
+            dlg.setText(f"'{os.path.dirname(filepath)}' is not a valid output directory")
+            dlg.setIcon(QMessageBox.Icon.Warning)
+            dlg.exec()
+            return
+        if self.custom_color_input.colour is None:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Invalid Colour")
+            dlg.setText("The custom colour is invalid")
+            dlg.setIcon(QMessageBox.Icon.Warning)
+            dlg.exec()
+            return
+        try:
+            self.ldraw_object.convert_to_dat_file(filepath)
+        except Exception:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Conversion Failed")
+            dlg.setText("Conversion may have failed due to unknown error")
+            dlg.setIcon(QMessageBox.Icon.Critical)
+            dlg.exec()
+        else:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Conversion Successfull")
+            dlg.setText(f"Model was saved to {filepath}")
+            dlg.setIcon(QMessageBox.Icon.Information)
+            dlg.exec()
+
 
 
 if __name__ == "__main__":
