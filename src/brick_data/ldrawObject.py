@@ -6,6 +6,7 @@ import numpy as np
 class LdrawObject:
     def __init__(self, filepath: str, name="", bricklinknumber="", author=""):
         self.__load_scene(filepath)
+        self.scene.convert_units("mm")
         self.scene.apply_scale(2.5)
         self.name = name
         self.bricklinknumber = bricklinknumber
