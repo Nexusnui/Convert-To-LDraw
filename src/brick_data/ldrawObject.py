@@ -26,7 +26,7 @@ class LdrawObject:
     def convert_to_dat_file(self, filepath):
         filename = os.path.basename(filepath)
         bricklinknumberline = ""
-        if len(self.bricklinknumber>0):
+        if len(self.bricklinknumber) > 0:
             bricklinknumberline = f"0 BL_Item_No {self.bricklinknumber}\n"
         header = (f"0 FILE {filename}\n"
                   f"0 {self.name}\n"
