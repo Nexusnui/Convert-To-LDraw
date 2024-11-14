@@ -6,14 +6,13 @@ import numpy as np
 class LdrawObject:
     def __init__(self, filepath: str, name="", bricklinknumber="", author=""):
         self.__load_scene(filepath)
-        self.scene.convert_units("mm")
         self.scene.apply_scale(2.5)
         self.name = name
         self.bricklinknumber = bricklinknumber
         self.author = author
         self.set_main_colour(Brickcolour("16"))
 
-    def __load_scene(self, filepath):
+    def __load_scene(self, filepath, convert_to_mm=False):
         _, file_extension = os.path.splitext(filepath)
         if file_extension in [".brep", ".stp", ".step", ".igs", ".iges", ".bdf", ".msh", ".inp", ".diff", ".mesh"]:
             scene = trimesh.Trimesh(**trimesh.interfaces.gmsh.load_gmsh(filepath))
@@ -22,6 +21,8 @@ class LdrawObject:
 
         if not isinstance(scene, trimesh.Scene):
             scene = trimesh.scene.scene.Scene(scene)
+        if convert_to_mm:
+            self.scene.convert_units("mm")
         self.scene = scene
 
     def convert_to_dat_file(self, filepath):
