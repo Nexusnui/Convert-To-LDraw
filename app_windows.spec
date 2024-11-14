@@ -5,7 +5,7 @@ a = Analysis(
     ['src\\app.py'],
     pathex=[],
     binaries=[],
-    datas=[('src\\icons\\stlToLDraw_icon.ico','icons'),('src\\brick_data\\colour_definitions.csv','brick_data')],
+    datas=[('src\\icons\\ConvertToLDraw_icon.ico','icons'),('src\\brick_data\\colour_definitions.csv','brick_data')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -32,7 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='src\\icons\\stlToLDraw_icon.ico',
+    icon='src\\icons\\ConvertToLDraw_icon.ico',
 )
 coll = COLLECT(
     exe,

@@ -323,7 +323,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication([])
-    app.setWindowIcon(QIcon(os.path.join(basedir, "icons/stlToLDraw_icon.ico")))
+    app.setWindowIcon(QIcon(os.path.join(basedir, "icons/ConvertToLDraw_icon.ico")))
 
     window = MainWindow()
 
