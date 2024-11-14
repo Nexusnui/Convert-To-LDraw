@@ -117,7 +117,6 @@ class BrickcolourDialog(QColorDialog):
             self.update_brickcolor(Brickcolour("16"))
 
     def update_brickcolor(self, colour):
-        # Todo: Colorname + Color Type
         if isinstance(colour, QColor):
             text_colour = get_contrast_colour(colour.name())
             self.preview.setStyleSheet(f"background-color : {colour.name()}; color : {text_colour};")
