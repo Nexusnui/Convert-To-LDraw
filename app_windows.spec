@@ -5,7 +5,7 @@ a = Analysis(
     ['src\\app.py'],
     pathex=[],
     binaries=[],
-    datas=[('src\\icons\\ConvertToLDraw_icon.ico','icons'),('src\\brick_data\\colour_definitions.csv','brick_data')],
+    datas=[('src\\icons\\ConvertToLDraw_icon.ico','icons'),('src\\brick_data\\colour_definitions.csv','brick_data'),('LICENSE','.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
