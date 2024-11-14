@@ -1,6 +1,6 @@
 import trimesh
 import os
-from src.brick_data.brickcolour import Brickcolour
+from brick_data.brickcolour import Brickcolour
 import numpy as np
 
 class LdrawObject:
