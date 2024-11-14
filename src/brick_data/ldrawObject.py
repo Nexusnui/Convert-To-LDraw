@@ -15,7 +15,7 @@ class LdrawObject:
     def __load_scene(self, filepath, convert_to_mm=False):
         _, file_extension = os.path.splitext(filepath)
         if file_extension in [".brep", ".stp", ".step", ".igs", ".iges", ".bdf", ".msh", ".inp", ".diff", ".mesh"]:
-            scene = trimesh.Trimesh(**trimesh.interfaces.gmsh.load_gmsh(filepath))
+            scene = trimesh.Trimesh(**trimesh.interfaces.gmsh.load_gmsh(filepath, [("General.Verbosity", 0)]))
         else:
             scene = trimesh.load_mesh(filepath)
 
