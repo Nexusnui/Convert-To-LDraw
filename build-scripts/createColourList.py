@@ -101,5 +101,5 @@ if __name__ == "__main__":
     # Change this to the current version
     bl_studio_custom_color_definition = "C:/Program Files/Studio 2.0/data/CustomColors/CustomColorDefinition_2_1_9.txt"
     bl_studio_colours = parse_bl_studio_color_definition(bl_studio_custom_color_definition)
-    color_definitions_csv = f"{__file__.split("build")[0]}src\\brick_data\\colour_definitions.csv"
+    color_definitions_csv = f"{__file__.split("build-scripts")[0]}src\\brick_data\\colour_definitions.csv"
     colourlists_to_csv([ldraw_colours, bl_studio_colours], color_definitions_csv)
