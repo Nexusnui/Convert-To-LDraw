@@ -1,8 +1,8 @@
 ![Image of Custom Part](AkiruDualColor.png)
 
-This is a simple graphical Python program for converting various 3D file formats(stl,3mf,obj,stp, etc.)
-to the LDraw format [(.dat)](http://www.ldraw.org/article/218). 
-The converted files can be used with LDview, Brickling Studio/Partdesigner and other compatible software.
+This is a graphical Python program for converting various 3D file formats(stl,3mf,obj,stp, etc.)
+to the LDraw file format [(.dat)](http://www.ldraw.org/article/218). 
+The converted files can be used with LDview, Bricklink Studio/Partdesigner and other compatible software.
 
 The Graphical Userinterface:
 ![Screenshot of the GUI](graphical_userinterface.png)
@@ -24,10 +24,10 @@ This version has no commandline interface, that was available in the previous ve
 Run/Install:
 
 Currently there is only a Windows Version.
-Under Releases you find a installer and a portable version for the latest release.
+Under Releases you find an installer and a portable version.
 If have an anti-virus software installed it might warn you, when running the installer.
 
-Mac and Linux users have to setup a python environment with the required with dependencies under build-scripts/requirements.
+Mac and Linux users have to setup a python environment with the dependencies found in "build-scripts/requirements.txt".
 
 This was originally a fork of a [python script of Hazen Babcock](https://github.com/HazenBabcock/stl-to-dat).
 The code that was used from that script was completely rewritten for the 1.0 release of this software.
