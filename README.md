@@ -9,6 +9,9 @@ The Graphical Userinterface:
 
 After loading the source file the output file and part name are set to the same name(with .dat extension).
 
+If defined and found units will be converted to millimeters. 
+For best compatibility the units of the model should be in millimeters.
+
 The default colour("16") will be used if not specified. 
 You can check the official LDraw Colour Definition Reference for the available colour codes.
 They can also be selected through the menu opened with the select button next to the custom colour field.
