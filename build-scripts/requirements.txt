@@ -1,11 +1,13 @@
 numpy==2.1.2
+cascadio==0.0.14
 chardet==5.2.0
-gmsh==4.13.1
 lxml==5.3.0
 manifold3d==2.5.1
 meshio==5.3.5
-networkx==3.4.1
+networkx==3.4.2
+pillow==11.0.0
+pycollada==0.8
 pyglet==1.5.29
 PyQt6==6.7.1
 scipy==1.14.1
-trimesh==4.5.0
+trimesh==4.5.2
