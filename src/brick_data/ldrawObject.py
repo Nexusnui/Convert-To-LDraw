@@ -1,6 +1,6 @@
 import trimesh
 import os
-from brick_data.brickcolour import Brickcolour
+from src.brick_data.brickcolour import Brickcolour
 import numpy as np
 
 class LdrawObject:
@@ -12,17 +12,24 @@ class LdrawObject:
         self.author = author
         self.set_main_colour(Brickcolour("16"))
 
-    def __load_scene(self, filepath, convert_to_mm=False):
+    def __load_scene(self, filepath):
         _, file_extension = os.path.splitext(filepath)
-        if file_extension in [".brep", ".stp", ".step", ".igs", ".iges", ".bdf", ".msh", ".inp", ".diff", ".mesh"]:
-            scene = trimesh.Trimesh(**trimesh.interfaces.gmsh.load_gmsh(filepath, [("General.Verbosity", 0)]))
-        else:
-            scene = trimesh.load_mesh(filepath)
+
+        scene = trimesh.load_mesh(filepath)
 
         if not isinstance(scene, trimesh.Scene):
             scene = trimesh.scene.scene.Scene(scene)
-        if convert_to_mm:
-            self.scene.convert_units("mm")
+        if scene.units not in ["mm", "millimeter", None]:
+            scene = scene.convert_units("millimeter")
+        for index, geometry in scene.geometry.items():
+            if isinstance(geometry.visual, trimesh.visual.texture.TextureVisuals):
+                geometry.visual = geometry.visual.to_color()
+            try:
+                geometry.visual.face_colors
+            except Exception:
+                #Invalid Color Data -> can occur when loading step files
+                geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8)
+
         self.scene = scene
 
     def convert_to_dat_file(self, filepath):
