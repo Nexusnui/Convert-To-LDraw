@@ -28,7 +28,7 @@ if platform.system() == "Windows":
     try:
         from ctypes import windll  # Only exists on Windows.
 
-        myappid = "nexusnui.converttoldraw.1.0"
+        myappid = "nexusnui.converttoldraw.1.0.1"
         windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except ImportError:
         pass
@@ -168,7 +168,9 @@ class MainWindow(QMainWindow):
     def load_file(self):
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
-        dialog.setNameFilter("3D File (*.stl  *.3mf *.obj *.off *.ply *.gltf *.glb *.xaml *.brep *.stp *.step *.igs *.iges *.bdf *.msh *.inp *.diff *.mesh);;Any File (*.*)")
+        dialog.setNameFilter("3D File (*.stl  *.3mf *.obj *.off *.ply *.gltf *.glb *.xaml *.stp *.step *.dae);;"
+                             "Unknown Compatibility (*.brep *.igs *.iges *.bdf *.msh *.inp *.diff *.mesh);;"
+                             "Any File (*.*)")
         dialog.setViewMode(QFileDialog.ViewMode.Detail)
         self.output_file_line.setReadOnly(True)
         self.select_output_button.setDisabled(True)
