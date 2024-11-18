@@ -6,7 +6,6 @@ import numpy as np
 class LdrawObject:
     def __init__(self, filepath: str, name="", bricklinknumber="", author=""):
         self.__load_scene(filepath)
-        self.scene.apply_scale(2.5)
         self.name = name
         self.bricklinknumber = bricklinknumber
         self.author = author
@@ -21,6 +20,7 @@ class LdrawObject:
             scene = trimesh.scene.scene.Scene(scene)
         if scene.units not in ["mm", "millimeter", None]:
             scene = scene.convert_units("millimeter")
+        scene = scene.scaled(2.5)
         for index, geometry in scene.geometry.items():
             if isinstance(geometry.visual, trimesh.visual.texture.TextureVisuals):
                 geometry.visual = geometry.visual.to_color()
