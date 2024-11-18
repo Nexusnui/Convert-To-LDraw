@@ -115,6 +115,11 @@ class Brickcolour:
             self.hex_rgba = self.rgb_values + hex(int(self.alpha)).lstrip("0x")
         return self.hex_rgba
 
+    def __eq__(self, other):
+        if isinstance(other, Brickcolour):
+            return self.colour_code == other.colour_code
+        return False
+
     def get_int_rgba(self):
         r = int(self.rgb_values[1:3], 16)
         g = int(self.rgb_values[3:5], 16)
