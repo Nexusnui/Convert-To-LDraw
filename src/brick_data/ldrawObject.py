@@ -9,7 +9,6 @@ from collections import OrderedDict
 class LdrawObject:
     def __init__(self, filepath: str, name="", bricklinknumber="", author=""):
         self.__load_scene(filepath)
-        self.scene.apply_scale(2.5)
         self.name = name
         self.bricklinknumber = bricklinknumber
         self.author = author
@@ -26,6 +25,7 @@ class LdrawObject:
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
         if scene.units not in ["mm", "millimeter", None]:
             scene = scene.convert_units("millimeter")
+        scene = scene.scaled(2.5)
         self.subparts = OrderedDict()
 
         scene_graph = scene.graph.transforms
@@ -66,8 +66,37 @@ class LdrawObject:
                 for line in list(self.subparts.values())[0].to_ldraw_lines():
                     file.write(line)
             else:
-                pass
-                # Todo: Save Subparts
+                sub_dir = f"{os.path.dirname(filepath)}/s/"
+                os.makedirs(sub_dir, exist_ok=True)
+                basename = filename.split(".dat")[0]
+                for count, part in enumerate(self.subparts.values()):
+                    subfilename = f"{basename}s{count:03d}.dat"
+                    subfilepath = f"{sub_dir}{subfilename}"
+                    part.convert_to_dat_file(subfilepath, filename, self.author)
+                    tm_a = f"{part.transformation_matrix[0][0]:f}"
+                    tm_b = f"{part.transformation_matrix[0][1]:f}"
+                    tm_c = f"{part.transformation_matrix[0][2]:f}"
+                    tm_d = f"{part.transformation_matrix[1][0]:f}"
+                    tm_e = f"{part.transformation_matrix[1][1]:f}"
+                    tm_f = f"{part.transformation_matrix[1][2]:f}"
+                    tm_g = f"{part.transformation_matrix[2][0]:f}"
+                    tm_h = f"{part.transformation_matrix[2][1]:f}"
+                    tm_i = f"{part.transformation_matrix[2][2]:f}"
+                    tm_x = f"{part.transformation_matrix[0][3]:f}"
+                    tm_y = f"{part.transformation_matrix[1][3]:f}"
+                    tm_z = f"{part.transformation_matrix[2][3]:f}"
+                    np.float64(1)
+                    #np.set_printoptions(floatmode="unique")
+                    #print(f"{tm_b:f} {tm_b}")
+                    code = "16"
+                    if not part.multicolour:
+                        code = part.main_colour.colour_code
+                    file.write(f"1 {code} {tm_x} {tm_y} {tm_z}"
+                               f" {tm_a} {tm_b} {tm_c}"
+                               f" {tm_d} {tm_e} {tm_f}"
+                               f" {tm_g} {tm_h} {tm_i}"
+                               f" s/{subfilename}\n")
+
 
     def set_main_colour(self, colour: Brickcolour):
         self.main_colour = colour
@@ -81,7 +110,6 @@ class Subpart:
         self.name = name
         self.transformation_matrix = transformation_matrix
         self.multicolour = False
-        print(main_colour, rgba_to_hex(main_colour))
         if not self.mesh.visual.defined:
             if main_colour is not None:
                 self.main_colour = Brickcolour(rgba_to_hex(main_colour)[: 7])
@@ -131,10 +159,9 @@ class Subpart:
             self.colours[key][0] = colour
 
     def convert_to_dat_file(self, filepath, main_file_name, author):
-        # f"{main_file_name}s{filenumber:04d}.dat"
         file_name = os.path.basename(filepath)
         header = (f"0 ~{self.name}: Subpart of {main_file_name}\n"
-                  f"Name: {file_name}"
+                  f"0 Name: {file_name}\n"
                   f"0 Author:  {author}\n"
                   f"0 BFC CERTIFY CCW\n")
         with open(filepath, "w", encoding="utf-8") as file:
@@ -157,7 +184,7 @@ class Subpart:
                 coordinate_a = ' '.join(map(str, self.mesh.vertices[face[0]]))
                 coordinate_b = ' '.join(map(str, self.mesh.vertices[face[1]]))
                 coordinate_c = ' '.join(map(str, self.mesh.vertices[face[2]]))
-                yield f"3 {self.main_colour.colour_code} {coordinate_a} {coordinate_b} {coordinate_c}\n"
+                yield f"3 16 {coordinate_a} {coordinate_b} {coordinate_c}\n"
 
 
 def rgba_to_hex(color):
