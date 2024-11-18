@@ -253,7 +253,6 @@ class MainWindow(QMainWindow):
         self.custom_color_input.changecolour(Brickcolour("16"), False)
 
     def convert_file(self):
-        print("Start Conversion")
         partname = self.partname_line.text()
         if len(partname) == 0:
             partname = "UntitledModel"
@@ -273,7 +272,6 @@ class MainWindow(QMainWindow):
         self.ldraw_object.author = author
         self.ldraw_object.bricklinknumber = bl_number
         filepath = self.output_file_line.text()
-        print([partname, bl_number, author, filepath])
         if os.path.isfile(filepath):
             dlg = QMessageBox(self)
             dlg.setWindowTitle("File already Exists")
