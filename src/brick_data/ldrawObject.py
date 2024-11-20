@@ -14,7 +14,7 @@ class LdrawObject:
         self.bricklinknumber = bricklinknumber
         self.author = author
 
-    def __load_scene(self, filepath):
+    def __load_scene(self, filepath, scale=1):
         _, file_extension = os.path.splitext(filepath)
 
         scene = trimesh.load_mesh(filepath)
@@ -26,7 +26,13 @@ class LdrawObject:
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
         if scene.units not in ["mm", "millimeter", None]:
             scene = scene.convert_units("millimeter")
+        if scale != 1:
+            scene = scene.scaled(scale)
+        self.size = scene.extents
+
+        #Convert to LDraw Units
         scene = scene.scaled(2.5)
+
         self.subparts = OrderedDict()
 
         scene_graph = scene.graph.transforms
