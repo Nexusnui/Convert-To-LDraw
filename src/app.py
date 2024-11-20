@@ -28,7 +28,7 @@ if platform.system() == "Windows":
     try:
         from ctypes import windll  # Only exists on Windows.
 
-        myappid = "nexusnui.converttoldraw.1.0.1"
+        myappid = "nexusnui.converttoldraw.1.1.0"
         windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except ImportError:
         pass
@@ -205,7 +205,7 @@ class MainWindow(QMainWindow):
                     x_length = mm_float_to_string(self.ldraw_object.size[0])
                     y_length = mm_float_to_string(self.ldraw_object.size[1])
                     z_length = mm_float_to_string(self.ldraw_object.size[2])
-                    self.loaded_file_status_label.setText(f"Current Model:{filename}({x_length}×{y_length}×{z_length})")
+                    self.loaded_file_status_label.setText(f"Current Model: {filename} ({x_length}×{y_length}×{z_length})")
 
                     if not self.file_loaded:
                         self.file_loaded = True
