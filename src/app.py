@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
 
         top_layout = QHBoxLayout()
 
-        #File Selection Area:
+        # File Selection Area:
         file_select_area = QVBoxLayout()
         file_select_label = QLabel("File Selection")
         file_select_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
@@ -72,7 +72,6 @@ class MainWindow(QMainWindow):
         input_layout.addWidget(load_input_button)
         load_input_button.clicked.connect(self.load_file)
 
-
         file_select_inputs.addLayout(input_layout)
 
         output_label = QLabel("Output File")
@@ -96,7 +95,7 @@ class MainWindow(QMainWindow):
         file_select_area.addWidget(convert_button)
         convert_button.clicked.connect(self.convert_file)
 
-        #Part settings area:
+        # Part settings area:
         part_settings_area = QVBoxLayout()
         part_settings_label = QLabel("Part Settings")
         part_settings_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
@@ -137,7 +136,6 @@ class MainWindow(QMainWindow):
         apply_color_layout.setAlignment(Qt.AlignmentFlag.AlignBottom)
         part_settings_inputs.addLayout(apply_color_layout)
 
-
         self.custom_color_input = BrickcolourWidget("Custom Color")
         self.custom_color_input.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.custom_color_input.setDisabled(True)
@@ -145,7 +143,7 @@ class MainWindow(QMainWindow):
         part_settings_inputs.addWidget(self.custom_color_input)
         self.apply_color_check.stateChanged.connect(self.disable_custom_colour)
 
-        #Preview Area
+        # Preview Area
         preview_area = QHBoxLayout()
 
         self.preview_button = QPushButton("Show Preview")
@@ -156,7 +154,7 @@ class MainWindow(QMainWindow):
         self.loaded_file_status_label = QLabel("No File loaded")
         preview_area.addWidget(self.loaded_file_status_label)
 
-        #Add Elements to Main Layout
+        # Add Elements to Main Layout
         top_layout.addLayout(part_settings_area)
         top_layout.addLayout(file_select_area)
         self.main_layout.addLayout(top_layout)
@@ -204,14 +202,16 @@ class MainWindow(QMainWindow):
                     self.select_output_button.setDisabled(False)
                     self.apply_color_check.setDisabled(False)
                     self.preview_button.setDisabled(False)
-                    self.loaded_file_status_label.setText(f"Current Model: {filename}")
+                    x_length = mm_float_to_string(self.ldraw_object.size[0])
+                    y_length = mm_float_to_string(self.ldraw_object.size[1])
+                    z_length = mm_float_to_string(self.ldraw_object.size[2])
+                    self.loaded_file_status_label.setText(f"Current Model:{filename}({x_length}×{y_length}×{z_length})")
 
                     if not self.file_loaded:
                         self.file_loaded = True
                     elif (self.custom_color_input.colour is not None
                           and self.apply_color_check.checkState() == Qt.CheckState.Checked):
                         self.update_custom_colour(self.custom_color_input.colour)
-
 
     def select_output_file(self):
         current_path = self.output_file_line.text()
@@ -319,6 +319,13 @@ class MainWindow(QMainWindow):
             dlg.setIcon(QMessageBox.Icon.Information)
             dlg.exec()
 
+
+def mm_float_to_string(number: float | int):
+    if number >= 100:
+        return f"{(number / 100):.2f}m"
+    elif number >= 10:
+        return f"{(number / 10):.2f}cm"
+    return f"{number:.2f}mm"
 
 
 if __name__ == "__main__":
