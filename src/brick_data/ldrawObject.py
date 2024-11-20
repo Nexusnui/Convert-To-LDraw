@@ -4,6 +4,7 @@ import os
 from src.brick_data.brickcolour import Brickcolour
 import numpy as np
 from collections import OrderedDict
+# Todo: Change np print settings
 
 
 class LdrawObject:
@@ -85,12 +86,10 @@ class LdrawObject:
                     tm_x = f"{part.transformation_matrix[0][3]:f}"
                     tm_y = f"{part.transformation_matrix[1][3]:f}"
                     tm_z = f"{part.transformation_matrix[2][3]:f}"
+                    # Todo: Improve precision of floats to string conversion
                     np.float64(1)
-                    #np.set_printoptions(floatmode="unique")
-                    #print(f"{tm_b:f} {tm_b}")
-                    code = "16"
-                    if not part.multicolour:
-                        code = part.main_colour.colour_code
+                    code = part.main_colour.colour_code
+                    print(subfilename)
                     file.write(f"1 {code} {tm_x} {tm_y} {tm_z}"
                                f" {tm_a} {tm_b} {tm_c}"
                                f" {tm_d} {tm_e} {tm_f}"
@@ -127,18 +126,24 @@ class Subpart:
                 else:
                     brickcolour = Brickcolour(hex_colour[:7])
                     brickcolour.alpha = str(colour[3])
-                    self.colours[hex_colour] = (brickcolour, [index])
+                    self.colours[hex_colour] = [brickcolour, [index]]
                     if not has_transparency and colour[3] > 0 and colour[3] > 255:
                         has_transparency = True
                     if is_invisible and colour[3] > 0:
                         is_invisible = False
             if len(self.colours) > 1:
                 self.multicolour = True
+                if main_colour is None:
+                    self.main_colour = Brickcolour("16")
+                else:
+                    print(main_colour, "here")
+                    self.main_colour = Brickcolour(rgba_to_hex(main_colour)[: 7])
             else:
                 self.main_colour = self.colours.popitem()[1][0]
             if is_invisible:
-                # Todo: Make visible
-                pass
+                for key, value in self.colours.items():
+                    value[0].alpha = "255"
+                    self.apply_color(key=key)
 
     def apply_color(self, colour: Brickcolour = None, key=None):
         if not self.multicolour or key is None:
@@ -147,9 +152,8 @@ class Subpart:
             self.mesh.visual.face_colors[0:] = np.array(colour.get_int_rgba())
             self.main_colour = colour
             if self.multicolour:
-                for value in self.colours:
+                for value in self.colours.values():
                     value[0] = colour
-                    # Todo: Test
         elif key is not None:
             if colour is None:
                 colour = self.colours[key][0]
@@ -189,7 +193,10 @@ class Subpart:
 
 def rgba_to_hex(color):
     def __color_to_hex(number: int):
-        hex_number = hex(number).lstrip("0x")
+        if number == 0:
+            hex_number = "00"
+        else:
+            hex_number = hex(number).lstrip("0x")
         if len(hex_number) < 2:
             hex_number = "0" + hex_number
         return hex_number
