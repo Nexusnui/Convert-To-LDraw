@@ -51,7 +51,7 @@ class LdrawObject:
                     geometry.visual.face_colors
                 except Exception:
                     # Invalid Color Data -> can occur when loading step files
-                    geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8)
+                    geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8)*255
                 transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
                 self.subparts[key] = Subpart(geometry, transformation_matrix, key, main_colour)
         self.scene = scene
