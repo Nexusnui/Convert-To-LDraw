@@ -8,8 +8,8 @@ from collections import OrderedDict
 
 
 class LdrawObject:
-    def __init__(self, filepath: str, name="", bricklinknumber="", author=""):
-        self.__load_scene(filepath)
+    def __init__(self, filepath: str, name="", bricklinknumber="", author="", scale=1):
+        self.__load_scene(filepath, scale)
         self.name = name
         self.bricklinknumber = bricklinknumber
         self.author = author
