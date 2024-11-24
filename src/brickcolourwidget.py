@@ -23,13 +23,13 @@ class BrickcolourWidget(QWidget):
         self.colourinput = QLineEdit()
         self.colourinput.setText(self.colour.colour_code)
         self.colourinput.textEdited.connect(self.changecolour)
-        self.selectbutton = QPushButton("Select")
-        self.selectbutton.clicked.connect(self.open_color_picker)
+        self.select_button = QPushButton("Select")
+        self.select_button.clicked.connect(self.open_color_picker)
 
         self.layout.addWidget(QLabel(labeltext))
         self.layout.addWidget(self.preview)
         self.layout.addWidget(self.colourinput)
-        self.layout.addWidget(self.selectbutton)
+        self.layout.addWidget(self.select_button)
 
         self.setLayout(self.layout)
 
@@ -63,7 +63,7 @@ class BrickcolourWidget(QWidget):
 
     def setDisabled(self, a0):
         self.colourinput.setDisabled(a0)
-        self.selectbutton.setDisabled(a0)
+        self.select_button.setDisabled(a0)
 
     def open_color_picker(self):
         initial_color = Brickcolour("16")
@@ -126,7 +126,10 @@ class BrickcolourDialog(QColorDialog):
             text_colour = get_contrast_colour(colour.rgb_values)
             self.preview.setStyleSheet(f"background-color : {colour.rgb_values}; color : {text_colour};")
             self.brickcolour = colour
-            self.preview.setText(f"{self.brickcolour.colour_code}: {self.brickcolour.ldrawname}")
+            preview_text = self.brickcolour.colour_code
+            if colour.colour_type == "LDraw":
+                preview_text = f"{preview_text}: {self.brickcolour.ldrawname}"
+            self.preview.setText(preview_text)
 
     def on_select_brickcolour(self, index):
         self.update_brickcolor(self.bickcolourlist.data(index, Qt.ItemDataRole.UserRole))
