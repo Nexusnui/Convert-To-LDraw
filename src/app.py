@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
 
         top_layout = QHBoxLayout()
 
-        # File Selection Area:
+    # File Selection Area:
         file_select_area = QVBoxLayout()
         file_select_label = QLabel("File Selection")
         file_select_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
@@ -58,6 +58,7 @@ class MainWindow(QMainWindow):
         file_select_frame.setLayout(file_select_inputs)
         file_select_area.addWidget(file_select_frame)
 
+        # Input File Selection
         input_label = QLabel("Input File")
         input_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
         file_select_inputs.addWidget(input_label)
@@ -74,6 +75,7 @@ class MainWindow(QMainWindow):
 
         file_select_inputs.addLayout(input_layout)
 
+        # Output File Selection
         output_label = QLabel("Output File")
         output_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
         file_select_inputs.addWidget(output_label)
@@ -91,11 +93,12 @@ class MainWindow(QMainWindow):
 
         file_select_inputs.addLayout(output_layout)
 
+        # Convert Button
         convert_button = QPushButton("Convert File")
         file_select_area.addWidget(convert_button)
         convert_button.clicked.connect(self.convert_file)
 
-        # Part settings area:
+    # Part settings area:
         part_settings_area = QVBoxLayout()
         part_settings_label = QLabel("Part Settings")
         part_settings_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
@@ -107,6 +110,7 @@ class MainWindow(QMainWindow):
         part_settings_frame.setLayout(part_settings_inputs)
         part_settings_area.addWidget(part_settings_frame)
 
+        # Partname Input
         partname_layout = QHBoxLayout()
         partname_layout.addWidget(QLabel("Part Name"))
         self.partname_line = QLineEdit()
@@ -114,6 +118,7 @@ class MainWindow(QMainWindow):
         partname_layout.addWidget(self.partname_line)
         part_settings_inputs.addLayout(partname_layout)
 
+        # Bricklink Number Input
         bl_number_layout = QHBoxLayout()
         bl_number_layout.addWidget(QLabel("BL Number(Optional)"))
         self.bl_number_line = QLineEdit()
@@ -121,6 +126,7 @@ class MainWindow(QMainWindow):
         bl_number_layout.addWidget(self.bl_number_line)
         part_settings_inputs.addLayout(bl_number_layout)
 
+        # Author Input
         author_layout = QHBoxLayout()
         author_layout.addWidget(QLabel("Author (Optional)"))
         self.author_line = QLineEdit()
@@ -128,6 +134,7 @@ class MainWindow(QMainWindow):
         author_layout.addWidget(self.author_line)
         part_settings_inputs.addLayout(author_layout)
 
+        # Color Selection - Todo: Replace check with button and move below
         apply_color_layout = QHBoxLayout()
         apply_color_layout.addWidget(QLabel("Apply Custom Color"))
         self.apply_color_check = QCheckBox()
@@ -143,7 +150,7 @@ class MainWindow(QMainWindow):
         part_settings_inputs.addWidget(self.custom_color_input)
         self.apply_color_check.stateChanged.connect(self.disable_custom_colour)
 
-        # Preview Area
+    # Preview Area
         preview_area = QHBoxLayout()
 
         self.preview_button = QPushButton("Show Preview")
@@ -154,7 +161,7 @@ class MainWindow(QMainWindow):
         self.loaded_file_status_label = QLabel("No File loaded")
         preview_area.addWidget(self.loaded_file_status_label)
 
-        # Add Elements to Main Layout
+    # Add Elements to Main Layout
         top_layout.addLayout(part_settings_area)
         top_layout.addLayout(file_select_area)
         self.main_layout.addLayout(top_layout)
@@ -231,8 +238,8 @@ class MainWindow(QMainWindow):
 
     def disable_custom_colour(self, s):
         if self.custom_color_input.colour is None or s == Qt.CheckState.Unchecked.value:
-            if self.ldraw_object.main_colour.colour_code != "16":
-                self.update_custom_colour(Brickcolour("16"))
+            #if self.ldraw_object.main_colour.colour_code != "16":
+            self.update_custom_colour(Brickcolour("16"))
         elif self.custom_color_input.colour.colour_code != "16":
             self.update_custom_colour(self.custom_color_input.colour)
         self.custom_color_input.setDisabled(
