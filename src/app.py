@@ -170,55 +170,57 @@ class MainWindow(QMainWindow):
         widget.setLayout(self.main_layout)
         self.setCentralWidget(widget)
 
-    def load_file(self):
-        dialog = QFileDialog(self)
-        dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
-        dialog.setNameFilter("3D File (*.stl  *.3mf *.obj *.off *.ply *.gltf *.glb *.xaml *.stp *.step *.dae);;"
-                             "Unknown Compatibility (*.brep *.igs *.iges *.bdf *.msh *.inp *.diff *.mesh);;"
-                             "Any File (*.*)")
-        dialog.setViewMode(QFileDialog.ViewMode.Detail)
-        self.output_file_line.setReadOnly(True)
-        self.select_output_button.setDisabled(True)
-        self.apply_color_check.setDisabled(True)
-        self.preview_button.setDisabled(True)
-        self.reset_part_settings()
+    def load_file(self, reload=False):
+        filepath = self.input_file_line.text()
+        self.disable_settings(False)
+        previous_status_text = self.loaded_file_status_label.text()
         self.loaded_file_status_label.setText(f"Loading File")
+        if not reload:
+            dialog = QFileDialog(self)
+            dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
+            dialog.setNameFilter("3D File (*.stl  *.3mf *.obj *.off *.ply *.gltf *.glb *.xaml *.stp *.step *.dae);;"
+                                 "Unknown Compatibility (*.brep *.igs *.iges *.bdf *.msh *.inp *.diff *.mesh);;"
+                                 "Any File (*.*)")
+            dialog.setViewMode(QFileDialog.ViewMode.Detail)
+            if dialog.exec():
+                filepath = dialog.selectedFiles()[0]
+        if filepath and len(filepath) > 0:
+            filename = os.path.basename(filepath)
+            try:
+                loaded_part = LdrawObject(filepath)
+            except Exception:
+                dlg = QMessageBox(self)
+                dlg.setWindowTitle("Failed to load file")
+                dlg.setText("File was not a 3D object or the format is unsupported")
+                dlg.setIcon(QMessageBox.Icon.Critical)
+                dlg.exec()
+                self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
+            else:
+                self.reset_part_settings()
+                self.ldraw_object = loaded_part
+                self.input_file_line.setText(filepath)
+                name = ".".join(filename.split(".")[:-1])
+                filedir = os.path.dirname(filepath)
+                self.partname_line.setText(name)
+                self.output_file_line.setText(f"{filedir}/{name}.dat")
 
-        if dialog.exec():
-            filepath = dialog.selectedFiles()[0]
-            if filepath:
-                filename = os.path.basename(filepath)
-                try:
-                    loaded_part = LdrawObject(filepath)
-                except Exception:
-                    dlg = QMessageBox(self)
-                    dlg.setWindowTitle("Failed to load file")
-                    dlg.setText("File was not a 3D object or the format is unsupported")
-                    dlg.setIcon(QMessageBox.Icon.Critical)
-                    dlg.exec()
-                    self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
-                else:
-                    self.ldraw_object = loaded_part
-                    self.input_file_line.setText(filepath)
-                    name = ".".join(filename.split(".")[:-1])
-                    filedir = os.path.dirname(filepath)
-                    self.partname_line.setText(name)
-                    self.output_file_line.setText(f"{filedir}/{name}.dat")
+                x_length = mm_float_to_string(self.ldraw_object.size[0])
+                y_length = mm_float_to_string(self.ldraw_object.size[1])
+                z_length = mm_float_to_string(self.ldraw_object.size[2])
+                self.loaded_file_status_label.setText(f"Current Model: {filename} ({x_length}×{y_length}×{z_length})")
 
-                    self.output_file_line.setReadOnly(False)
-                    self.select_output_button.setDisabled(False)
-                    self.apply_color_check.setDisabled(False)
-                    self.preview_button.setDisabled(False)
-                    x_length = mm_float_to_string(self.ldraw_object.size[0])
-                    y_length = mm_float_to_string(self.ldraw_object.size[1])
-                    z_length = mm_float_to_string(self.ldraw_object.size[2])
-                    self.loaded_file_status_label.setText(f"Current Model: {filename} ({x_length}×{y_length}×{z_length})")
-
-                    if not self.file_loaded:
-                        self.file_loaded = True
-                    elif (self.custom_color_input.colour is not None
-                          and self.apply_color_check.checkState() == Qt.CheckState.Checked):
-                        self.update_custom_colour(self.custom_color_input.colour)
+                if not self.file_loaded:
+                    self.file_loaded = True
+                elif (self.custom_color_input.colour is not None
+                      and self.apply_color_check.checkState() == Qt.CheckState.Checked):
+                    self.update_custom_colour(self.custom_color_input.colour)
+        # No file Selected
+        else:
+            if self.file_loaded:
+                self.loaded_file_status_label.setText(previous_status_text)
+            else:
+                self.loaded_file_status_label.clear()
+        self.disable_settings(False)
 
     def select_output_file(self):
         current_path = self.output_file_line.text()
@@ -238,7 +240,7 @@ class MainWindow(QMainWindow):
 
     def disable_custom_colour(self, s):
         if self.custom_color_input.colour is None or s == Qt.CheckState.Unchecked.value:
-            #if self.ldraw_object.main_colour.colour_code != "16":
+            # if self.ldraw_object.main_colour.colour_code != "16":
             self.update_custom_colour(Brickcolour("16"))
         elif self.custom_color_input.colour.colour_code != "16":
             self.update_custom_colour(self.custom_color_input.colour)
@@ -258,6 +260,13 @@ class MainWindow(QMainWindow):
         self.author_line.clear()
         self.apply_color_check.setChecked(False)
         self.custom_color_input.changecolour(Brickcolour("16"), False)
+
+    def disable_settings(self, value: bool):
+        self.output_file_line.setReadOnly(value)
+        self.select_output_button.setDisabled(value)
+        self.apply_color_check.setDisabled(value)
+        self.preview_button.setDisabled(value)
+
 
     def convert_file(self):
         partname = self.partname_line.text()
