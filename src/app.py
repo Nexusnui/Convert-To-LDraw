@@ -16,6 +16,7 @@ from PyQt6.QtWidgets import (
     QCheckBox,
     QFileDialog,
     QMessageBox,
+    QDoubleSpinBox,
 )
 
 from brick_data.brickcolour import Brickcolour
@@ -75,7 +76,37 @@ class MainWindow(QMainWindow):
 
         file_select_inputs.addLayout(input_layout)
 
-        #Reload Button
+        # Enable Multicolour Check
+        multicolour_check_layout = QHBoxLayout()
+        multicolour_check_layout.addWidget(QLabel("Multicolour"))
+        self.multicolour_check = QCheckBox()
+        multicolour_check_layout.addWidget(self.multicolour_check)
+        self.multicolour_check.setChecked(True)
+        file_select_inputs.addLayout(multicolour_check_layout)
+        # Todo: Add Functionality
+
+        # Enable Multi Objects Check
+        multi_object_check_layout = QHBoxLayout()
+        multi_object_check_layout.addWidget(QLabel("Multiple objects"))
+        self.multi_object_check = QCheckBox()
+        multi_object_check_layout.addWidget(self.multi_object_check)
+        self.multi_object_check.setChecked(True)
+        file_select_inputs.addLayout(multi_object_check_layout)
+        # Todo: Add Functionality
+
+        # Set Scale
+        scale_layout = QHBoxLayout()
+        scale_layout.addWidget(QLabel("Scale"))
+        self.scale_input = QDoubleSpinBox()
+        self.scale_input.setValue(1.0)
+        self.scale_input.setMaximum(999.999)
+        self.scale_input.setMinimum(0.001)
+        self.scale_input.setDecimals(3)
+        scale_layout.addWidget(self.scale_input)
+        file_select_inputs.addLayout(scale_layout)
+        # Todo: Add Functionality
+
+        # Reload Button
         self.reload_button = QPushButton("Reload Model")
         self.reload_button.setIcon(QIcon(os.path.join(basedir, "icons/reload-icon.svg")))
         self.reload_button.clicked.connect(lambda a: self.load_file(True))
@@ -105,6 +136,7 @@ class MainWindow(QMainWindow):
 
     # Part settings area:
         part_settings_area = QVBoxLayout()
+        part_settings_area.setAlignment(Qt.AlignmentFlag.AlignTop)
         part_settings_label = QLabel("Part Settings")
         part_settings_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
         part_settings_area.addWidget(part_settings_label)
@@ -387,4 +419,4 @@ if __name__ == "__main__":
 
     window.show()
 
-app.exec()
+    app.exec()
