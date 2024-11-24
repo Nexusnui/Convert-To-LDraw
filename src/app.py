@@ -87,16 +87,15 @@ class MainWindow(QMainWindow):
         output_layout.addWidget(self.output_file_line)
 
         self.select_output_button = QPushButton("Select")
-        self.select_output_button.setDisabled(True)
         output_layout.addWidget(self.select_output_button)
         self.select_output_button.clicked.connect(self.select_output_file)
 
         file_select_inputs.addLayout(output_layout)
 
         # Convert Button
-        convert_button = QPushButton("Convert File")
-        file_select_area.addWidget(convert_button)
-        convert_button.clicked.connect(self.convert_file)
+        self.convert_button = QPushButton("Convert File")
+        file_select_area.addWidget(self.convert_button)
+        self.convert_button.clicked.connect(self.convert_file)
 
     # Part settings area:
         part_settings_area = QVBoxLayout()
@@ -158,7 +157,7 @@ class MainWindow(QMainWindow):
         self.preview_button.setDisabled(True)
         preview_area.addWidget(self.preview_button)
 
-        self.loaded_file_status_label = QLabel("No File loaded")
+        self.loaded_file_status_label = QLabel("No file loaded")
         preview_area.addWidget(self.loaded_file_status_label)
 
     # Add Elements to Main Layout
@@ -168,11 +167,12 @@ class MainWindow(QMainWindow):
         self.main_layout.addLayout(preview_area)
         widget = QWidget()
         widget.setLayout(self.main_layout)
+        self.disable_settings(True)
         self.setCentralWidget(widget)
 
     def load_file(self, reload=False):
         filepath = self.input_file_line.text()
-        self.disable_settings(False)
+        self.disable_settings(True)
         previous_status_text = self.loaded_file_status_label.text()
         self.loaded_file_status_label.setText(f"Loading File")
         if not reload:
@@ -214,13 +214,15 @@ class MainWindow(QMainWindow):
                 elif (self.custom_color_input.colour is not None
                       and self.apply_color_check.checkState() == Qt.CheckState.Checked):
                     self.update_custom_colour(self.custom_color_input.colour)
+                self.disable_settings(False)
         # No file Selected
         else:
             if self.file_loaded:
                 self.loaded_file_status_label.setText(previous_status_text)
+                self.disable_settings(False)
             else:
-                self.loaded_file_status_label.clear()
-        self.disable_settings(False)
+                self.loaded_file_status_label.setText("No file loaded")
+
 
     def select_output_file(self):
         current_path = self.output_file_line.text()
@@ -266,6 +268,10 @@ class MainWindow(QMainWindow):
         self.select_output_button.setDisabled(value)
         self.apply_color_check.setDisabled(value)
         self.preview_button.setDisabled(value)
+        self.convert_button.setDisabled(value)
+        self.partname_line.setReadOnly(value)
+        self.bl_number_line.setReadOnly(value)
+        self.author_line.setReadOnly(value)
 
 
     def convert_file(self):
