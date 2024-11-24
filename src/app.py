@@ -69,9 +69,9 @@ class MainWindow(QMainWindow):
         self.input_file_line.setReadOnly(True)
         input_layout.addWidget(self.input_file_line)
 
-        load_input_button = QPushButton("Load File")
-        input_layout.addWidget(load_input_button)
-        load_input_button.clicked.connect(self.load_file)
+        self.load_input_button = QPushButton("Load File")
+        input_layout.addWidget(self.load_input_button)
+        self.load_input_button.clicked.connect(self.load_file)
 
         file_select_inputs.addLayout(input_layout)
 
@@ -133,21 +133,14 @@ class MainWindow(QMainWindow):
         author_layout.addWidget(self.author_line)
         part_settings_inputs.addLayout(author_layout)
 
-        # Color Selection - Todo: Replace check with button and move below
-        apply_color_layout = QHBoxLayout()
-        apply_color_layout.addWidget(QLabel("Apply Custom Color"))
-        self.apply_color_check = QCheckBox()
-        self.apply_color_check.setDisabled(True)
-        apply_color_layout.addWidget(self.apply_color_check)
-        apply_color_layout.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        part_settings_inputs.addLayout(apply_color_layout)
-
+        # Color Selection (Entire Part)
         self.custom_color_input = BrickcolourWidget("Custom Color")
         self.custom_color_input.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        self.custom_color_input.setDisabled(True)
-        self.custom_color_input.colour_changed.connect(self.update_custom_colour)
         part_settings_inputs.addWidget(self.custom_color_input)
-        self.apply_color_check.stateChanged.connect(self.disable_custom_colour)
+
+        self.apply_color_button = QPushButton("Apply Colour")
+        self.apply_color_button.clicked.connect(self.apply_custom_colour)
+        part_settings_inputs.addWidget(self.apply_color_button)
 
     # Preview Area
         preview_area = QHBoxLayout()
@@ -168,6 +161,7 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(self.main_layout)
         self.disable_settings(True)
+        self.load_input_button.setDisabled(False)
         self.setCentralWidget(widget)
 
     def load_file(self, reload=False):
@@ -195,6 +189,7 @@ class MainWindow(QMainWindow):
                 dlg.setIcon(QMessageBox.Icon.Critical)
                 dlg.exec()
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
+                self.load_input_button.setDisabled(False)
             else:
                 self.reset_part_settings()
                 self.ldraw_object = loaded_part
@@ -211,9 +206,6 @@ class MainWindow(QMainWindow):
 
                 if not self.file_loaded:
                     self.file_loaded = True
-                elif (self.custom_color_input.colour is not None
-                      and self.apply_color_check.checkState() == Qt.CheckState.Checked):
-                    self.update_custom_colour(self.custom_color_input.colour)
                 self.disable_settings(False)
         # No file Selected
         else:
@@ -222,6 +214,7 @@ class MainWindow(QMainWindow):
                 self.disable_settings(False)
             else:
                 self.loaded_file_status_label.setText("No file loaded")
+                self.load_input_button.setDisabled(False)
 
 
     def select_output_file(self):
@@ -237,17 +230,25 @@ class MainWindow(QMainWindow):
         if filepath:
             self.output_file_line.setText(filepath)
 
-    def update_custom_colour(self, colour: Brickcolour):
-        self.ldraw_object.set_main_colour(colour)
+    def apply_custom_colour(self):
+        self.disable_settings(True)
+        colour = self.custom_color_input.colour
+        colour_name = colour.colour_code
+        if colour.colour_type == "LDraw":
+            colour_name = colour.ldrawname
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("Override Colours?")
+        dlg.setText(f'Override all colours with "{colour_name}"')
+        dlg.setIcon(QMessageBox.Icon.Warning)
+        dlg.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        answer = dlg.exec()
+        if answer == QMessageBox.StandardButton.Yes:
+            self.ldraw_object.set_main_colour(colour)
+        self.disable_settings(False)
+        # Todo: Check for multicolor/multiobject
 
-    def disable_custom_colour(self, s):
-        if self.custom_color_input.colour is None or s == Qt.CheckState.Unchecked.value:
-            # if self.ldraw_object.main_colour.colour_code != "16":
-            self.update_custom_colour(Brickcolour("16"))
-        elif self.custom_color_input.colour.colour_code != "16":
-            self.update_custom_colour(self.custom_color_input.colour)
-        self.custom_color_input.setDisabled(
-            s != Qt.CheckState.Checked.value)
 
     def show_preview(self):
         hex_bg_color = self.palette().window().color().name()
@@ -260,21 +261,24 @@ class MainWindow(QMainWindow):
         self.partname_line.clear()
         self.bl_number_line.clear()
         self.author_line.clear()
-        self.apply_color_check.setChecked(False)
+        self.apply_color_button.setChecked(False)
         self.custom_color_input.changecolour(Brickcolour("16"), False)
 
     def disable_settings(self, value: bool):
+        self.load_input_button.setDisabled(value)
         self.output_file_line.setReadOnly(value)
         self.select_output_button.setDisabled(value)
-        self.apply_color_check.setDisabled(value)
+        self.apply_color_button.setDisabled(value)
         self.preview_button.setDisabled(value)
         self.convert_button.setDisabled(value)
         self.partname_line.setReadOnly(value)
         self.bl_number_line.setReadOnly(value)
         self.author_line.setReadOnly(value)
+        self.custom_color_input.setDisabled(value)
 
 
     def convert_file(self):
+        self.disable_settings(True)
         partname = self.partname_line.text()
         if len(partname) == 0:
             partname = "UntitledModel"
@@ -287,6 +291,7 @@ class MainWindow(QMainWindow):
             )
             answer = dlg.exec()
             if answer == QMessageBox.StandardButton.No:
+                self.disable_settings(False)
                 return
         bl_number = self.bl_number_line.text()
         author = self.author_line.text()
@@ -304,12 +309,14 @@ class MainWindow(QMainWindow):
             )
             answer = dlg.exec()
             if answer == QMessageBox.StandardButton.No:
+                self.disable_settings(False)
                 return
         elif len(os.path.basename(filepath)) == 0:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("No Outputfile")
             dlg.setText("No output file specified")
             dlg.setIcon(QMessageBox.Icon.Warning)
+            self.disable_settings(False)
             dlg.exec()
             return
         elif not os.path.isdir(os.path.dirname(filepath)):
@@ -318,6 +325,7 @@ class MainWindow(QMainWindow):
             dlg.setText(f"'{os.path.dirname(filepath)}' is not a valid output directory")
             dlg.setIcon(QMessageBox.Icon.Warning)
             dlg.exec()
+            self.disable_settings(False)
             return
         if self.custom_color_input.colour is None:
             dlg = QMessageBox(self)
@@ -325,6 +333,7 @@ class MainWindow(QMainWindow):
             dlg.setText("The custom colour is invalid")
             dlg.setIcon(QMessageBox.Icon.Warning)
             dlg.exec()
+            self.disable_settings(False)
             return
         try:
             self.ldraw_object.convert_to_dat_file(filepath)
@@ -340,6 +349,7 @@ class MainWindow(QMainWindow):
             dlg.setText(f"Model was saved to {filepath}")
             dlg.setIcon(QMessageBox.Icon.Information)
             dlg.exec()
+        self.disable_settings(False)
 
 
 def mm_float_to_string(number: float | int):
