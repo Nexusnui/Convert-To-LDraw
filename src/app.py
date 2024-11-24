@@ -75,6 +75,12 @@ class MainWindow(QMainWindow):
 
         file_select_inputs.addLayout(input_layout)
 
+        #Reload Button
+        self.reload_button = QPushButton("Reload Model")
+        self.reload_button.setIcon(QIcon(os.path.join(basedir, "icons/reload-icon.svg")))
+        self.reload_button.clicked.connect(lambda a: self.load_file(True))
+        file_select_inputs.addWidget(self.reload_button)
+
         # Output File Selection
         output_label = QLabel("Output File")
         output_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
@@ -166,6 +172,18 @@ class MainWindow(QMainWindow):
 
     def load_file(self, reload=False):
         filepath = self.input_file_line.text()
+        filename = os.path.basename(filepath)
+        if reload:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Reload Model?")
+            dlg.setText(f'Reloading resets all colours and other changes\n Reload "{filename}"?')
+            dlg.setIcon(QMessageBox.Icon.Warning)
+            dlg.setStandardButtons(
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+            answer = dlg.exec()
+            if answer == QMessageBox.StandardButton.No:
+                return
         self.disable_settings(True)
         previous_status_text = self.loaded_file_status_label.text()
         self.loaded_file_status_label.setText(f"Loading File")
@@ -275,6 +293,7 @@ class MainWindow(QMainWindow):
         self.bl_number_line.setReadOnly(value)
         self.author_line.setReadOnly(value)
         self.custom_color_input.setDisabled(value)
+        self.reload_button.setDisabled(value)
 
 
     def convert_file(self):
