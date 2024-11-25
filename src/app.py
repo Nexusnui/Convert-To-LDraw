@@ -231,8 +231,10 @@ class MainWindow(QMainWindow):
         if filepath and len(filepath) > 0:
             filename = os.path.basename(filepath)
             scale = self.scale_input.value()
+            multicolour = self.multicolour_check.checkState() == Qt.CheckState.Checked
+            multi_object = self.multi_object_check.checkState() == Qt.CheckState.Checked
             try:
-                loaded_part = LdrawObject(filepath, scale=scale)
+                loaded_part = LdrawObject(filepath, scale=scale, multi_object=multi_object, multicolour=multicolour)
             except Exception:
                 dlg = QMessageBox(self)
                 dlg.setWindowTitle("Failed to load file")

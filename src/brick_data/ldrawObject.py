@@ -1,20 +1,20 @@
 import trimesh
 import trimesh.visual.material
 import os
-from src.brick_data.brickcolour import Brickcolour
+from brick_data.brickcolour import Brickcolour
 import numpy as np
 from collections import OrderedDict
 # Todo: Change np print settings
 
 
 class LdrawObject:
-    def __init__(self, filepath: str, name="", bricklinknumber="", author="", scale=1):
-        self.__load_scene(filepath, scale)
+    def __init__(self, filepath: str, name="", bricklinknumber="", author="", scale=1, multi_object=True, multicolour=True):
+        self.__load_scene(filepath, scale, multi_object, multicolour)
         self.name = name
         self.bricklinknumber = bricklinknumber
         self.author = author
 
-    def __load_scene(self, filepath, scale=1):
+    def __load_scene(self, filepath, scale=1, multi_object=True, multicolour=True):
         _, file_extension = os.path.splitext(filepath)
 
         scene = trimesh.load_mesh(filepath)
@@ -22,7 +22,7 @@ class LdrawObject:
         if not isinstance(scene, trimesh.Scene):
             scene = trimesh.scene.scene.Scene(scene)
 
-        elif len(scene.geometry) == 1:
+        elif len(scene.geometry) == 1 or not multi_object:
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
         if scene.units not in ["mm", "millimeter", None]:
             scene = scene.convert_units("millimeter")
@@ -47,11 +47,16 @@ class LdrawObject:
                 if isinstance(geometry.visual, trimesh.visual.texture.TextureVisuals):
                     main_colour = geometry.visual.material.main_color
                     geometry.visual = geometry.visual.to_color()
-                try:
-                    geometry.visual.face_colors
-                except Exception:
-                    # Invalid Color Data -> can occur when loading step files
+                if multicolour:
+                    try:
+                        geometry.visual.face_colors
+                    except Exception:
+                        # Invalid Color Data -> can occur when loading step files
+                        geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8)*255
+                        # Todo: Change to Main_Colour ('16')
+                else:
                     geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8)*255
+                    # Todo: Change to Main_Colour ('16')
                 transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
                 self.subparts[key] = Subpart(geometry, transformation_matrix, key, main_colour)
         self.scene = scene
