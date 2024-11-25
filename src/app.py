@@ -199,7 +199,7 @@ class MainWindow(QMainWindow):
         widget = QWidget()
         widget.setLayout(self.main_layout)
         self.disable_settings(True)
-        self.load_input_button.setDisabled(False)
+        self.enable_load_settings()
         self.setCentralWidget(widget)
 
     def load_file(self, reload=False):
@@ -230,8 +230,9 @@ class MainWindow(QMainWindow):
                 filepath = dialog.selectedFiles()[0]
         if filepath and len(filepath) > 0:
             filename = os.path.basename(filepath)
+            scale = self.scale_input.value()
             try:
-                loaded_part = LdrawObject(filepath)
+                loaded_part = LdrawObject(filepath, scale=scale)
             except Exception:
                 dlg = QMessageBox(self)
                 dlg.setWindowTitle("Failed to load file")
@@ -239,7 +240,7 @@ class MainWindow(QMainWindow):
                 dlg.setIcon(QMessageBox.Icon.Critical)
                 dlg.exec()
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
-                self.load_input_button.setDisabled(False)
+                self.enable_load_settings()
             else:
                 self.reset_part_settings()
                 self.ldraw_object = loaded_part
@@ -264,7 +265,7 @@ class MainWindow(QMainWindow):
                 self.disable_settings(False)
             else:
                 self.loaded_file_status_label.setText("No file loaded")
-                self.load_input_button.setDisabled(False)
+                self.enable_load_settings()
 
 
     def select_output_file(self):
@@ -326,6 +327,15 @@ class MainWindow(QMainWindow):
         self.author_line.setReadOnly(value)
         self.custom_color_input.setDisabled(value)
         self.reload_button.setDisabled(value)
+        self.multicolour_check.setDisabled(value)
+        self.multi_object_check.setDisabled(value)
+        self.scale_input.setDisabled(value)
+
+    def enable_load_settings(self):
+        self.multicolour_check.setDisabled(False)
+        self.multi_object_check.setDisabled(False)
+        self.scale_input.setDisabled(False)
+        self.load_input_button.setDisabled(False)
 
 
     def convert_file(self):
