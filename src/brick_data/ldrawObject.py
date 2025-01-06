@@ -23,7 +23,18 @@ class LdrawObject:
             scene = trimesh.scene.scene.Scene(scene)
 
         elif len(scene.geometry) == 1 or not multi_object:
+            #Todo:Case Multicolour==True and len(scene.geometry) > 1
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
+
+        # LDraw co-ordinate system is right-handed where -Y is "up"
+        # For this reason the entire scene is rotated by 90° around the X-axis
+        scene.apply_transform([
+            [1, 0, 0, 0],
+            [0, 0, -1, 0],
+            [0, 1, 0, 0],
+            [0, 0, 0, 1]
+        ])
+
         if scene.units not in ["mm", "millimeter", None]:
             scene = scene.convert_units("millimeter")
         if scale != 1:
