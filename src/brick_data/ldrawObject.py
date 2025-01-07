@@ -23,7 +23,43 @@ class LdrawObject:
             scene = trimesh.scene.scene.Scene(scene)
 
         elif len(scene.geometry) == 1 or not multi_object:
-            #Todo:Case Multicolour==True and len(scene.geometry) > 1
+            if len(scene.geometry) > 1 and multicolour:
+                recolour = True
+                if len(scene.geometry) == 1:
+                    recolour = False
+                for geometry in scene.geometry.values():
+                    if not recolour:
+                        break
+                    if isinstance(geometry.visual, trimesh.visual.texture.TextureVisuals):
+                        recolour = False
+                        break
+                    try:
+                        geometry.visual.face_colors
+                        has_multiple_colours = False
+                        first_colour = geometry.visual.face_colors[0]
+                        for colour in geometry.visual.face_colors:
+                            c_check = first_colour == colour
+                            if not(c_check[0] and c_check[1] and c_check[2] and c_check[3]):
+                                has_multiple_colours = True
+                                break
+
+                        c_check = geometry.visual.main_color == [102, 102, 102, 255]
+                        default_colour = c_check[0] and c_check[1] and c_check[2] and c_check[3]
+                        if has_multiple_colours and not default_colour:
+                            recolour = False
+                            break
+                    except Exception:
+                        #No or invalid color data
+                        pass
+                if recolour:
+                    colorrange = [0, 63, 127, 191, 255]
+                    for index, geometry in enumerate(scene.geometry.values()):
+                        # only 125 different colors possible
+                        g = colorrange[index % 5]
+                        r = colorrange[int(index / 5 % 5)]
+                        b = colorrange[int(index / 25 % 5)]
+                        geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [r, g, b, 255]
+
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
         # LDraw co-ordinate system is right-handed where -Y is "up"
