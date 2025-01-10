@@ -11,6 +11,9 @@ def parse_ldraw_colour_config(configPath):
         while skipped_line != "0 // Colour definitions\n":
             skipped_line = source.readline()
         for line in source:
+            #After the colour definitons the Avatar definitions follow
+            if line == "0 // Avatar definitions":
+                break
             if "LEGOID" not in line and "!COLOUR" not in line and "BricksetID" not in line and "LDraw" in line:
                 category = f"LDraw:{line.split("0 // ")[1].split("\n")[0]}"
                 pass
@@ -49,6 +52,7 @@ def parse_ldraw_colour_config(configPath):
                 lego_names = []
     return colours
 
+#Todo: Function for getting categories from config file
 
 # Parse the custom Bricklink color definition to a list of colours
 def parse_bl_studio_color_definition(definitionPath):
