@@ -223,7 +223,7 @@ class Subpart:
     def convert_to_dat_file(self, filepath, main_file_name, author):
         file_name = os.path.basename(filepath)
         header = (f"0 ~{self.name}: Subpart of {main_file_name}\n"
-                  f"0 Name: {file_name}\n"
+                  f"0 Name: s/{file_name}\n"
                   f"0 Author:  {author}\n"
                   f"0 BFC CERTIFY CCW\n")
         with open(filepath, "w", encoding="utf-8") as file:
