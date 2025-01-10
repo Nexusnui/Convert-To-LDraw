@@ -148,6 +148,9 @@ class MainWindow(QMainWindow):
         part_settings_area.addWidget(part_settings_frame)
 
         # Partname Input
+        # Todo: Separate Partname and descriptive Partname
+        # Todo: Add Category Selection
+        # Todo: Add Keywords Field?
         partname_layout = QHBoxLayout()
         partname_layout.addWidget(QLabel("Part Name"))
         self.partname_line = QLineEdit()
