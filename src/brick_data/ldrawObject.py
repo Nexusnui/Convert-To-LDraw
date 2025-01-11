@@ -8,12 +8,15 @@ from collections import OrderedDict
 
 
 class LdrawObject:
-    def __init__(self, filepath: str, name="", bricklinknumber="", author="", category="", scale=1, multi_object=True, multicolour=True):
+    def __init__(self, filepath: str,
+                 name="", bricklinknumber="", author="", category="", keywords=[],
+                 scale=1, multi_object=True, multicolour=True):
         self.__load_scene(filepath, scale, multi_object, multicolour)
         self.name = name
         self.bricklinknumber = bricklinknumber
         self.author = author
         self.category = category
+        self.keywords = keywords
 
     def __load_scene(self, filepath, scale=1, multi_object=True, multicolour=True):
         _, file_extension = os.path.splitext(filepath)
@@ -114,15 +117,33 @@ class LdrawObject:
         bricklinknumberline = ""
         if len(self.bricklinknumber) > 0:
             bricklinknumberline = f"0 BL_Item_No {self.bricklinknumber}\n\n"
+        categoryline = ""
         if len(self.category) > 0:
-            categoryline = f"0 !CATEGORY {self.category}\n\n"
+            if len(self.keywords) > 0:
+                categoryline = f"0 !CATEGORY {self.category}\n"
+            else:
+                categoryline = f"0 !CATEGORY {self.category}\n\n"
+        keyword_lines = ""
+        if len(self.keywords) > 0:
+            keyword_lines = []
+            current_line = f"0 !KEYWORDS {self.keywords[0]}"
+            for kw in self.keywords[1:]:
+                if len(current_line + kw) > 80:
+                    keyword_lines.append(current_line)
+                    current_line = f"0 !KEYWORDS {kw}"
+                else:
+                    current_line = f"{current_line}, {kw}"
+            keyword_lines.append(f"{current_line}\n\n")
+            keyword_lines = "\n".join(keyword_lines)
+
         header = (f"0 FILE {filename}\n"
                   f"0 {self.name}\n"
                   f"0 Name:  {filename}\n"
                   f"0 Author:  {self.author}\n\n"
                   f"{bricklinknumberline}"
                   f"0 BFC CERTIFY CCW\n\n"
-                  f"{categoryline}")
+                  f"{categoryline}"
+                  f"{keyword_lines}")
         with open(filepath, "w", encoding="utf-8") as file:
             file.write(header)
             if len(self.subparts) == 1:

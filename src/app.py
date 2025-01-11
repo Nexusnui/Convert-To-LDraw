@@ -181,7 +181,13 @@ class MainWindow(QMainWindow):
         part_category_layout.addWidget(self.part_category_input)
         part_settings_inputs.addLayout(part_category_layout)
 
-        # Todo: Add Keywords Field?
+        # Keywords Input
+        keywords_layout = QHBoxLayout()
+        keywords_layout.addWidget(QLabel("Keywords (Optional)"))
+        self.keywords_line = QLineEdit()
+        self.keywords_line.setPlaceholderText("comma seperated: Wheel, Tire, Car")
+        keywords_layout.addWidget(self.keywords_line)
+        part_settings_inputs.addLayout(keywords_layout)
 
         # Color Selection (Entire Part)
         self.custom_color_input = BrickcolourWidget("Custom Color")
@@ -329,6 +335,7 @@ class MainWindow(QMainWindow):
         self.author_line.clear()
         self.apply_color_button.setChecked(False)
         self.part_category_input.clearEditText()
+        self.keywords_line.clear()
         self.custom_color_input.changecolour(Brickcolour("16"), False)
 
     def disable_settings(self, value: bool):
@@ -347,6 +354,7 @@ class MainWindow(QMainWindow):
         self.multi_object_check.setDisabled(value)
         self.scale_input.setDisabled(value)
         self.part_category_input.setDisabled(value)
+        self.keywords_line.setReadOnly(value)
 
     def enable_load_settings(self):
         self.multicolour_check.setDisabled(False)
@@ -385,12 +393,19 @@ class MainWindow(QMainWindow):
             if answer == QMessageBox.StandardButton.No:
                 self.disable_settings(False)
                 return
+        keywords = []
+        for kw in self.keywords_line.text().split(","):
+            #Remove redundant spaces
+            word = " ".join([w for w in kw.split(" ") if w != ""])
+            if len(word) > 0:
+                keywords.append(word)
         bl_number = self.bl_number_line.text()
         author = self.author_line.text()
         self.ldraw_object.name = partname
         self.ldraw_object.author = author
         self.ldraw_object.bricklinknumber = bl_number
         self.ldraw_object.category = category
+        self.ldraw_object.keywords = keywords
         filepath = self.output_file_line.text()
         if os.path.isfile(filepath):
             dlg = QMessageBox(self)
