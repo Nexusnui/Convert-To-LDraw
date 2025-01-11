@@ -17,10 +17,12 @@ from PyQt6.QtWidgets import (
     QFileDialog,
     QMessageBox,
     QDoubleSpinBox,
+    QComboBox,
 )
 
 from brick_data.brickcolour import Brickcolour
 from brick_data.ldrawObject import LdrawObject
+from brick_data.brick_categories import brick_categories
 from brickcolourwidget import BrickcolourWidget
 
 basedir = os.path.dirname(__file__)
@@ -83,7 +85,6 @@ class MainWindow(QMainWindow):
         multicolour_check_layout.addWidget(self.multicolour_check)
         self.multicolour_check.setChecked(True)
         file_select_inputs.addLayout(multicolour_check_layout)
-        # Todo: Add Functionality
 
         # Enable Multi Objects Check
         multi_object_check_layout = QHBoxLayout()
@@ -92,7 +93,6 @@ class MainWindow(QMainWindow):
         multi_object_check_layout.addWidget(self.multi_object_check)
         self.multi_object_check.setChecked(True)
         file_select_inputs.addLayout(multi_object_check_layout)
-        # Todo: Add Functionality
 
         # Set Scale
         scale_layout = QHBoxLayout()
@@ -104,7 +104,6 @@ class MainWindow(QMainWindow):
         self.scale_input.setDecimals(3)
         scale_layout.addWidget(self.scale_input)
         file_select_inputs.addLayout(scale_layout)
-        # Todo: Add Functionality
 
         # Reload Button
         self.reload_button = QPushButton("Reload Model")
@@ -148,11 +147,8 @@ class MainWindow(QMainWindow):
         part_settings_area.addWidget(part_settings_frame)
 
         # Partname Input
-        # Todo: Separate Partname and descriptive Partname
-        # Todo: Add Category Selection
-        # Todo: Add Keywords Field?
         partname_layout = QHBoxLayout()
-        partname_layout.addWidget(QLabel("Part Name"))
+        partname_layout.addWidget(QLabel("Descriptive Part Name"))
         self.partname_line = QLineEdit()
         self.partname_line.setPlaceholderText("UntitledModel")
         partname_layout.addWidget(self.partname_line)
@@ -173,6 +169,19 @@ class MainWindow(QMainWindow):
         self.author_line.setPlaceholderText("Your Name/Alias")
         author_layout.addWidget(self.author_line)
         part_settings_inputs.addLayout(author_layout)
+
+        # Category Selection
+        part_category_layout = QHBoxLayout()
+        part_category_layout.addWidget(QLabel("Part Category (Recommended)"))
+        self.part_category_input = QComboBox()
+        self.part_category_input.addItems(brick_categories)
+        self.part_category_input.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        print(self.part_category_input.insertPolicy())
+        self.part_category_input.setEditable(True)
+        part_category_layout.addWidget(self.part_category_input)
+        part_settings_inputs.addLayout(part_category_layout)
+
+        # Todo: Add Keywords Field?
 
         # Color Selection (Entire Part)
         self.custom_color_input = BrickcolourWidget("Custom Color")
@@ -247,7 +256,8 @@ class MainWindow(QMainWindow):
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
                 self.enable_load_settings()
             else:
-                self.reset_part_settings()
+                if not reload:
+                    self.reset_part_settings()
                 self.ldraw_object = loaded_part
                 self.input_file_line.setText(filepath)
                 name = ".".join(filename.split(".")[:-1])
@@ -318,6 +328,7 @@ class MainWindow(QMainWindow):
         self.bl_number_line.clear()
         self.author_line.clear()
         self.apply_color_button.setChecked(False)
+        self.part_category_input.clearEditText()
         self.custom_color_input.changecolour(Brickcolour("16"), False)
 
     def disable_settings(self, value: bool):
@@ -335,6 +346,7 @@ class MainWindow(QMainWindow):
         self.multicolour_check.setDisabled(value)
         self.multi_object_check.setDisabled(value)
         self.scale_input.setDisabled(value)
+        self.part_category_input.setDisabled(value)
 
     def enable_load_settings(self):
         self.multicolour_check.setDisabled(False)
@@ -359,11 +371,26 @@ class MainWindow(QMainWindow):
             if answer == QMessageBox.StandardButton.No:
                 self.disable_settings(False)
                 return
+        category = self.part_category_input.currentText()
+        if category not in brick_categories:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Unofficial Category")
+            dlg.setText(f'The category "{category}" is not one of official LDraw Categories.\n'
+                        f'Do want to use it anyway?')
+            dlg.setIcon(QMessageBox.Icon.Warning)
+            dlg.setStandardButtons(
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+            answer = dlg.exec()
+            if answer == QMessageBox.StandardButton.No:
+                self.disable_settings(False)
+                return
         bl_number = self.bl_number_line.text()
         author = self.author_line.text()
         self.ldraw_object.name = partname
         self.ldraw_object.author = author
         self.ldraw_object.bricklinknumber = bl_number
+        self.ldraw_object.category = category
         filepath = self.output_file_line.text()
         if os.path.isfile(filepath):
             dlg = QMessageBox(self)
