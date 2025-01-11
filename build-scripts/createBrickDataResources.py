@@ -52,8 +52,6 @@ def parse_ldraw_colour_config(configPath):
                 lego_names = []
     return colours
 
-#Todo: Function for getting categories from config file
-
 # Parse the custom Bricklink color definition to a list of colours
 def parse_bl_studio_color_definition(definitionPath):
     colours = []
@@ -90,12 +88,30 @@ def get_ldraw_colour_definition_line(colour):
     return line
 
 
-def colourlists_to_csv(colorlists, filename):
+def save_colourlists_to_csv(colorlists, filename):
     with open(filename, "w", encoding="utf-8") as file_out:
         file_out.write("LDraw Name;Code;RGB Values;Edge Values;Alpha;Luminance;Material;Lego IDs;Lego Names;Category\n")
         for colourlist in colorlists:
             for colour in colourlist:
                 file_out.write(";".join(colour[:7] + ("/".join(colour[7]), "/".join(colour[8]), colour[9])) + "\n")
+
+def get_categories_from_config(configPath):
+    categories = []
+    with open(configPath, "r", encoding="utf-8") as source:
+        skipped_line = ""
+        while skipped_line != "0 // Avatar definitions\n":
+            skipped_line = source.readline()
+        for line in source:
+            if "!AVATAR" in line:
+                categories.append(line.split('CATEGORY "')[1].split('" DESCRIPTION')[0])
+    return categories
+
+def save_categories_to_py(categories, filename):
+    with open(filename, "w", encoding="utf-8") as file_out:
+        file_out.write("brick_categories = [\n")
+        for category in categories:
+            file_out.write(f'    "{category}",\n')
+        file_out.write("]\n")
 
 
 if __name__ == "__main__":
@@ -106,4 +122,8 @@ if __name__ == "__main__":
     bl_studio_custom_color_definition = "C:/Program Files/Studio 2.0/data/CustomColors/CustomColorDefinition_2_1_9.txt"
     bl_studio_colours = parse_bl_studio_color_definition(bl_studio_custom_color_definition)
     color_definitions_csv = f"{__file__.split("build-scripts")[0]}src\\brick_data\\colour_definitions.csv"
-    colourlists_to_csv([ldraw_colours, bl_studio_colours], color_definitions_csv)
+    save_colourlists_to_csv([ldraw_colours, bl_studio_colours], color_definitions_csv)
+
+    categories = get_categories_from_config(ldraw_config)
+    category_definitions = f"{__file__.split("build-scripts")[0]}src\\brick_data\\brick_categories.py"
+    save_categories_to_py(categories, category_definitions)
