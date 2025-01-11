@@ -118,9 +118,11 @@ if __name__ == "__main__":
     # This file is in your LDraw library folder
     ldraw_config = "Path/To/Your/LDConfig.ldr"
     ldraw_colours = parse_ldraw_colour_config(ldraw_config)
+
     # Change this to the current version
     bl_studio_custom_color_definition = "C:/Program Files/Studio 2.0/data/CustomColors/CustomColorDefinition_2_1_9.txt"
     bl_studio_colours = parse_bl_studio_color_definition(bl_studio_custom_color_definition)
+
     color_definitions_csv = f"{__file__.split("build-scripts")[0]}src\\brick_data\\colour_definitions.csv"
     save_colourlists_to_csv([ldraw_colours, bl_studio_colours], color_definitions_csv)
 
