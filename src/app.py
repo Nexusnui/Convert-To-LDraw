@@ -176,7 +176,6 @@ class MainWindow(QMainWindow):
         self.part_category_input = QComboBox()
         self.part_category_input.addItems(brick_categories)
         self.part_category_input.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
-        print(self.part_category_input.insertPolicy())
         self.part_category_input.setEditable(True)
         part_category_layout.addWidget(self.part_category_input)
         part_settings_inputs.addLayout(part_category_layout)

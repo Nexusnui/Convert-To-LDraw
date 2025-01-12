@@ -172,7 +172,6 @@ class LdrawObject:
                     # Todo: Improve precision of floats to string conversion
                     np.float64(1)
                     code = part.main_colour.colour_code
-                    print(subfilename)
                     file.write(f"1 {code} {tm_x} {tm_y} {tm_z}"
                                f" {tm_a} {tm_b} {tm_c}"
                                f" {tm_d} {tm_e} {tm_f}"
@@ -219,7 +218,6 @@ class Subpart:
                 if main_colour is None:
                     self.main_colour = Brickcolour("16")
                 else:
-                    print(main_colour, "here")
                     self.main_colour = Brickcolour(rgba_to_hex(main_colour)[: 7])
             else:
                 self.main_colour = self.colours.popitem()[1][0]
