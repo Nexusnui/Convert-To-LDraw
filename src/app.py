@@ -133,10 +133,10 @@ class MainWindow(QMainWindow):
         file_select_area.addWidget(self.convert_button)
         self.convert_button.clicked.connect(self.convert_file)
 
-    # Part settings area:
+    # Part Settings Area:
         part_settings_area = QVBoxLayout()
         part_settings_area.setAlignment(Qt.AlignmentFlag.AlignTop)
-        part_settings_label = QLabel("Part Settings")
+        part_settings_label = QLabel("Parent Part Settings")
         part_settings_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
         part_settings_area.addWidget(part_settings_label)
 
@@ -209,10 +209,26 @@ class MainWindow(QMainWindow):
         self.loaded_file_status_label = QLabel("No file loaded")
         preview_area.addWidget(self.loaded_file_status_label)
 
+    # Subpart and Color Editor Area
+        subpart_area = QVBoxLayout()
+        subpart_area_label = QLabel("Subparts and Color")
+        subpart_area_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
+        subpart_area.addWidget(subpart_area_label)
+
+        # Todo: Choose different Layout?| Rename subpart_area_inputs
+        subpart_area_inputs = QVBoxLayout()
+        subpart_area_frame = QFrame()
+        subpart_area_frame.setFrameStyle(1)
+        subpart_area_frame.setLayout(subpart_area_inputs)
+        subpart_area.addWidget(subpart_area_frame)
+
+        # Todo: Add Subpart Panel after model is loaded
+
     # Add Elements to Main Layout
         top_layout.addLayout(part_settings_area)
         top_layout.addLayout(file_select_area)
         self.main_layout.addLayout(top_layout)
+        self.main_layout.addLayout(subpart_area)
         self.main_layout.addLayout(preview_area)
         widget = QWidget()
         widget.setLayout(self.main_layout)
