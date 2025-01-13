@@ -25,7 +25,7 @@ from brick_data.brickcolour import Brickcolour
 from brick_data.ldrawObject import LdrawObject
 from brick_data.brick_categories import brick_categories
 from brickcolourwidget import BrickcolourWidget
-from suppartPanel import SubpartPanel, ColourPanel
+from subpartPanel import SubpartPanel, ColourPanel
 
 basedir = os.path.dirname(__file__)
 
