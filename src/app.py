@@ -25,7 +25,7 @@ from brick_data.brickcolour import Brickcolour
 from brick_data.ldrawObject import LdrawObject
 from brick_data.brick_categories import brick_categories
 from brickcolourwidget import BrickcolourWidget
-from suppartPanel import SubpartPanel
+from suppartPanel import SubpartPanel, ColourPanel
 
 basedir = os.path.dirname(__file__)
 
@@ -266,7 +266,10 @@ class MainWindow(QMainWindow):
                 if self.file_loaded:
                     pass
                     # Todo: Remove SubpartPanel
-                self.subpart_panel = SubpartPanel(self.ldraw_object)
+                if len(self.ldraw_object.subparts) > 1:
+                    self.subpart_panel = SubpartPanel(self.ldraw_object)
+                else:
+                    self.subpart_panel = ColourPanel(self.ldraw_object)
                 self.subpart_area_layout.addWidget(self.subpart_panel)
 
                 x_length = mm_float_to_string(self.ldraw_object.size[0])

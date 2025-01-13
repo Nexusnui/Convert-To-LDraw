@@ -31,9 +31,13 @@ class SubpartPanel(QTabWidget):
 class ColourPanel(QWidget):
     def __init__(self, mainmodel: LdrawObject):
         super().__init__()
-        # Todo: Add SubpartView
+        mainlayout = QVBoxLayout()
+        self.setLayout(mainlayout)
+        subpart = list(mainmodel.subparts.items())[0][1]
+        mainlayout.addWidget(SubpartTab(subpart, single_part=True))
+
 class SubpartTab(QWidget):
-    def __init__(self, subpart: Subpart):
+    def __init__(self, subpart: Subpart, single_part=False):
         super().__init__()
         self.subpart = subpart
 
@@ -44,10 +48,11 @@ class SubpartTab(QWidget):
         main_settings = QFormLayout()
 
         #Name Input
-        self.name_line = QLineEdit()
-        self.name_line.setText(self.subpart.name)
-        main_settings.addRow("Name", self.name_line)
-        # Todo: Reflect Name Change
+        if not single_part:
+            self.name_line = QLineEdit()
+            self.name_line.setText(self.subpart.name)
+            main_settings.addRow("Name", self.name_line)
+            # Todo: Connect Name Change
 
         #Override / Set Colour
 
@@ -81,9 +86,13 @@ class SubpartTab(QWidget):
 
 if __name__ == "__main__":
     app = QApplication([])
-    testfile = "Path/To/TestFile"
+    testfile = "Path/To/Testfile"
     testmodel = LdrawObject(testfile)
-    subpartpanel = SubpartPanel(testmodel)
-    subpartpanel.show()
+
+    #subpartpanel = SubpartPanel(testmodel)
+    #subpartpanel.show()
+
+    colourpanel = ColourPanel(testmodel)
+    colourpanel.show()
 
     app.exec()
