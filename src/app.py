@@ -56,7 +56,7 @@ class MainWindow(QMainWindow):
         file_select_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
         file_select_area.addWidget(file_select_label)
 
-        file_select_inputs = QVBoxLayout()
+        file_select_inputs = QFormLayout()
         file_select_frame = QFrame()
         file_select_frame.setFrameStyle(1)
         file_select_frame.setLayout(file_select_inputs)
@@ -64,8 +64,7 @@ class MainWindow(QMainWindow):
 
         # Input File Selection
         input_label = QLabel("Input File")
-        input_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        file_select_inputs.addWidget(input_label)
+        file_select_inputs.addRow(input_label)
         input_layout = QHBoxLayout()
 
         self.input_file_line = QLineEdit()
@@ -77,45 +76,37 @@ class MainWindow(QMainWindow):
         input_layout.addWidget(self.load_input_button)
         self.load_input_button.clicked.connect(self.load_file)
 
-        file_select_inputs.addLayout(input_layout)
+        file_select_inputs.addRow(input_layout)
 
         # Enable Multicolour Check
-        multicolour_check_layout = QHBoxLayout()
-        multicolour_check_layout.addWidget(QLabel("Multicolour"))
         self.multicolour_check = QCheckBox()
-        multicolour_check_layout.addWidget(self.multicolour_check)
+        file_select_inputs.addRow("Multicolour", self.multicolour_check)
         self.multicolour_check.setChecked(True)
-        file_select_inputs.addLayout(multicolour_check_layout)
+
 
         # Enable Multi Objects Check
-        multi_object_check_layout = QHBoxLayout()
-        multi_object_check_layout.addWidget(QLabel("Multiple objects"))
         self.multi_object_check = QCheckBox()
-        multi_object_check_layout.addWidget(self.multi_object_check)
+        file_select_inputs.addRow("Multiple objects", self.multi_object_check)
         self.multi_object_check.setChecked(True)
-        file_select_inputs.addLayout(multi_object_check_layout)
+
 
         # Set Scale
-        scale_layout = QHBoxLayout()
-        scale_layout.addWidget(QLabel("Scale"))
         self.scale_input = QDoubleSpinBox()
         self.scale_input.setValue(1.0)
         self.scale_input.setMaximum(999.999)
         self.scale_input.setMinimum(0.001)
         self.scale_input.setDecimals(3)
-        scale_layout.addWidget(self.scale_input)
-        file_select_inputs.addLayout(scale_layout)
+        file_select_inputs.addRow("Scale", self.scale_input)
 
         # Reload Button
         self.reload_button = QPushButton("Reload Model")
         self.reload_button.setIcon(QIcon(os.path.join(basedir, "icons/reload-icon.svg")))
         self.reload_button.clicked.connect(lambda a: self.load_file(True))
-        file_select_inputs.addWidget(self.reload_button)
+        file_select_inputs.addRow(self.reload_button)
 
         # Output File Selection
         output_label = QLabel("Output File")
-        output_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        file_select_inputs.addWidget(output_label)
+        file_select_inputs.addRow(output_label)
         output_layout = QHBoxLayout()
 
         self.output_file_line = QLineEdit()
@@ -127,7 +118,7 @@ class MainWindow(QMainWindow):
         output_layout.addWidget(self.select_output_button)
         self.select_output_button.clicked.connect(self.select_output_file)
 
-        file_select_inputs.addLayout(output_layout)
+        file_select_inputs.addRow(output_layout)
 
         # Convert Button
         self.convert_button = QPushButton("Convert File")
