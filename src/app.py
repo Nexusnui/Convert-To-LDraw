@@ -371,7 +371,7 @@ class MainWindow(QMainWindow):
                 self.disable_settings(False)
                 return
         category = self.part_category_input.currentText()
-        if category not in brick_categories:
+        if category not in brick_categories and len(category) > 0:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Unofficial Category")
             dlg.setText(f'The category "{category}" is not one of official LDraw Categories.\n'
