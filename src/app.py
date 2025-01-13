@@ -25,6 +25,7 @@ from brick_data.brickcolour import Brickcolour
 from brick_data.ldrawObject import LdrawObject
 from brick_data.brick_categories import brick_categories
 from brickcolourwidget import BrickcolourWidget
+from suppartPanel import SubpartPanel
 
 basedir = os.path.dirname(__file__)
 
@@ -190,14 +191,13 @@ class MainWindow(QMainWindow):
         subpart_area_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
         subpart_area.addWidget(subpart_area_label)
 
-        # Todo: Choose different Layout?| Rename subpart_area_inputs
-        subpart_area_inputs = QVBoxLayout()
+        # Todo: Choose different Layout?
+        self.subpart_area_layout = QVBoxLayout()
         subpart_area_frame = QFrame()
         subpart_area_frame.setFrameStyle(1)
-        subpart_area_frame.setLayout(subpart_area_inputs)
+        subpart_area_frame.setLayout(self.subpart_area_layout)
         subpart_area.addWidget(subpart_area_frame)
 
-        # Todo: Add Subpart Panel after model is loaded
 
     # Add Elements to Main Layout
         top_layout.addLayout(part_settings_area)
@@ -255,12 +255,19 @@ class MainWindow(QMainWindow):
             else:
                 if not reload:
                     self.reset_part_settings()
+
                 self.ldraw_object = loaded_part
                 self.input_file_line.setText(filepath)
                 name = ".".join(filename.split(".")[:-1])
                 filedir = os.path.dirname(filepath)
                 self.partname_line.setText(name)
                 self.output_file_line.setText(f"{filedir}/{name}.dat")
+
+                if self.file_loaded:
+                    pass
+                    # Todo: Remove SubpartPanel
+                self.subpart_panel = SubpartPanel(self.ldraw_object)
+                self.subpart_area_layout.addWidget(self.subpart_panel)
 
                 x_length = mm_float_to_string(self.ldraw_object.size[0])
                 y_length = mm_float_to_string(self.ldraw_object.size[1])
@@ -346,6 +353,8 @@ class MainWindow(QMainWindow):
         self.scale_input.setDisabled(value)
         self.part_category_input.setDisabled(value)
         self.keywords_line.setReadOnly(value)
+        if self.file_loaded:
+            self.subpart_panel.setDisabled(value)
 
     def enable_load_settings(self):
         self.multicolour_check.setDisabled(False)
