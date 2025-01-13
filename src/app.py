@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
     QMessageBox,
     QDoubleSpinBox,
     QComboBox,
+    QFormLayout
 )
 
 from brick_data.brickcolour import Brickcolour
@@ -140,62 +141,46 @@ class MainWindow(QMainWindow):
         part_settings_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
         part_settings_area.addWidget(part_settings_label)
 
-        part_settings_inputs = QVBoxLayout()
+        part_settings_inputs = QFormLayout()
         part_settings_frame = QFrame()
         part_settings_frame.setFrameStyle(1)
         part_settings_frame.setLayout(part_settings_inputs)
         part_settings_area.addWidget(part_settings_frame)
 
         # Partname Input
-        partname_layout = QHBoxLayout()
-        partname_layout.addWidget(QLabel("Descriptive Part Name"))
         self.partname_line = QLineEdit()
         self.partname_line.setPlaceholderText("UntitledModel")
-        partname_layout.addWidget(self.partname_line)
-        part_settings_inputs.addLayout(partname_layout)
+        part_settings_inputs.addRow("Descriptive Part Name", self.partname_line)
 
         # Bricklink Number Input
-        bl_number_layout = QHBoxLayout()
-        bl_number_layout.addWidget(QLabel("BL Number(Optional)"))
         self.bl_number_line = QLineEdit()
         self.bl_number_line.setPlaceholderText("Bricklinknumber")
-        bl_number_layout.addWidget(self.bl_number_line)
-        part_settings_inputs.addLayout(bl_number_layout)
+        part_settings_inputs.addRow("BL Number(Optional)", self.bl_number_line)
 
         # Author Input
-        author_layout = QHBoxLayout()
-        author_layout.addWidget(QLabel("Author (Optional)"))
         self.author_line = QLineEdit()
         self.author_line.setPlaceholderText("Your Name/Alias")
-        author_layout.addWidget(self.author_line)
-        part_settings_inputs.addLayout(author_layout)
+        part_settings_inputs.addRow("Your Name/Alias", self.author_line)
 
         # Category Selection
-        part_category_layout = QHBoxLayout()
-        part_category_layout.addWidget(QLabel("Part Category (Recommended)"))
         self.part_category_input = QComboBox()
         self.part_category_input.addItems(brick_categories)
         self.part_category_input.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.part_category_input.setEditable(True)
-        part_category_layout.addWidget(self.part_category_input)
-        part_settings_inputs.addLayout(part_category_layout)
+        part_settings_inputs.addRow("Part Category (Recommended)", self.part_category_input)
 
         # Keywords Input
-        keywords_layout = QHBoxLayout()
-        keywords_layout.addWidget(QLabel("Keywords (Optional)"))
         self.keywords_line = QLineEdit()
         self.keywords_line.setPlaceholderText("comma seperated: Wheel, Tire, Car")
-        keywords_layout.addWidget(self.keywords_line)
-        part_settings_inputs.addLayout(keywords_layout)
+        part_settings_inputs.addRow("Keywords (Optional)", self.keywords_line)
 
         # Color Selection (Entire Part)
         self.custom_color_input = BrickcolourWidget("Custom Color")
-        self.custom_color_input.layout.setAlignment(Qt.AlignmentFlag.AlignTop)
-        part_settings_inputs.addWidget(self.custom_color_input)
+        part_settings_inputs.addRow(self.custom_color_input)
 
         self.apply_color_button = QPushButton("Apply Colour")
         self.apply_color_button.clicked.connect(self.apply_custom_colour)
-        part_settings_inputs.addWidget(self.apply_color_button)
+        part_settings_inputs.addRow(self.apply_color_button)
 
     # Preview Area
         preview_area = QHBoxLayout()
@@ -210,7 +195,7 @@ class MainWindow(QMainWindow):
 
     # Subpart and Color Editor Area
         subpart_area = QVBoxLayout()
-        subpart_area_label = QLabel("Subparts and Color")
+        subpart_area_label = QLabel("Subparts and Colour")
         subpart_area_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
         subpart_area.addWidget(subpart_area_label)
 
