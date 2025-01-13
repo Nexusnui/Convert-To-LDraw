@@ -264,8 +264,7 @@ class MainWindow(QMainWindow):
                 self.output_file_line.setText(f"{filedir}/{name}.dat")
 
                 if self.file_loaded:
-                    pass
-                    # Todo: Remove SubpartPanel
+                    self.subpart_area_layout.removeWidget(self.subpart_panel)
                 if len(self.ldraw_object.subparts) > 1:
                     self.subpart_panel = SubpartPanel(self.ldraw_object)
                 else:
