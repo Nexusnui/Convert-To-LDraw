@@ -56,7 +56,7 @@ class SubpartTab(QWidget):
             self.name_line = QLineEdit()
             self.name_line.setText(self.subpart.name)
             main_settings.addRow("Name", self.name_line)
-            self.name_line.textChanged.connect(self.name_changed.emit)
+            self.name_line.textChanged.connect(self.apply_name_change)
             # Todo: Connect Name Change
 
         #Override / Set Colour
@@ -80,6 +80,10 @@ class SubpartTab(QWidget):
 
     # Add Elements to Main Layout
         mainlayout.addLayout(main_settings)
+
+    def apply_name_change(self, new_name: str):
+        self.subpart.name = new_name
+        self.name_changed.emit(new_name)
 
     def apply_main_colour(self, colour: Brickcolour = None):
         if self.subpart.multicolour:
