@@ -147,7 +147,7 @@ class MainWindow(QMainWindow):
         # Author Input
         self.author_line = QLineEdit()
         self.author_line.setPlaceholderText("Your Name/Alias")
-        part_settings_inputs.addRow("Your Name/Alias", self.author_line)
+        part_settings_inputs.addRow("Author (Optional)", self.author_line)
 
         # Category Selection
         self.part_category_input = QComboBox()
