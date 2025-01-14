@@ -121,11 +121,6 @@ class MainWindow(QMainWindow):
 
         file_select_inputs.addRow(output_layout)
 
-        # Convert Button
-        self.convert_button = QPushButton("Convert File")
-        file_select_area.addWidget(self.convert_button)
-        self.convert_button.clicked.connect(self.convert_file)
-
     # Part Settings Area:
         part_settings_area = QVBoxLayout()
         part_settings_area.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -165,6 +160,11 @@ class MainWindow(QMainWindow):
         self.keywords_line = QLineEdit()
         self.keywords_line.setPlaceholderText("comma seperated: Wheel, Tire, Car")
         part_settings_inputs.addRow("Keywords (Optional)", self.keywords_line)
+
+        # Convert Button
+        self.convert_button = QPushButton("Convert File")
+        part_settings_area.addWidget(self.convert_button)
+        self.convert_button.clicked.connect(self.convert_file)
 
     # Preview Area
         preview_area = QHBoxLayout()
