@@ -166,14 +166,6 @@ class MainWindow(QMainWindow):
         self.keywords_line.setPlaceholderText("comma seperated: Wheel, Tire, Car")
         part_settings_inputs.addRow("Keywords (Optional)", self.keywords_line)
 
-        # Color Selection (Entire Part)
-        self.custom_color_input = BrickcolourWidget("Custom Color")
-        part_settings_inputs.addRow(self.custom_color_input)
-
-        self.apply_color_button = QPushButton("Apply Colour")
-        self.apply_color_button.clicked.connect(self.apply_custom_colour)
-        part_settings_inputs.addRow(self.apply_color_button)
-
     # Preview Area
         preview_area = QHBoxLayout()
 
@@ -302,24 +294,6 @@ class MainWindow(QMainWindow):
         if filepath:
             self.output_file_line.setText(filepath)
 
-    def apply_custom_colour(self):
-        self.disable_settings(True)
-        colour = self.custom_color_input.colour
-        colour_name = colour.colour_code
-        if colour.colour_type == "LDraw":
-            colour_name = colour.ldrawname
-        dlg = QMessageBox(self)
-        dlg.setWindowTitle("Override Colours?")
-        dlg.setText(f'Override all colours with "{colour_name}"')
-        dlg.setIcon(QMessageBox.Icon.Warning)
-        dlg.setStandardButtons(
-            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
-        )
-        answer = dlg.exec()
-        if answer == QMessageBox.StandardButton.Yes:
-            self.ldraw_object.set_main_colour(colour)
-        self.disable_settings(False)
-        # Todo: Check for multicolor/multiobject
 
 
     def show_preview(self):
@@ -333,22 +307,18 @@ class MainWindow(QMainWindow):
         self.partname_line.clear()
         self.bl_number_line.clear()
         self.author_line.clear()
-        self.apply_color_button.setChecked(False)
         self.part_category_input.clearEditText()
         self.keywords_line.clear()
-        self.custom_color_input.changecolour(Brickcolour("16"), False)
 
     def disable_settings(self, value: bool):
         self.load_input_button.setDisabled(value)
         self.output_file_line.setReadOnly(value)
         self.select_output_button.setDisabled(value)
-        self.apply_color_button.setDisabled(value)
         self.preview_button.setDisabled(value)
         self.convert_button.setDisabled(value)
         self.partname_line.setReadOnly(value)
         self.bl_number_line.setReadOnly(value)
         self.author_line.setReadOnly(value)
-        self.custom_color_input.setDisabled(value)
         self.reload_button.setDisabled(value)
         self.multicolour_check.setDisabled(value)
         self.multi_object_check.setDisabled(value)
@@ -433,14 +403,6 @@ class MainWindow(QMainWindow):
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Invalid output directory")
             dlg.setText(f"'{os.path.dirname(filepath)}' is not a valid output directory")
-            dlg.setIcon(QMessageBox.Icon.Warning)
-            dlg.exec()
-            self.disable_settings(False)
-            return
-        if self.custom_color_input.colour is None:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Invalid Colour")
-            dlg.setText("The custom colour is invalid")
             dlg.setIcon(QMessageBox.Icon.Warning)
             dlg.exec()
             self.disable_settings(False)
