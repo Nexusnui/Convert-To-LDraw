@@ -1,3 +1,4 @@
+from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import (
     QTabWidget,
     QWidget,
@@ -6,6 +7,7 @@ from PyQt6.QtWidgets import (
     QFormLayout,
     QLineEdit,
     QPushButton,
+    QMessageBox
 )
 
 from brick_data.ldrawObject import LdrawObject, Subpart
@@ -21,7 +23,8 @@ class SubpartPanel(QTabWidget):
 
     def __add_tab(self, subpart: Subpart):
         tab = SubpartTab(subpart)
-        self.addTab(tab, subpart.name)
+        index = self.addTab(tab, subpart.name)
+        tab.name_changed.connect(lambda name: self.setTabText(index, name))
 
     def setDisabled(self, value: bool):
         self.currentWidget().setDisabled(value)
@@ -37,6 +40,7 @@ class ColourPanel(QWidget):
         mainlayout.addWidget(SubpartTab(subpart, single_part=True))
 
 class SubpartTab(QWidget):
+    name_changed = pyqtSignal(str)
     def __init__(self, subpart: Subpart, single_part=False):
         super().__init__()
         self.subpart = subpart
@@ -52,6 +56,7 @@ class SubpartTab(QWidget):
             self.name_line = QLineEdit()
             self.name_line.setText(self.subpart.name)
             main_settings.addRow("Name", self.name_line)
+            self.name_line.textChanged.connect(self.name_changed.emit)
             # Todo: Connect Name Change
 
         #Override / Set Colour
@@ -65,23 +70,44 @@ class SubpartTab(QWidget):
         self.main_colour_input = BrickcolourWidget(main_colour_text, brick_colour)
         main_settings.addRow(self.main_colour_input)
         if self.subpart.multicolour:
-            self.apply_color_button = QPushButton("Apply Colour")
-            self.apply_color_button.clicked.connect(self.apply_main_colour)
-            main_settings.addRow(self.apply_color_button)
+            self.apply_colour_button = QPushButton("Apply Colour")
+            self.apply_colour_button.clicked.connect(self.apply_main_colour)
+            main_settings.addRow(self.apply_colour_button)
         else:
-            pass
-            # Todo: Connect Colour Signal to apply colour
+            self.main_colour_input.colour_changed.connect(self.apply_main_colour)
 
         # Todo: Add Multicolour Settings
 
     # Add Elements to Main Layout
         mainlayout.addLayout(main_settings)
 
-    def apply_main_colour(self):
-        print("Apply Colour")
-        # Todo: Apply Colour
-        # Todo: Check if valid Colour
-        # Todo: Warning if multicolour
+    def apply_main_colour(self, colour: Brickcolour = None):
+        if self.subpart.multicolour:
+            self.setDisabled(True)
+            colour = self.main_colour_input.colour
+            colour_name = colour.colour_code
+            if colour.colour_type == "LDraw":
+                colour_name = colour.ldrawname
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Override Colours?")
+            dlg.setText(f'Override all colours with "{colour_name}"')
+            dlg.setIcon(QMessageBox.Icon.Warning)
+            dlg.setStandardButtons(
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+            answer = dlg.exec()
+            if answer == QMessageBox.StandardButton.Yes:
+                self.subpart.multicolour = False
+                # Todo: Remove Multicolour Inputs
+            else:
+                self.setDisabled(False)
+                return
+        elif colour is None:
+            print("Invalid Colour")
+            return
+        self.subpart.apply_color(colour)
+        self.setDisabled(False)
+
 
 
 if __name__ == "__main__":
