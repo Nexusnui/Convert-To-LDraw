@@ -257,6 +257,7 @@ class MainWindow(QMainWindow):
 
                 if self.file_loaded:
                     self.subpart_area_layout.removeWidget(self.subpart_panel)
+                    self.subpart_panel.deleteLater()
                 if len(self.ldraw_object.subparts) > 1:
                     self.subpart_panel = SubpartPanel(self.ldraw_object)
                 else:
