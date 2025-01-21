@@ -5,7 +5,7 @@ basedir = os.path.dirname(__file__)
 
 def is_brickcolour(colour_code: str):
     if len(colour_code) < 1:
-        return False, "No Colour Code", "Apply Checkbox was toggled, but no colour code provided"
+        return False, "No Colour Code", "Empty colour code was provided"
     elif not colour_code.startswith("0x2") and not colour_code.startswith("#"):
         if not colour_code.isdigit():
             return (False, "Invalid Colour Code",
@@ -24,7 +24,7 @@ def is_brickcolour(colour_code: str):
             if colour_code[i] not in ["A", "B", "C", "D", "E", "F"] and not colour_code[i].isdigit():
                 return (False, "Invalid Colour Code",
                         f"The provided colour '{colour_code}' seems to be a Direct/HTML colour, "
-                        f"but contains a invalid charcter at position: {i - 2} - '{colour_code[i]}'.\n"
+                        f"but contains a invalid character at position: {i - 2} - '{colour_code[i]}'.\n"
                         f"Valid characters are 0-9 and A-F(uppercase)")
     elif colour_code.startswith("#"):
         colour_code = colour_code.upper()
@@ -57,6 +57,7 @@ class Brickcolour:
             self.rgb_values = f"#{self.colour_code[3:]}"
             self.rgb_edge = get_contrast_colour(self.rgb_values)
             self.alpha = "255"
+            self.ldrawname = self.colour_code
         elif colour_code.startswith("#"):
             colour_code = colour_code.upper()
             self.colour_type = "Direct"
@@ -64,6 +65,7 @@ class Brickcolour:
             self.colour_code = f"0x2{colour_code[1:]}"
             self.rgb_edge = get_contrast_colour(self.rgb_values)
             self.alpha = "255"
+            self.ldrawname = self.colour_code
         else:
             self.colour_type = "LDraw"
             self.ldrawname, _, \
@@ -74,7 +76,7 @@ class Brickcolour:
             self.material, \
             self.legoids, \
             self.legoname, \
-            self.category = get_colour_info_by_id(self.colour_code)
+            self.category = get_colour_info_by_colour_code(self.colour_code)
 
     def __getitem__(self, key):
         if key == 0:
@@ -127,14 +129,14 @@ class Brickcolour:
         return (r, g, b, int(self.alpha))
 
 
-def get_colour_info_by_id(id: str):
-    found_colour = ["Undefined", id, "#FFFFFF", "000000", "255", "", "", "", "", ""]
+def get_colour_info_by_colour_code(colour_code: str):
+    found_colour = ["Undefined", colour_code, "#FFFFFF", "000000", "255", "", "", "", "", ""]
     with open(os.path.join(basedir, "colour_definitions.csv"), "r", encoding="utf-8") as source:
         # skip row with column names
         source.readline()
         for line in source:
             values = line.split(";")
-            if values[1] == id:
+            if values[1] == colour_code:
                 for i in range(len(values)):
                     # replace empty values with None
                     if len(values[i]) == 0:
