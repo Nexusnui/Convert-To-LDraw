@@ -156,6 +156,10 @@ class Brickcolourlistmodel(QAbstractTableModel):
             return Qt.AlignmentFlag.AlignVCenter + Qt.AlignmentFlag.AlignRight
         if role == Qt.ItemDataRole.UserRole:
             return self._data[index.row()]
+        if role == Qt.ItemDataRole.ToolTipRole:
+            value = self._data[index.row()][index.column()]
+            if value is not None and len(value) > 0:
+                return f'"{value}"'
 
     def headerData(self, section, orientation, role):
         # section is the index of the column/row.
