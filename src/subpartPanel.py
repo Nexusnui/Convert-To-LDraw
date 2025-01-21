@@ -147,16 +147,20 @@ class Subpartcolourlistmodel(QAbstractTableModel):
         self._data = subpart
 
     def data(self, index, role):
+        brick_colour = list(self._data.colours.values())[index.row()][0]
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
-            brick_colour = list(self._data.colours.values())[index.row()][0]
             if index.column() == 0:
                 return brick_colour.ldrawname
             elif index.column() == 1:
                 return brick_colour.colour_code
             else:
                 return "Select"
+        if role == Qt.ItemDataRole.ToolTipRole:
+            if index.column() == 0:
+                return f'"{brick_colour.ldrawname}"'
+            elif index.column() == 1:
+                return f'"{brick_colour.colour_code}"'
         if role == Qt.ItemDataRole.DecorationRole and index.column() == 0:
-            brick_colour = list(self._data.colours.values())[index.row()][0]
             return QColor(brick_colour.rgb_values)
         if role == Qt.ItemDataRole.DecorationRole and index.column() == 2:
             html_color = "#FFFFFF"
