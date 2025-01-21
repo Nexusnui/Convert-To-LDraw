@@ -86,14 +86,16 @@ class BrickcolourDialog(QColorDialog):
         html_widget.setLayout(self.layout())
 
         # Widget for picking LDraw colour
-        ldraw_wiget = QTableView()
-        ldraw_wiget.setCornerButtonEnabled(False)
+        ldraw_widget = QTableView()
+        ldraw_widget.setSelectionMode(QTableView.SelectionMode.SingleSelection)
+        ldraw_widget.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        ldraw_widget.setCornerButtonEnabled(False)
 
         self.bickcolourlist = Brickcolourlistmodel(get_all_brickcolours())
-        ldraw_wiget.setModel(self.bickcolourlist)
-        ldraw_wiget.clicked.connect(self.on_select_brickcolour)
+        ldraw_widget.setModel(self.bickcolourlist)
+        ldraw_widget.clicked.connect(self.on_select_brickcolour)
 
-        tab_widget.addTab(ldraw_wiget, "LDraw Color")
+        tab_widget.addTab(ldraw_widget, "LDraw Color")
 
         tab_widget.addTab(html_widget, "Direct Colour")
         main_layout.addWidget(tab_widget)
@@ -143,7 +145,7 @@ class Brickcolourlistmodel(QAbstractTableModel):
     def data(self, index, role):
         if role == Qt.ItemDataRole.DisplayRole:
             return self._data[index.row()][index.column()]
-        if role == Qt.ItemDataRole.DecorationRole and index.column() in [0,2]:
+        if role == Qt.ItemDataRole.DecorationRole and index.column() in [0, 2]:
             html_color = self._data[index.row()].rgb_values
             return QColor(html_color)
         if role == Qt.ItemDataRole.DecorationRole and index.column() == 3:
