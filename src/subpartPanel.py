@@ -1,4 +1,5 @@
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import pyqtSignal, QAbstractTableModel, Qt
+from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
     QTabWidget,
     QWidget,
@@ -7,12 +8,13 @@ from PyQt6.QtWidgets import (
     QFormLayout,
     QLineEdit,
     QPushButton,
-    QMessageBox
+    QMessageBox,
+    QTableView
 )
 
 from brick_data.ldrawObject import LdrawObject, Subpart
-from brick_data.brickcolour import Brickcolour
-from brickcolourwidget import BrickcolourWidget
+from brick_data.brickcolour import Brickcolour, is_brickcolour
+from brickcolourwidget import BrickcolourWidget, BrickcolourDialog
 
 class SubpartPanel(QTabWidget):
     def __init__(self, mainmodel: LdrawObject):
@@ -45,8 +47,8 @@ class SubpartTab(QWidget):
         super().__init__()
         self.subpart = subpart
 
-        mainlayout = QVBoxLayout()
-        self.setLayout(mainlayout)
+        self.mainlayout = QVBoxLayout()
+        self.setLayout(self.mainlayout)
 
     # Main Settings Area
         main_settings = QFormLayout()
@@ -57,7 +59,6 @@ class SubpartTab(QWidget):
             self.name_line.setText(self.subpart.name)
             main_settings.addRow("Name", self.name_line)
             self.name_line.textChanged.connect(self.apply_name_change)
-            # Todo: Connect Name Change
 
         #Override / Set Colour
 
@@ -73,13 +74,23 @@ class SubpartTab(QWidget):
             self.apply_colour_button = QPushButton("Apply Colour")
             self.apply_colour_button.clicked.connect(self.apply_main_colour)
             main_settings.addRow(self.apply_colour_button)
+            self.multicolour_widget = QTableView()
+            self.multicolour_widget.setCornerButtonEnabled(False)
+            self.subpartcolourlist = Subpartcolourlistmodel(self.subpart)
+            self.multicolour_widget.setModel(self.subpartcolourlist)
+            self.multicolour_widget.clicked.connect(self._on_select_brickcolour)
+            self.multicolour_widget.setSelectionMode(QTableView.SelectionMode.SingleSelection)
+            self.multicolour_widget.setSelectionBehavior(QTableView.SelectionBehavior.SelectItems)
         else:
             self.main_colour_input.colour_changed.connect(self.apply_main_colour)
 
-        # Todo: Add Multicolour Settings
 
     # Add Elements to Main Layout
-        mainlayout.addLayout(main_settings)
+        self.mainlayout.addLayout(main_settings)
+        if self.subpart.multicolour:
+            #self.mainlayout.addWidget(self.colour_scroll)
+            self.mainlayout.addWidget(self.multicolour_widget)
+
 
     def apply_name_change(self, new_name: str):
         self.subpart.name = new_name
@@ -94,7 +105,8 @@ class SubpartTab(QWidget):
                 colour_name = colour.ldrawname
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Override Colours?")
-            dlg.setText(f'Override all colours with "{colour_name}"')
+            dlg.setText(f'Override all colours with "{colour_name}"\n'
+                        f'(Only reversible by reloading the file)')
             dlg.setIcon(QMessageBox.Icon.Warning)
             dlg.setStandardButtons(
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
@@ -112,6 +124,73 @@ class SubpartTab(QWidget):
         self.subpart.apply_color(colour)
         self.setDisabled(False)
 
+    def _on_select_brickcolour(self, index):
+        if index.column() in [0, 2]:
+            self.multicolour_widget.clearSelection()
+        if index.column() == 2:
+            colour_key = self.subpartcolourlist.data(index, Qt.ItemDataRole.UserRole)
+            initial_color = self.subpart.colours[colour_key][0]
+            color_picker = BrickcolourDialog(initial_color)
+            color_picker.accepted.connect(lambda: self.changecolour(color_picker.brickcolour, colour_key))
+            color_picker.exec()
+    def changecolour(self, colour: Brickcolour, key):
+        self.subpart.apply_color(colour, key)
+
+class Subpartcolourlistmodel(QAbstractTableModel):
+    def __init__(self, subpart: Subpart):
+        super().__init__()
+        self._data = subpart
+
+    def data(self, index, role):
+        if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
+            brick_colour = list(self._data.colours.values())[index.row()][0]
+            if index.column() == 0:
+                return brick_colour.ldrawname
+            elif index.column() == 1:
+                return brick_colour.colour_code
+            else:
+                return "Select"
+        if role == Qt.ItemDataRole.DecorationRole and index.column() == 0:
+            brick_colour = list(self._data.colours.values())[index.row()][0]
+            return QColor(brick_colour.rgb_values)
+        if role == Qt.ItemDataRole.DecorationRole and index.column() == 2:
+            html_color = "#FFFFFF"
+            # Todo: Correct Select Button Colour/Style
+            return QColor(html_color)
+        if role == Qt.ItemDataRole.TextAlignmentRole and index.column() == 1:
+            return Qt.AlignmentFlag.AlignVCenter + Qt.AlignmentFlag.AlignRight
+        if role == Qt.ItemDataRole.UserRole:
+            return list(self._data.colours.items())[index.row()][0]
+
+    def headerData(self, section, orientation, role):
+        # section is the index of the column/row.
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return ["LDraw Name", "Colour Code", ""][section]
+
+    def rowCount(self, index):
+        return len(self._data.colours)
+
+    def columnCount(self, index):
+        return 3
+
+    def setData(self, index, value, role):
+        if role == Qt.ItemDataRole.EditRole:
+            print(value)
+            if is_brickcolour(value):
+                colour_key = self.data(index, Qt.ItemDataRole.UserRole)
+                new_colour = Brickcolour(value)
+                self._data.apply_color(new_colour, colour_key)
+                # Todo: Warning for undefiened colour codes
+            return True
+
+    def flags(self, index):
+        if index.column() == 0:
+            return Qt.ItemFlag.ItemIsEnabled
+        elif index.column() == 1:
+            return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEditable
+        elif index.column() == 2:
+            return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
 
 if __name__ == "__main__":
