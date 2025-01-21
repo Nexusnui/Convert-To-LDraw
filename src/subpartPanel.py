@@ -51,13 +51,13 @@ class SubpartTab(QWidget):
         self.setLayout(self.mainlayout)
 
     # Main Settings Area
-        main_settings = QFormLayout()
+        self.main_settings = QFormLayout()
 
         #Name Input
         if not single_part:
             self.name_line = QLineEdit()
             self.name_line.setText(self.subpart.name)
-            main_settings.addRow("Name", self.name_line)
+            self.main_settings.addRow("Name", self.name_line)
             self.name_line.textChanged.connect(self.apply_name_change)
 
         #Override / Set Colour
@@ -69,11 +69,11 @@ class SubpartTab(QWidget):
             main_colour_text = "Subpart Colour"
             brick_colour = self.subpart.main_colour
         self.main_colour_input = BrickcolourWidget(main_colour_text, brick_colour)
-        main_settings.addRow(self.main_colour_input)
+        self.main_settings.addRow(self.main_colour_input)
         if self.subpart.multicolour:
             self.apply_colour_button = QPushButton("Apply Colour")
             self.apply_colour_button.clicked.connect(self.apply_main_colour)
-            main_settings.addRow(self.apply_colour_button)
+            self.main_settings.addRow(self.apply_colour_button)
             self.multicolour_widget = QTableView()
             self.multicolour_widget.setCornerButtonEnabled(False)
             self.subpartcolourlist = Subpartcolourlistmodel(self.subpart)
@@ -86,7 +86,7 @@ class SubpartTab(QWidget):
 
 
     # Add Elements to Main Layout
-        self.mainlayout.addLayout(main_settings)
+        self.mainlayout.addLayout(self.main_settings)
         if self.subpart.multicolour:
             #self.mainlayout.addWidget(self.colour_scroll)
             self.mainlayout.addWidget(self.multicolour_widget)
@@ -114,7 +114,12 @@ class SubpartTab(QWidget):
             answer = dlg.exec()
             if answer == QMessageBox.StandardButton.Yes:
                 self.subpart.multicolour = False
-                # Todo: Remove Multicolour Inputs
+                self.mainlayout.removeWidget(self.multicolour_widget)
+                self.multicolour_widget.deleteLater()
+                self.main_colour_input.colour_changed.connect(self.apply_main_colour)
+                self.main_settings.removeWidget(self.apply_colour_button)
+                self.apply_colour_button.deleteLater()
+                self.main_colour_input.label.setText("Subpart Colour")
             else:
                 self.setDisabled(False)
                 return

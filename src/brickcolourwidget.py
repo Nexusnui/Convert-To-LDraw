@@ -26,7 +26,8 @@ class BrickcolourWidget(QWidget):
         self.select_button = QPushButton("Select")
         self.select_button.clicked.connect(self.open_color_picker)
 
-        self.layout.addWidget(QLabel(labeltext))
+        self.label = QLabel(labeltext)
+        self.layout.addWidget(self.label)
         self.layout.addWidget(self.preview)
         self.layout.addWidget(self.colourinput)
         self.layout.addWidget(self.select_button)
