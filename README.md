@@ -12,14 +12,19 @@ After loading the source file the output file and part name are set to the same 
 If defined and found units will be converted to millimeters. 
 For best compatibility the units of the model should be in millimeters.
 
-The default colour("16") will be used if not specified. 
+The default colour("16") will be used if the model contains no colour data, otherwise direct colors are used. 
 You can check the official LDraw Colour Definition Reference for the available colour codes.
-They can also be selected through the menu opened with the select button next to the custom colour field.
-Only change the colour if you want to create a multicolour part or if you want to use a html colour("0x2hexcolour"), that is not available as a LDraw colour.
+They can also be selected through the menu opened with the select button next to colour fields.
+The main_colour("16") is the colour that can be changed by other editors like Bricklink Studio.
+It is advised to use LDraw colours and not direct/html colours unless it is unavailable.
 You can also select a html colour through the menu.
 
-You can create multicolour parts by combining multiple dat files in one dat file.
-You can use text a editor or another tool like Bricklink Partdesigner to combine mutiple dat files.
+You can create multicolour parts by loading either a coloured/textured or multipart model.
+Some notes about compatibility of multicolour/-part 3D file formats:
+- multipart 3mf files are supported, while multicolour objects are not
+- textures are converted to surface colours
+- not all file formats and the features are fully tested
+If a model has multiple objects, they are saved in a "s" folder, if you only want one file uncheck "Multiple Objects".
 
 This version has no commandline interface, that was available in the previous versions.
 

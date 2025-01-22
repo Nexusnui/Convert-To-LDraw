@@ -85,7 +85,7 @@ class MainWindow(QMainWindow):
 
         # Enable Multi Objects Check
         self.multi_object_check = QCheckBox()
-        file_select_inputs.addRow("Multiple objects", self.multi_object_check)
+        file_select_inputs.addRow("Multiple Objects", self.multi_object_check)
         self.multi_object_check.setChecked(True)
 
 
