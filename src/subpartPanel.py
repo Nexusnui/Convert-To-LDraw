@@ -75,6 +75,7 @@ class SubpartTab(QWidget):
             self.apply_colour_button.clicked.connect(self.apply_main_colour)
             self.main_settings.addRow(self.apply_colour_button)
             self.multicolour_widget = QTableView()
+            # Todo: Set Correct Size
             self.multicolour_widget.setCornerButtonEnabled(False)
             self.subpartcolourlist = Subpartcolourlistmodel(self.subpart)
             self.multicolour_widget.setModel(self.subpartcolourlist)
@@ -147,8 +148,8 @@ class Subpartcolourlistmodel(QAbstractTableModel):
         self._data = subpart
 
     def data(self, index, role):
-        brick_colour = list(self._data.colours.values())[index.row()][0]
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
+            brick_colour = list(self._data.colours.values())[index.row()][0]
             if index.column() == 0:
                 return brick_colour.ldrawname
             elif index.column() == 1:
@@ -156,11 +157,13 @@ class Subpartcolourlistmodel(QAbstractTableModel):
             else:
                 return "Select"
         if role == Qt.ItemDataRole.ToolTipRole:
+            brick_colour = list(self._data.colours.values())[index.row()][0]
             if index.column() == 0:
                 return f'"{brick_colour.ldrawname}"'
             elif index.column() == 1:
                 return f'"{brick_colour.colour_code}"'
         if role == Qt.ItemDataRole.DecorationRole and index.column() == 0:
+            brick_colour = list(self._data.colours.values())[index.row()][0]
             return QColor(brick_colour.rgb_values)
         if role == Qt.ItemDataRole.DecorationRole and index.column() == 2:
             html_color = "#FFFFFF"
