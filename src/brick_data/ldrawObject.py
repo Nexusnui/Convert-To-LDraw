@@ -93,11 +93,11 @@ class LdrawObject:
                 if "geometry" in scene_graph.node_data[node]:
                     key = scene_graph.node_data[node]["geometry"]
             if key is not None:
-                is_ldraw_main_colour = False
                 geometry = scene.geometry[key]
                 main_colour = None
                 if isinstance(geometry.visual, trimesh.visual.texture.TextureVisuals):
-                    main_colour = geometry.visual.material.main_color
+                    hexcolour = rgba_to_hex(geometry.visual.material.main_color)[:7]
+                    main_colour = Brickcolour(hexcolour)
                     geometry.visual = geometry.visual.to_color()
                 if multicolour:
                     try:
@@ -219,7 +219,7 @@ class Subpart:
                 if main_colour is None:
                     self.main_colour = Brickcolour("16")
                 else:
-                    self.main_colour = Brickcolour(rgba_to_hex(main_colour)[: 7])
+                    self.main_colour = main_colour
             else:
                 self.main_colour = self.colours.popitem()[1][0]
             if is_invisible:
