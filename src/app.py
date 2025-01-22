@@ -183,7 +183,6 @@ class MainWindow(QMainWindow):
         subpart_area_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
         subpart_area.addWidget(subpart_area_label)
 
-        # Todo: Choose different Layout?
         self.subpart_area_layout = QVBoxLayout()
         subpart_area_frame = QFrame()
         subpart_area_frame.setFrameStyle(1)
