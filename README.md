@@ -1,7 +1,7 @@
 ![Image of Custom Part](ConvertToLDraw_Banner.png)
 
 This is a graphical Python program for converting various 3D file formats(stl,3mf,obj,stp, etc.)
-to the LDraw file format [(.dat)](http://www.ldraw.org/article/218). 
+to the LDraw file format ([.dat](http://www.ldraw.org/article/218)) 
 The converted files can be used with LDview, Bricklink Studio/Partdesigner and other compatible software.
 
 The Graphical Userinterface:
@@ -13,7 +13,7 @@ If defined and found units will be converted to millimeters.
 For best compatibility the units of the model should be in millimeters.
 
 The default colour("16") will be used if the model contains no colour data, otherwise direct colors are used. 
-You can check the official LDraw Colour Definition Reference for the available colour codes.
+In the official [LDraw Colour Definition Reference](https://www.ldraw.org/article/547.html) you find all the available colour codes or check out the [SetDB Color Guide](https://www.merlinsbricks.com/colors/).
 They can also be selected through the menu opened with the select button next to colour fields.
 The main_colour("16") is the colour that can be changed by other editors like Bricklink Studio.
 It is advised to use LDraw colours and not direct/html colours unless it is unavailable.
@@ -24,6 +24,7 @@ Some notes about compatibility of multicolour/-part 3D file formats:
 - multipart 3mf files are supported, while multicolour objects are not
 - textures are converted to surface colours
 - not all file formats and the features are fully tested
+
 If a model has multiple objects, they are saved in a "s" folder, if you only want one file uncheck "Multiple Objects".
 
 This version has no commandline interface, that was available in the previous versions.
