@@ -4,7 +4,7 @@ import os
 from brick_data.brickcolour import Brickcolour
 import numpy as np
 from collections import OrderedDict
-# Todo: Change np print settings
+# Todo: Change np print settings?
 
 
 class LdrawObject:
@@ -93,6 +93,7 @@ class LdrawObject:
                 if "geometry" in scene_graph.node_data[node]:
                     key = scene_graph.node_data[node]["geometry"]
             if key is not None:
+                is_ldraw_main_colour = False
                 geometry = scene.geometry[key]
                 main_colour = None
                 if isinstance(geometry.visual, trimesh.visual.texture.TextureVisuals):
@@ -104,10 +105,10 @@ class LdrawObject:
                     except Exception:
                         # Invalid Color Data -> can occur when loading step files
                         geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8)*255
-                        # Todo: Change to Main_Colour ('16')
+                        main_colour = Brickcolour("16")
                 else:
                     geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8)*255
-                    # Todo: Change to Main_Colour ('16')
+                    main_colour = Brickcolour("16")
                 transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
                 self.subparts[key] = Subpart(geometry, transformation_matrix, key, main_colour)
         self.scene = scene
@@ -172,12 +173,12 @@ class LdrawObject:
                     # Todo: Improve precision of floats to string conversion
                     np.float64(1)
                     code = part.main_colour.colour_code
-                    file.write(f"1 {code} {tm_x} {tm_y} {tm_z}"
+                    file.write(f"0 //~{part.name}\n"
+                               f"1 {code} {tm_x} {tm_y} {tm_z}"
                                f" {tm_a} {tm_b} {tm_c}"
                                f" {tm_d} {tm_e} {tm_f}"
                                f" {tm_g} {tm_h} {tm_i}"
                                f" s/{subfilename}\n")
-
 
     def set_main_colour(self, colour: Brickcolour):
         self.main_colour = colour
@@ -186,14 +187,14 @@ class LdrawObject:
 
 
 class Subpart:
-    def __init__(self, mesh: trimesh.base.Trimesh, transformation_matrix, name, main_colour=None):
+    def __init__(self, mesh: trimesh.base.Trimesh, transformation_matrix, name, main_colour: Brickcolour = None):
         self.mesh = mesh
         self.name = name
         self.transformation_matrix = transformation_matrix
         self.multicolour = False
         if not self.mesh.visual.defined:
             if main_colour is not None:
-                self.main_colour = Brickcolour(rgba_to_hex(main_colour)[: 7])
+                self.main_colour = main_colour
             else:
                 self.main_colour = Brickcolour("16")
             self.apply_color()
