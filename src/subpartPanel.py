@@ -9,11 +9,12 @@ from PyQt6.QtWidgets import (
     QLineEdit,
     QPushButton,
     QMessageBox,
-    QTableView
+    QTableView,
+    QHeaderView
 )
 
 from brick_data.ldrawObject import LdrawObject, Subpart
-from brick_data.brickcolour import Brickcolour, is_brickcolour
+from brick_data.brickcolour import Brickcolour, is_brickcolour, get_contrast_colour
 from brickcolourwidget import BrickcolourWidget, BrickcolourDialog
 
 class SubpartPanel(QTabWidget):
@@ -53,12 +54,14 @@ class SubpartTab(QWidget):
     # Main Settings Area
         self.main_settings = QFormLayout()
 
-        #Name Input
+        #Name Input and Subpart Preview Button
         if not single_part:
             self.name_line = QLineEdit()
             self.name_line.setText(self.subpart.name)
             self.main_settings.addRow("Name", self.name_line)
             self.name_line.textChanged.connect(self.apply_name_change)
+            self.preview_button = QPushButton("Show Preview of Subpart")
+            self.preview_button.clicked.connect(self.show_preview)
 
         #Override / Set Colour
 
@@ -75,22 +78,34 @@ class SubpartTab(QWidget):
             self.apply_colour_button.clicked.connect(self.apply_main_colour)
             self.main_settings.addRow(self.apply_colour_button)
             self.multicolour_widget = QTableView()
-            # Todo: Set Correct Size
             self.multicolour_widget.setCornerButtonEnabled(False)
-            self.subpartcolourlist = Subpartcolourlistmodel(self.subpart)
+            button_colour = self.palette().button().color()
+            self.subpartcolourlist = Subpartcolourlistmodel(self.subpart, button_colour)
             self.multicolour_widget.setModel(self.subpartcolourlist)
             self.multicolour_widget.clicked.connect(self._on_select_brickcolour)
             self.multicolour_widget.setSelectionMode(QTableView.SelectionMode.SingleSelection)
             self.multicolour_widget.setSelectionBehavior(QTableView.SelectionBehavior.SelectItems)
+            self.multicolour_widget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+            self.multicolour_widget.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+            row_height = self.multicolour_widget.verticalHeader().sectionSize(0)
+            column_width = self.multicolour_widget.size().width()
+            print(self.multicolour_widget.verticalHeader().sectionSize(0))
+            new_widget_height = row_height * 6
+            if len(self.subpart.colours) < 5:
+                new_widget_height = (len(self.subpart.colours) + 1) * row_height
+            self.multicolour_widget.setMinimumSize(column_width, new_widget_height)
         else:
             self.main_colour_input.colour_changed.connect(self.apply_main_colour)
+
+
 
 
     # Add Elements to Main Layout
         self.mainlayout.addLayout(self.main_settings)
         if self.subpart.multicolour:
-            #self.mainlayout.addWidget(self.colour_scroll)
             self.mainlayout.addWidget(self.multicolour_widget)
+        if not single_part:
+            self.mainlayout.addWidget(self.preview_button)
 
 
     def apply_name_change(self, new_name: str):
@@ -130,6 +145,13 @@ class SubpartTab(QWidget):
         self.subpart.apply_color(colour)
         self.setDisabled(False)
 
+    def show_preview(self):
+        hex_bg_color = self.palette().window().color().name()
+        r = int(hex_bg_color[1:3], 16)
+        g = int(hex_bg_color[3:5], 16)
+        b = int(hex_bg_color[5:7], 16)
+        self.subpart.mesh.show(smooth=False, resolution=(900, 900), caption="Subpart Preview", background=(r, g, b, 255))
+
     def _on_select_brickcolour(self, index):
         if index.column() in [0, 2]:
             self.multicolour_widget.clearSelection()
@@ -143,13 +165,15 @@ class SubpartTab(QWidget):
         self.subpart.apply_color(colour, key)
 
 class Subpartcolourlistmodel(QAbstractTableModel):
-    def __init__(self, subpart: Subpart):
+    def __init__(self, subpart: Subpart, button_colour):
         super().__init__()
         self._data = subpart
+        self._data_keys = list(subpart.colours.keys())
+        self.button_colour = button_colour
 
     def data(self, index, role):
         if role == Qt.ItemDataRole.DisplayRole or role == Qt.ItemDataRole.EditRole:
-            brick_colour = list(self._data.colours.values())[index.row()][0]
+            brick_colour = self._data.colours[self._data_keys[index.row()]][0]
             if index.column() == 0:
                 return brick_colour.ldrawname
             elif index.column() == 1:
@@ -157,22 +181,25 @@ class Subpartcolourlistmodel(QAbstractTableModel):
             else:
                 return "Select"
         if role == Qt.ItemDataRole.ToolTipRole:
-            brick_colour = list(self._data.colours.values())[index.row()][0]
+            brick_colour = self._data.colours[self._data_keys[index.row()]][0]
             if index.column() == 0:
                 return f'"{brick_colour.ldrawname}"'
             elif index.column() == 1:
                 return f'"{brick_colour.colour_code}"'
-        if role == Qt.ItemDataRole.DecorationRole and index.column() == 0:
-            brick_colour = list(self._data.colours.values())[index.row()][0]
-            return QColor(brick_colour.rgb_values)
-        if role == Qt.ItemDataRole.DecorationRole and index.column() == 2:
-            html_color = "#FFFFFF"
-            # Todo: Correct Select Button Colour/Style
-            return QColor(html_color)
-        if role == Qt.ItemDataRole.TextAlignmentRole and index.column() == 1:
-            return Qt.AlignmentFlag.AlignVCenter + Qt.AlignmentFlag.AlignRight
+        if role == Qt.ItemDataRole.BackgroundRole:
+            if index.column() == 0:
+                brick_colour = self._data.colours[self._data_keys[index.row()]][0]
+                return QColor(brick_colour.rgb_values)
+            elif index.column() == 2:
+                return QColor(self.button_colour)
+        if role == Qt.ItemDataRole.ForegroundRole and index.column() == 0:
+            brick_colour = self._data.colours[self._data_keys[index.row()]][0]
+            contrastcolour = get_contrast_colour(brick_colour.rgb_values)
+            return QColor(contrastcolour)
+        if role == Qt.ItemDataRole.TextAlignmentRole:
+            return Qt.AlignmentFlag.AlignCenter
         if role == Qt.ItemDataRole.UserRole:
-            return list(self._data.colours.items())[index.row()][0]
+            return self._data_keys[index.row()]
 
     def headerData(self, section, orientation, role):
         # section is the index of the column/row.
@@ -190,10 +217,23 @@ class Subpartcolourlistmodel(QAbstractTableModel):
         if role == Qt.ItemDataRole.EditRole:
             print(value)
             if is_brickcolour(value):
-                colour_key = self.data(index, Qt.ItemDataRole.UserRole)
                 new_colour = Brickcolour(value)
+                if new_colour.ldrawname == "Undefined":
+                    dlg = QMessageBox(self.parent())
+                    dlg.setWindowTitle("Undefined Colour")
+                    dlg.setText(f'The Colour Code "{new_colour.colour_code}" is unknown\n'
+                                f'Apply anyway?')
+                    dlg.setIcon(QMessageBox.Icon.Warning)
+                    dlg.setStandardButtons(
+                        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+                    )
+                    answer = dlg.exec()
+                    if answer != QMessageBox.StandardButton.Yes:
+                        return False
+
+                colour_key = self.data(index, Qt.ItemDataRole.UserRole)
+
                 self._data.apply_color(new_colour, colour_key)
-                # Todo: Warning for undefiened colour codes
             return True
 
     def flags(self, index):
