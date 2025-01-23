@@ -36,4 +36,4 @@ To avoid the problems with an anti-virus or for installation on Mac and Linux fo
 
 This was originally a fork of a [python script of Hazen Babcock](https://github.com/HazenBabcock/stl-to-dat).  
 The code that was used from that script was completely rewritten for the 1.0 release of this software.  
-This application was also renamed from "stlToDat" to "Convert To LDraw" to reflect the new capabilities of the new version.
+This application was also renamed from "stlToDat" to "Convert To LDraw" to reflect the added capabilities of the new version.
