@@ -23,13 +23,14 @@ class BrickcolourWidget(QWidget):
         self.colourinput = QLineEdit()
         self.colourinput.setText(self.colour.colour_code)
         self.colourinput.textEdited.connect(self.changecolour)
-        self.selectbutton = QPushButton("Select")
-        self.selectbutton.clicked.connect(self.open_color_picker)
+        self.select_button = QPushButton("Select")
+        self.select_button.clicked.connect(self.open_color_picker)
 
-        self.layout.addWidget(QLabel(labeltext))
+        self.label = QLabel(labeltext)
+        self.layout.addWidget(self.label)
         self.layout.addWidget(self.preview)
         self.layout.addWidget(self.colourinput)
-        self.layout.addWidget(self.selectbutton)
+        self.layout.addWidget(self.select_button)
 
         self.setLayout(self.layout)
 
@@ -63,7 +64,7 @@ class BrickcolourWidget(QWidget):
 
     def setDisabled(self, a0):
         self.colourinput.setDisabled(a0)
-        self.selectbutton.setDisabled(a0)
+        self.select_button.setDisabled(a0)
 
     def open_color_picker(self):
         initial_color = Brickcolour("16")
@@ -86,14 +87,16 @@ class BrickcolourDialog(QColorDialog):
         html_widget.setLayout(self.layout())
 
         # Widget for picking LDraw colour
-        ldraw_wiget = QTableView()
-        ldraw_wiget.setCornerButtonEnabled(False)
+        ldraw_widget = QTableView()
+        ldraw_widget.setSelectionMode(QTableView.SelectionMode.SingleSelection)
+        ldraw_widget.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        ldraw_widget.setCornerButtonEnabled(False)
 
         self.bickcolourlist = Brickcolourlistmodel(get_all_brickcolours())
-        ldraw_wiget.setModel(self.bickcolourlist)
-        ldraw_wiget.clicked.connect(self.on_select_brickcolour)
+        ldraw_widget.setModel(self.bickcolourlist)
+        ldraw_widget.clicked.connect(self.on_select_brickcolour)
 
-        tab_widget.addTab(ldraw_wiget, "LDraw Color")
+        tab_widget.addTab(ldraw_widget, "LDraw Color")
 
         tab_widget.addTab(html_widget, "Direct Colour")
         main_layout.addWidget(tab_widget)
@@ -126,7 +129,10 @@ class BrickcolourDialog(QColorDialog):
             text_colour = get_contrast_colour(colour.rgb_values)
             self.preview.setStyleSheet(f"background-color : {colour.rgb_values}; color : {text_colour};")
             self.brickcolour = colour
-            self.preview.setText(f"{self.brickcolour.colour_code}: {self.brickcolour.ldrawname}")
+            preview_text = self.brickcolour.colour_code
+            if colour.colour_type == "LDraw":
+                preview_text = f"{preview_text}: {self.brickcolour.ldrawname}"
+            self.preview.setText(preview_text)
 
     def on_select_brickcolour(self, index):
         self.update_brickcolor(self.bickcolourlist.data(index, Qt.ItemDataRole.UserRole))
@@ -140,7 +146,7 @@ class Brickcolourlistmodel(QAbstractTableModel):
     def data(self, index, role):
         if role == Qt.ItemDataRole.DisplayRole:
             return self._data[index.row()][index.column()]
-        if role == Qt.ItemDataRole.DecorationRole and index.column() in [0,2]:
+        if role == Qt.ItemDataRole.DecorationRole and index.column() in [0, 2]:
             html_color = self._data[index.row()].rgb_values
             return QColor(html_color)
         if role == Qt.ItemDataRole.DecorationRole and index.column() == 3:
@@ -150,6 +156,10 @@ class Brickcolourlistmodel(QAbstractTableModel):
             return Qt.AlignmentFlag.AlignVCenter + Qt.AlignmentFlag.AlignRight
         if role == Qt.ItemDataRole.UserRole:
             return self._data[index.row()]
+        if role == Qt.ItemDataRole.ToolTipRole:
+            value = self._data[index.row()][index.column()]
+            if value is not None and len(value) > 0:
+                return f'"{value}"'
 
     def headerData(self, section, orientation, role):
         # section is the index of the column/row.
