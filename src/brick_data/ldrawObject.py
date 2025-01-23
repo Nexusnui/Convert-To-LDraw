@@ -12,6 +12,7 @@ class LdrawObject:
                  name="", bricklinknumber="", author="", category="", keywords=[],
                  scale=1, multi_object=True, multicolour=True):
         self.__load_scene(filepath, scale, multi_object, multicolour)
+
         self.name = name
         self.bricklinknumber = bricklinknumber
         self.author = author
@@ -77,9 +78,11 @@ class LdrawObject:
 
         if scene.units not in ["mm", "millimeter", None]:
             scene = scene.convert_units("millimeter")
+
         if scale != 1:
             scene = scene.scaled(scale)
         self.size = scene.extents
+
 
         #Convert to LDraw Units
         scene = scene.scaled(2.5)
