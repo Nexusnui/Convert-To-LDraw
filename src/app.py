@@ -31,7 +31,7 @@ if platform.system() == "Windows":
     try:
         from ctypes import windll  # Only exists on Windows.
 
-        myappid = "nexusnui.converttoldraw.1.1.0"
+        myappid = "nexusnui.converttoldraw.1.2.0"
         windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except ImportError:
         pass
