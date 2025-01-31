@@ -12,13 +12,13 @@ from PyQt6.QtWidgets import (
     QWidget,
     QLabel,
     QLineEdit,
-    QFrame,
     QCheckBox,
     QFileDialog,
     QMessageBox,
     QDoubleSpinBox,
     QComboBox,
-    QFormLayout
+    QFormLayout,
+    QGroupBox
 )
 
 from brick_data.ldrawObject import LdrawObject
@@ -50,16 +50,9 @@ class MainWindow(QMainWindow):
         top_layout = QHBoxLayout()
 
     # File Selection Area:
-        file_select_area = QVBoxLayout()
-        file_select_label = QLabel("File Selection")
-        file_select_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        file_select_area.addWidget(file_select_label)
-
+        file_select_area = QGroupBox("File Selection")
         file_select_inputs = QFormLayout()
-        file_select_frame = QFrame()
-        file_select_frame.setFrameStyle(1)
-        file_select_frame.setLayout(file_select_inputs)
-        file_select_area.addWidget(file_select_frame)
+        file_select_area.setLayout(file_select_inputs)
 
         # Input File Selection
         input_label = QLabel("Input File")
@@ -120,17 +113,9 @@ class MainWindow(QMainWindow):
         file_select_inputs.addRow(output_layout)
 
     # Part Settings Area:
-        part_settings_area = QVBoxLayout()
-        part_settings_area.setAlignment(Qt.AlignmentFlag.AlignTop)
-        part_settings_label = QLabel("Parent Part Settings")
-        part_settings_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        part_settings_area.addWidget(part_settings_label)
-
+        part_settings_area = QGroupBox("Parent Part Settings")
         part_settings_inputs = QFormLayout()
-        part_settings_frame = QFrame()
-        part_settings_frame.setFrameStyle(1)
-        part_settings_frame.setLayout(part_settings_inputs)
-        part_settings_area.addWidget(part_settings_frame)
+        part_settings_area.setLayout(part_settings_inputs)
 
         # Partname Input
         self.partname_line = QLineEdit()
@@ -161,7 +146,6 @@ class MainWindow(QMainWindow):
 
         # Convert Button
         self.convert_button = QPushButton("Convert File")
-        part_settings_area.addWidget(self.convert_button)
         self.convert_button.clicked.connect(self.convert_file)
 
     # Preview Area
@@ -176,23 +160,16 @@ class MainWindow(QMainWindow):
         preview_area.addWidget(self.loaded_file_status_label)
 
     # Subpart and Color Editor Area
-        subpart_area = QVBoxLayout()
-        subpart_area_label = QLabel("Subparts and Colour")
-        subpart_area_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        subpart_area.addWidget(subpart_area_label)
-
+        subpart_area = QGroupBox("Subparts and Colour")
         self.subpart_area_layout = QVBoxLayout()
-        subpart_area_frame = QFrame()
-        subpart_area_frame.setFrameStyle(1)
-        subpart_area_frame.setLayout(self.subpart_area_layout)
-        subpart_area.addWidget(subpart_area_frame)
-
+        subpart_area.setLayout(self.subpart_area_layout)
 
     # Add Elements to Main Layout
-        top_layout.addLayout(part_settings_area)
-        top_layout.addLayout(file_select_area)
+        top_layout.addWidget(part_settings_area)
+        top_layout.addWidget(file_select_area)
         self.main_layout.addLayout(top_layout)
-        self.main_layout.addLayout(subpart_area)
+        self.main_layout.addWidget(self.convert_button)
+        self.main_layout.addWidget(subpart_area)
         self.main_layout.addLayout(preview_area)
         widget = QWidget()
         widget.setLayout(self.main_layout)
