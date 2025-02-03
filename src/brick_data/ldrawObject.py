@@ -22,12 +22,9 @@ class LdrawObject:
     def __load_scene(self, filepath, scale=1, multi_object=True, multicolour=True):
         _, file_extension = os.path.splitext(filepath)
 
-        scene = trimesh.load_mesh(filepath)
+        scene = trimesh.load_scene(filepath)
 
-        if not isinstance(scene, trimesh.Scene):
-            scene = trimesh.scene.scene.Scene(scene)
-
-        elif len(scene.geometry) == 1 or not multi_object:
+        if len(scene.geometry) == 1 or not multi_object:
             if len(scene.geometry) > 1 and multicolour:
                 recolour = True
                 if len(scene.geometry) == 1:
