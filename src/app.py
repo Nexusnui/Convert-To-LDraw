@@ -72,12 +72,18 @@ class MainWindow(QMainWindow):
 
         # Enable Multicolour Check
         self.multicolour_check = QCheckBox()
-        file_select_inputs.addRow("Multicolour", self.multicolour_check)
+        multicolour_label = QLabel("Multicolour ℹ️")
+        multicolour_label.setToolTip("If deactivated aLL objects are single color")
+        file_select_inputs.addRow(multicolour_label, self.multicolour_check)
         self.multicolour_check.setChecked(True)
 
         # Enable Multi Objects Check
         self.multi_object_check = QCheckBox()
-        file_select_inputs.addRow("Multiple Objects", self.multi_object_check)
+        multi_object_label = QLabel("Multiple Objects ℹ️")
+        multi_object_label.setToolTip("If deactivated all submodels will be merged\n"
+                                      "With multicolor unique colors are applied before merging\n"
+                                      "(If the the file does not define colors)")
+        file_select_inputs.addRow(multi_object_label, self.multi_object_check)
         self.multi_object_check.setChecked(True)
 
         # Set Scale
@@ -86,7 +92,9 @@ class MainWindow(QMainWindow):
         self.scale_input.setMaximum(999.999)
         self.scale_input.setMinimum(0.001)
         self.scale_input.setDecimals(3)
-        file_select_inputs.addRow("Scale", self.scale_input)
+        scale_label = QLabel("Scale ℹ️")
+        scale_label.setToolTip("Factor used to scale the model")
+        file_select_inputs.addRow(scale_label, self.scale_input)
 
         # Reload Button
         self.reload_button = QPushButton("Reload Model")
@@ -95,7 +103,9 @@ class MainWindow(QMainWindow):
         file_select_inputs.addRow(self.reload_button)
 
         # Output File Selection
-        output_label = QLabel("Output File")
+        output_label = QLabel("Output File ℹ️")
+        output_label.setToolTip("Place where the Main File is saved.\n"
+                                "Subparts are saved in 's' subdirectory located in the same directory")
         file_select_inputs.addRow(output_label)
         output_layout = QHBoxLayout()
 
@@ -118,12 +128,17 @@ class MainWindow(QMainWindow):
         # Partname Input
         self.partname_line = QLineEdit()
         self.partname_line.setPlaceholderText("UntitledModel")
-        part_settings_inputs.addRow("Descriptive Part Name", self.partname_line)
+        partname_label = QLabel("Descriptive Part Name ℹ️")
+        partname_label.setToolTip("This shows up as the Partname in Editors")
+        part_settings_inputs.addRow(partname_label, self.partname_line)
 
         # Bricklink Number Input
         self.bl_number_line = QLineEdit()
         self.bl_number_line.setPlaceholderText("Bricklinknumber")
-        part_settings_inputs.addRow("BL Number(Optional)", self.bl_number_line)
+        bl_number_label = QLabel("BL Number(Optional) ℹ️")
+        bl_number_label.setToolTip("Bricklink Studio uses this to identify a piece\n"
+                                   "Leave this empty is there is no Bricklink listing")
+        part_settings_inputs.addRow(bl_number_label, self.bl_number_line)
 
         # Author Input
         self.author_line = QLineEdit()
@@ -135,19 +150,27 @@ class MainWindow(QMainWindow):
         self.part_category_input.addItems(brick_categories)
         self.part_category_input.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.part_category_input.setEditable(True)
-        part_settings_inputs.addRow("Part Category (Recommended)", self.part_category_input)
+        category_label = QLabel("Part Category (Recommended) ℹ️")
+        category_label.setToolTip("Defines the Category the part appears in.\n"
+                                  "(Currently not supported by Bricklink Studio)")
+        part_settings_inputs.addRow(category_label, self.part_category_input)
 
         # Keywords Input
         self.keywords_line = QLineEdit()
         self.keywords_line.setPlaceholderText("comma seperated: Wheel, Tire, Car")
-        part_settings_inputs.addRow("Keywords (Optional)", self.keywords_line)
+        keywords_label = QLabel("Keywords (Optional) ℹ️")
+        keywords_label.setToolTip("Keywords make a part easier to search.\n"
+                                  "(Currently not supported in Bricklink Studio)")
+        part_settings_inputs.addRow(keywords_label, self.keywords_line)
 
         # License Input
         self.part_license_input = QComboBox()
         self.part_license_input.addItems(default_part_licenses)
         self.part_license_input.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.part_license_input.setEditable(True)
-        part_settings_inputs.addRow("Part License (Optional)", self.part_license_input)
+        part_license_label = QLabel("Part License (Optional) ℹ️")
+        part_license_label.setToolTip("License of the Part, set your own one or use one from the list.")
+        part_settings_inputs.addRow(part_license_label, self.part_license_input)
 
         # Convert Button
         self.convert_button = QPushButton("Convert File")
