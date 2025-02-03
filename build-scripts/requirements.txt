@@ -11,3 +11,4 @@ pyglet==1.5.29
 PyQt6==6.8.0
 scipy==1.15.1
 trimesh==4.6.1
+colormath2==3.0.3
