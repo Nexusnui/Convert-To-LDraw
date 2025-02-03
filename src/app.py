@@ -75,12 +75,10 @@ class MainWindow(QMainWindow):
         file_select_inputs.addRow("Multicolour", self.multicolour_check)
         self.multicolour_check.setChecked(True)
 
-
         # Enable Multi Objects Check
         self.multi_object_check = QCheckBox()
         file_select_inputs.addRow("Multiple Objects", self.multi_object_check)
         self.multi_object_check.setChecked(True)
-
 
         # Set Scale
         self.scale_input = QDoubleSpinBox()
@@ -262,7 +260,6 @@ class MainWindow(QMainWindow):
                 self.loaded_file_status_label.setText("No file loaded")
                 self.enable_load_settings()
 
-
     def select_output_file(self):
         current_path = self.output_file_line.text()
         current_filename = os.path.basename(current_path)
@@ -276,14 +273,13 @@ class MainWindow(QMainWindow):
         if filepath:
             self.output_file_line.setText(filepath)
 
-
-
     def show_preview(self):
         hex_bg_color = self.palette().window().color().name()
         r = int(hex_bg_color[1:3], 16)
         g = int(hex_bg_color[3:5], 16)
         b = int(hex_bg_color[5:7], 16)
-        self.ldraw_object.scene.show(smooth=False, resolution=(900, 900), caption="Part Preview", background=(r, g, b, 255))
+        self.ldraw_object.scene.show(smooth=False, resolution=(900, 900),
+                                     caption="Part Preview", background=(r, g, b, 255))
 
     def reset_part_settings(self):
         self.partname_line.clear()
@@ -318,7 +314,6 @@ class MainWindow(QMainWindow):
         self.scale_input.setDisabled(False)
         self.load_input_button.setDisabled(False)
 
-
     def convert_file(self):
         self.disable_settings(True)
         partname = self.partname_line.text()
@@ -351,7 +346,7 @@ class MainWindow(QMainWindow):
                 return
         keywords = []
         for kw in self.keywords_line.text().split(","):
-            #Remove redundant spaces
+            # Remove redundant spaces
             word = " ".join([w for w in kw.split(" ") if w != ""])
             if len(word) > 0:
                 keywords.append(word)

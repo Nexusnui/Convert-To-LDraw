@@ -69,14 +69,14 @@ class Brickcolour:
         else:
             self.colour_type = "LDraw"
             self.ldrawname, _, \
-            self.rgb_values, \
-            self.rgb_edge, \
-            self.alpha, \
-            self.luminance, \
-            self.material, \
-            self.legoids, \
-            self.legoname, \
-            self.category = get_colour_info_by_colour_code(self.colour_code)
+                self.rgb_values, \
+                self.rgb_edge, \
+                self.alpha, \
+                self.luminance, \
+                self.material, \
+                self.legoids, \
+                self.legoname, \
+                self.category = get_colour_info_by_colour_code(self.colour_code)
 
     def __getitem__(self, key):
         if key == 0:
@@ -126,7 +126,7 @@ class Brickcolour:
         r = int(self.rgb_values[1:3], 16)
         g = int(self.rgb_values[3:5], 16)
         b = int(self.rgb_values[5:7], 16)
-        return (r, g, b, int(self.alpha))
+        return r, g, b, int(self.alpha)
 
 
 def get_colour_info_by_colour_code(colour_code: str):

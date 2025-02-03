@@ -43,7 +43,7 @@ class LdrawObject:
                         first_colour = geometry.visual.face_colors[0]
                         for colour in geometry.visual.face_colors:
                             c_check = first_colour == colour
-                            if not(c_check[0] and c_check[1] and c_check[2] and c_check[3]):
+                            if not (c_check[0] and c_check[1] and c_check[2] and c_check[3]):
                                 has_multiple_colours = True
                                 break
 
@@ -53,7 +53,7 @@ class LdrawObject:
                             recolour = False
                             break
                     except Exception:
-                        #No or invalid color data
+                        # Invalid or no color data (is fixed at a later point)
                         pass
                 if recolour:
                     colorrange = [0, 63, 127, 191, 255]
@@ -82,8 +82,7 @@ class LdrawObject:
             scene = scene.scaled(scale)
         self.size = scene.extents
 
-
-        #Convert to LDraw Units
+        # Convert to LDraw Units
         scene = scene.scaled(2.5)
 
         self.subparts = OrderedDict()

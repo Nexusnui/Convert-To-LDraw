@@ -17,6 +17,7 @@ from brick_data.ldrawObject import LdrawObject, Subpart
 from brick_data.brickcolour import Brickcolour, is_brickcolour, get_contrast_colour
 from brickcolourwidget import BrickcolourWidget, BrickcolourDialog
 
+
 class SubpartPanel(QTabWidget):
     def __init__(self, mainmodel: LdrawObject):
         super().__init__()
@@ -42,8 +43,10 @@ class ColourPanel(QWidget):
         subpart = list(mainmodel.subparts.items())[0][1]
         mainlayout.addWidget(SubpartTab(subpart, single_part=True))
 
+
 class SubpartTab(QWidget):
     name_changed = pyqtSignal(str)
+
     def __init__(self, subpart: Subpart, single_part=False):
         super().__init__()
         self.subpart = subpart
@@ -54,7 +57,7 @@ class SubpartTab(QWidget):
     # Main Settings Area
         self.main_settings = QFormLayout()
 
-        #Name Input and Subpart Preview Button
+        # Name Input and Subpart Preview Button
         if not single_part:
             self.name_line = QLineEdit()
             self.name_line.setText(self.subpart.name)
@@ -63,7 +66,7 @@ class SubpartTab(QWidget):
             self.preview_button = QPushButton("Show Preview of Subpart")
             self.preview_button.clicked.connect(self.show_preview)
 
-        #Override / Set Colour
+        # Override / Set Colour
 
         if self.subpart.multicolour:
             main_colour_text = "Override Colours"
@@ -97,16 +100,12 @@ class SubpartTab(QWidget):
         else:
             self.main_colour_input.colour_changed.connect(self.apply_main_colour)
 
-
-
-
     # Add Elements to Main Layout
         self.mainlayout.addLayout(self.main_settings)
         if self.subpart.multicolour:
             self.mainlayout.addWidget(self.multicolour_widget)
         if not single_part:
             self.mainlayout.addWidget(self.preview_button)
-
 
     def apply_name_change(self, new_name: str):
         self.subpart.name = new_name
@@ -150,7 +149,8 @@ class SubpartTab(QWidget):
         r = int(hex_bg_color[1:3], 16)
         g = int(hex_bg_color[3:5], 16)
         b = int(hex_bg_color[5:7], 16)
-        self.subpart.mesh.show(smooth=False, resolution=(900, 900), caption="Subpart Preview", background=(r, g, b, 255))
+        self.subpart.mesh.show(smooth=False, resolution=(900, 900),
+                               caption="Subpart Preview", background=(r, g, b, 255))
 
     def _on_select_brickcolour(self, index):
         if index.column() in [0, 2]:
@@ -161,8 +161,10 @@ class SubpartTab(QWidget):
             color_picker = BrickcolourDialog(initial_color)
             color_picker.accepted.connect(lambda: self.changecolour(color_picker.brickcolour, colour_key))
             color_picker.exec()
+
     def changecolour(self, colour: Brickcolour, key):
         self.subpart.apply_color(colour, key)
+
 
 class Subpartcolourlistmodel(QAbstractTableModel):
     def __init__(self, subpart: Subpart, button_colour):
@@ -250,8 +252,8 @@ if __name__ == "__main__":
     testfile = "Path/To/Testfile"
     testmodel = LdrawObject(testfile)
 
-    #subpartpanel = SubpartPanel(testmodel)
-    #subpartpanel.show()
+    # subpartpanel = SubpartPanel(testmodel)
+    # subpartpanel.show()
 
     colourpanel = ColourPanel(testmodel)
     colourpanel.show()

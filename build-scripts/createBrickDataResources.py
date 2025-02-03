@@ -1,9 +1,9 @@
-#This File is intended for updating the colour list src/brick_data/colour_definitions.csv
+# This File is intended for updating the colour list src/brick_data/colour_definitions.csv
 
 # Parse the LDraw Colour Config to a List of Colours
-def parse_ldraw_colour_config(configPath):
+def parse_ldraw_colour_config(config_path):
     colours = []
-    with open(configPath, "r", encoding="utf-8") as source:
+    with open(config_path, "r", encoding="utf-8") as source:
         lego_ids = []
         lego_names = []
         skipped_line = ""
@@ -11,7 +11,7 @@ def parse_ldraw_colour_config(configPath):
         while skipped_line != "0 // Colour definitions\n":
             skipped_line = source.readline()
         for line in source:
-            #After the colour definitons the Avatar definitions follow
+            # After the colour definitons the Avatar definitions follow
             if line == "0 // Avatar definitions":
                 break
             if "LEGOID" not in line and "!COLOUR" not in line and "BricksetID" not in line and "LDraw" in line:
@@ -52,10 +52,11 @@ def parse_ldraw_colour_config(configPath):
                 lego_names = []
     return colours
 
+
 # Parse the custom Bricklink color definition to a list of colours
-def parse_bl_studio_color_definition(definitionPath):
+def parse_bl_studio_color_definition(definition_path):
     colours = []
-    with open(definitionPath, "r", encoding="utf-8") as source:
+    with open(definition_path, "r", encoding="utf-8") as source:
         source.readline()
         for line in source:
             values = line.split("\t")
@@ -95,9 +96,10 @@ def save_colourlists_to_csv(colorlists, filename):
             for colour in colourlist:
                 file_out.write(";".join(colour[:7] + ("/".join(colour[7]), "/".join(colour[8]), colour[9])) + "\n")
 
-def get_categories_from_config(configPath):
+
+def get_categories_from_config(config_path):
     categories = []
-    with open(configPath, "r", encoding="utf-8") as source:
+    with open(config_path, "r", encoding="utf-8") as source:
         skipped_line = ""
         while skipped_line != "0 // Avatar definitions\n":
             skipped_line = source.readline()
@@ -105,6 +107,7 @@ def get_categories_from_config(configPath):
             if "!AVATAR" in line:
                 categories.append(line.split('CATEGORY "')[1].split('" DESCRIPTION')[0])
     return categories
+
 
 def save_categories_to_py(categories, filename):
     with open(filename, "w", encoding="utf-8") as file_out:
@@ -126,6 +129,6 @@ if __name__ == "__main__":
     color_definitions_csv = f"{__file__.split("build-scripts")[0]}src\\brick_data\\colour_definitions.csv"
     save_colourlists_to_csv([ldraw_colours, bl_studio_colours], color_definitions_csv)
 
-    categories = get_categories_from_config(ldraw_config)
+    ldraw_categories = get_categories_from_config(ldraw_config)
     category_definitions = f"{__file__.split("build-scripts")[0]}src\\brick_data\\brick_categories.py"
-    save_categories_to_py(categories, category_definitions)
+    save_categories_to_py(ldraw_categories, category_definitions)
