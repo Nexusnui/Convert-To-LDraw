@@ -9,7 +9,8 @@ from collections import OrderedDict
 
 class LdrawObject:
     def __init__(self, filepath: str,
-                 name="", bricklinknumber="", author="", category="", keywords=[],
+                 name="", bricklinknumber="", author="", category="", keywords=None,
+                 part_license=None,
                  scale=1, multi_object=True, multicolour=True):
         self.__load_scene(filepath, scale, multi_object, multicolour)
 
@@ -18,6 +19,7 @@ class LdrawObject:
         self.author = author
         self.category = category
         self.keywords = keywords
+        self.part_license = part_license
 
     def __load_scene(self, filepath, scale=1, multi_object=True, multicolour=True):
         _, file_extension = os.path.splitext(filepath)
@@ -120,12 +122,9 @@ class LdrawObject:
             bricklinknumberline = f"0 BL_Item_No {self.bricklinknumber}\n\n"
         categoryline = ""
         if len(self.category) > 0:
-            if len(self.keywords) > 0:
-                categoryline = f"0 !CATEGORY {self.category}\n"
-            else:
-                categoryline = f"0 !CATEGORY {self.category}\n\n"
+            categoryline = f"\n0 !CATEGORY {self.category}\n"
         keyword_lines = ""
-        if len(self.keywords) > 0:
+        if self.keywords is not None and len(self.keywords) > 0:
             keyword_lines = []
             current_line = f"0 !KEYWORDS {self.keywords[0]}"
             for kw in self.keywords[1:]:
@@ -134,17 +133,21 @@ class LdrawObject:
                     current_line = f"0 !KEYWORDS {kw}"
                 else:
                     current_line = f"{current_line}, {kw}"
-            keyword_lines.append(f"{current_line}\n\n")
+            keyword_lines.append(f"{current_line}\n")
             keyword_lines = "\n".join(keyword_lines)
-
+        license_line = ""
+        if self.part_license is not None and len(self.part_license) > 0:
+            license_line = f"0 !LICENSE {self.part_license}\n"
         header = (f"0 FILE {filename}\n"
                   f"0 {self.name}\n"
                   f"0 Name:  {filename}\n"
-                  f"0 Author:  {self.author}\n\n"
+                  f"0 Author:  {self.author}\n"
+                  f"0 !LDRAW_ORG Unofficial_Part\n"
+                  f"{license_line}\n"
                   f"{bricklinknumberline}"
-                  f"0 BFC CERTIFY CCW\n\n"
+                  f"0 BFC CERTIFY CCW\n"
                   f"{categoryline}"
-                  f"{keyword_lines}")
+                  f"{keyword_lines}\n")
         with open(filepath, "w", encoding="utf-8") as file:
             file.write(header)
             if len(self.subparts) == 1:
@@ -157,7 +160,7 @@ class LdrawObject:
                 for count, part in enumerate(self.subparts.values()):
                     subfilename = f"{basename}s{count:03d}.dat"
                     subfilepath = f"{sub_dir}{subfilename}"
-                    part.convert_to_dat_file(subfilepath, filename, self.author)
+                    part.convert_to_dat_file(subfilepath, filename, self.author, license_line)
                     tm_a = f"{part.transformation_matrix[0][0]:f}"
                     tm_b = f"{part.transformation_matrix[0][1]:f}"
                     tm_c = f"{part.transformation_matrix[0][2]:f}"
@@ -244,11 +247,13 @@ class Subpart:
                 self.mesh.visual.face_colors[face] = rgba_values
             self.colours[key][0] = colour
 
-    def convert_to_dat_file(self, filepath, main_file_name, author):
+    def convert_to_dat_file(self, filepath, main_file_name, author, license_line):
         file_name = os.path.basename(filepath)
         header = (f"0 ~{self.name}: Subpart of {main_file_name}\n"
                   f"0 Name: s/{file_name}\n"
                   f"0 Author:  {author}\n"
+                  f"0 !LDRAW_ORG Unofficial_Subpart\n"
+                  f"{license_line}"
                   f"0 BFC CERTIFY CCW\n")
         with open(filepath, "w", encoding="utf-8") as file:
             file.write(header)
