@@ -21,7 +21,7 @@ from PyQt6.QtWidgets import (
     QGroupBox
 )
 
-from brick_data.ldrawObject import LdrawObject
+from brick_data.ldrawObject import LdrawObject, default_part_licenses
 from brick_data.brick_categories import brick_categories
 from subpartPanel import SubpartPanel, ColourPanel
 
@@ -143,6 +143,13 @@ class MainWindow(QMainWindow):
         self.keywords_line = QLineEdit()
         self.keywords_line.setPlaceholderText("comma seperated: Wheel, Tire, Car")
         part_settings_inputs.addRow("Keywords (Optional)", self.keywords_line)
+
+        # License Input
+        self.part_license_input = QComboBox()
+        self.part_license_input.addItems(default_part_licenses)
+        self.part_license_input.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self.part_license_input.setEditable(True)
+        part_settings_inputs.addRow("Part License (Optional)", self.part_license_input)
 
         # Convert Button
         self.convert_button = QPushButton("Convert File")
@@ -283,6 +290,7 @@ class MainWindow(QMainWindow):
         self.bl_number_line.clear()
         self.author_line.clear()
         self.part_category_input.clearEditText()
+        self.part_license_input.clearEditText()
         self.keywords_line.clear()
 
     def disable_settings(self, value: bool):
@@ -299,6 +307,7 @@ class MainWindow(QMainWindow):
         self.multi_object_check.setDisabled(value)
         self.scale_input.setDisabled(value)
         self.part_category_input.setDisabled(value)
+        self.part_license_input.setDisabled(value)
         self.keywords_line.setReadOnly(value)
         if self.file_loaded:
             self.subpart_panel.setDisabled(value)
@@ -348,11 +357,13 @@ class MainWindow(QMainWindow):
                 keywords.append(word)
         bl_number = self.bl_number_line.text()
         author = self.author_line.text()
+        part_license = self.part_license_input.currentText()
         self.ldraw_object.name = partname
         self.ldraw_object.author = author
         self.ldraw_object.bricklinknumber = bl_number
         self.ldraw_object.category = category
         self.ldraw_object.keywords = keywords
+        self.ldraw_object.part_license = part_license
         filepath = self.output_file_line.text()
         if os.path.isfile(filepath):
             dlg = QMessageBox(self)

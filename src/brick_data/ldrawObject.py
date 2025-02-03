@@ -293,3 +293,11 @@ def rgba_to_hex(color):
     b = __color_to_hex(color[2])
     a = __color_to_hex(color[3])
     return f"#{r}{g}{b}{a}"
+
+
+default_part_licenses = [
+    "Licensed under CC BY 4.0 : see CAreadme.txt ",
+    "Licensed under CC BY 2.0 and CC BY 4.0 : see CAreadme.txt",
+    "Redistributable under CCAL version 2.0 : see CAreadme.txt",
+    "Not redistributable : see NonCAreadme.txt"
+]
