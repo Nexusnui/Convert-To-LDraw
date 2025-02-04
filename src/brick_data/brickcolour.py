@@ -144,19 +144,23 @@ def get_colour_info_by_colour_code(colour_code: str):
                     if len(values[i]) == 0:
                         values[i] = None
                 found_colour = values
+                # remove line break character from colour category
+                found_colour[9] = found_colour[9][:-1]
                 break
 
     return found_colour
 
 
-def get_all_brickcolours():
+def get_all_brickcolours(included_color_categories=None):
     colour_list = []
     with open(os.path.join(basedir, "colour_definitions.csv"), "r", encoding="utf-8") as source:
         # skip row with column names
         source.readline()
         for line in source:
             values = line.split(";")
-            colour_list.append(Brickcolour(values[1]))
+            colour = Brickcolour(values[1])
+            if included_color_categories is None or colour.category in included_color_categories:
+                colour_list.append(colour)
     return colour_list
 
 
