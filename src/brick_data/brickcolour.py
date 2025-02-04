@@ -178,6 +178,11 @@ def get_all_brickcolours(included_color_categories=None):
     return colour_list
 
 
+def search_brickcolour_by_rgb_colour(rgb_colour: str, included_color_categories: list = None):
+    colourlist = get_all_brickcolours(included_color_categories)
+    colourlist.sort(key=lambda c: get_hex_colour_distance(rgb_colour, c.rgb_values))
+    return colourlist
+
 def get_contrast_colour(rgb_values: str):
     r = 0 if int(rgb_values[1:3], 16) < 128 else 1
     g = 0 if int(rgb_values[3:5], 16) < 128 else 1
