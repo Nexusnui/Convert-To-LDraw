@@ -46,31 +46,44 @@ def is_brickcolour(colour_code: str):
 
 
 class Brickcolour:
-    def __new__(cls, colour_code: str):
-        if not is_brickcolour(colour_code)[0]:
+    def __new__(cls, colour_code: str = "16", values=None):
+        if not is_brickcolour(colour_code)[0] and values is None:
             return None
         instance = super().__new__(cls)
         return instance
 
-    def __init__(self, colour_code: str):
-        self.colour_code = colour_code
-        if colour_code.startswith("0x2"):
-            self.colour_type = "Direct"
-            self.rgb_values = f"#{self.colour_code[3:]}"
-            self.rgb_edge = get_contrast_colour(self.rgb_values)
-            self.alpha = "255"
-            self.ldrawname = self.colour_code
-        elif colour_code.startswith("#"):
-            colour_code = colour_code.upper()
-            self.colour_type = "Direct"
-            self.rgb_values = colour_code
-            self.colour_code = f"0x2{colour_code[1:]}"
-            self.rgb_edge = get_contrast_colour(self.rgb_values)
-            self.alpha = "255"
-            self.ldrawname = self.colour_code
+    def __init__(self, colour_code: str = "16", values=None):
+        if values is None:
+            self.colour_code = colour_code
+            if colour_code.startswith("0x2"):
+                self.colour_type = "Direct"
+                self.rgb_values = f"#{self.colour_code[3:]}"
+                self.rgb_edge = get_contrast_colour(self.rgb_values)
+                self.alpha = "255"
+                self.ldrawname = self.colour_code
+            elif colour_code.startswith("#"):
+                colour_code = colour_code.upper()
+                self.colour_type = "Direct"
+                self.rgb_values = colour_code
+                self.colour_code = f"0x2{colour_code[1:]}"
+                self.rgb_edge = get_contrast_colour(self.rgb_values)
+                self.alpha = "255"
+                self.ldrawname = self.colour_code
+            else:
+                self.colour_type = "LDraw"
+                self.ldrawname, _, \
+                    self.rgb_values, \
+                    self.rgb_edge, \
+                    self.alpha, \
+                    self.luminance, \
+                    self.material, \
+                    self.legoids, \
+                    self.legoname, \
+                    self.category = get_colour_info_by_colour_code(self.colour_code)
         else:
             self.colour_type = "LDraw"
-            self.ldrawname, _, \
+            self.ldrawname, \
+                self.colour_code, \
                 self.rgb_values, \
                 self.rgb_edge, \
                 self.alpha, \
@@ -78,7 +91,7 @@ class Brickcolour:
                 self.material, \
                 self.legoids, \
                 self.legoname, \
-                self.category = get_colour_info_by_colour_code(self.colour_code)
+                self.category = values
 
     def __getitem__(self, key):
         if key == 0:
@@ -144,8 +157,8 @@ def get_colour_info_by_colour_code(colour_code: str):
                     if len(values[i]) == 0:
                         values[i] = None
                 found_colour = values
-                # remove line break character from colour category
-                found_colour[9] = found_colour[9][:-1]
+                # remove line break character from last value
+                found_colour[-1] = found_colour[-1][:-1]
                 break
 
     return found_colour
@@ -158,9 +171,10 @@ def get_all_brickcolours(included_color_categories=None):
         source.readline()
         for line in source:
             values = line.split(";")
-            colour = Brickcolour(values[1])
-            if included_color_categories is None or colour.category in included_color_categories:
-                colour_list.append(colour)
+            # remove line break character from last value
+            values[-1] = values[-1][:-1]
+            if included_color_categories is None or values[9] in included_color_categories:
+                colour_list.append(Brickcolour(values=values))
     return colour_list
 
 
