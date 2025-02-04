@@ -1,4 +1,5 @@
 # This File is intended for updating the colour list src/brick_data/colour_definitions.csv
+# (Paths are Windows based)
 
 # Parse the LDraw Colour Config to a List of Colours
 def parse_ldraw_colour_config(config_path):
@@ -97,7 +98,7 @@ def save_colourlists_to_csv(colorlists, filename):
                 file_out.write(";".join(colour[:7] + ("/".join(colour[7]), "/".join(colour[8]), colour[9])) + "\n")
 
 
-def get_categories_from_config(config_path):
+def get_brick_categories_from_config(config_path):
     categories = []
     with open(config_path, "r", encoding="utf-8") as source:
         skipped_line = ""
@@ -108,12 +109,19 @@ def get_categories_from_config(config_path):
                 categories.append(line.split('CATEGORY "')[1].split('" DESCRIPTION')[0])
     return categories
 
+def get_color_categories_from_lists(colorlists: list):
+    categories = []
+    for cl in colorlists:
+        for colour in cl:
+            if colour[9] not in categories:
+                categories.append(colour[9])
+    return categories
 
-def save_categories_to_py(categories, filename):
+def save_list_to_py(listname, str_list, filename):
     with open(filename, "w", encoding="utf-8") as file_out:
-        file_out.write("brick_categories = [\n")
-        for category in categories:
-            file_out.write(f'    "{category}",\n')
+        file_out.write(f"{listname} = [\n")
+        for item in str_list:
+            file_out.write(f'    "{item}",\n')
         file_out.write("]\n")
 
 
@@ -126,9 +134,14 @@ if __name__ == "__main__":
     bl_studio_custom_color_definition = "C:/Program Files/Studio 2.0/data/CustomColors/CustomColorDefinition_2_1_9.txt"
     bl_studio_colours = parse_bl_studio_color_definition(bl_studio_custom_color_definition)
 
+
     color_definitions_csv = f"{__file__.split("build-scripts")[0]}src\\brick_data\\colour_definitions.csv"
     save_colourlists_to_csv([ldraw_colours, bl_studio_colours], color_definitions_csv)
 
-    ldraw_categories = get_categories_from_config(ldraw_config)
-    category_definitions = f"{__file__.split("build-scripts")[0]}src\\brick_data\\brick_categories.py"
-    save_categories_to_py(ldraw_categories, category_definitions)
+    colour_category_definitions = f"{__file__.split("build-scripts")[0]}src\\brick_data\\colour_categories.py"
+    colour_categories = get_color_categories_from_lists([ldraw_colours, bl_studio_colours])
+    save_list_to_py("brick_categories", colour_categories, colour_category_definitions)
+
+    ldraw_categories = get_brick_categories_from_config(ldraw_config)
+    brick_category_definitions = f"{__file__.split("build-scripts")[0]}src\\brick_data\\brick_categories.py"
+    save_list_to_py("brick_categories", ldraw_categories, brick_category_definitions)
