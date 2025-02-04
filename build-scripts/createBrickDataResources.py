@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     colour_category_definitions = f"{__file__.split("build-scripts")[0]}src\\brick_data\\colour_categories.py"
     colour_categories = get_color_categories_from_lists([ldraw_colours, bl_studio_colours])
-    save_list_to_py("brick_categories", colour_categories, colour_category_definitions)
+    save_list_to_py("colour_categories", colour_categories, colour_category_definitions)
 
     ldraw_categories = get_brick_categories_from_config(ldraw_config)
     brick_category_definitions = f"{__file__.split("build-scripts")[0]}src\\brick_data\\brick_categories.py"

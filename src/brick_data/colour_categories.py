@@ -1,4 +1,4 @@
-brick_categories = [
+colour_categories = [
     "LDraw:LDraw Solid Colours",
     "LDraw:LDraw Transparent Colours",
     "LDraw:LDraw Chrome Plated Colours",
