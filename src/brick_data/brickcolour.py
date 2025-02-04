@@ -1,7 +1,5 @@
 import os
-from colormath2.color_objects import sRGBColor, LabColor
-from colormath2.color_conversions import convert_color
-from colormath2.color_diff import delta_e_cmc
+import numpy as np
 basedir = os.path.dirname(__file__)
 
 
@@ -178,8 +176,7 @@ def get_all_brickcolours(included_color_categories=None):
     return colour_list
 
 
-def search_brickcolour_by_rgb_colour(rgb_colour: str, included_color_categories: list = None):
-    colourlist = get_all_brickcolours(included_color_categories)
+def search_brickcolour_by_rgb_colour(rgb_colour: str, colourlist: list):
     colourlist.sort(key=lambda c: get_hex_colour_distance(rgb_colour, c.rgb_values))
     return colourlist
 
@@ -207,12 +204,10 @@ def get_hex_colour_distance(colour_1: str, colour_2: str) -> float:
     r_1 = int(colour_1[1:3], 16)
     g_1 = int(colour_1[3:5], 16)
     b_1 = int(colour_1[5:7], 16)
-    rgb_1 = sRGBColor(r_1, g_1, b_1, True)
-    lab_1 = convert_color(rgb_1, LabColor)
+    rgb_1 = np.array((r_1, g_1, b_1))
     r_2 = int(colour_2[1:3], 16)
     g_2 = int(colour_2[3:5], 16)
     b_2 = int(colour_2[5:7], 16)
-    rgb_2 = sRGBColor(r_2, g_2, b_2, True)
-    lab_2 = convert_color(rgb_2, LabColor)
-    distance = delta_e_cmc(lab_1, lab_2)
+    rgb_2 = np.array((r_2, g_2, b_2))
+    distance = np.linalg.norm(rgb_1-rgb_2)
     return distance

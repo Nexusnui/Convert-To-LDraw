@@ -1,7 +1,7 @@
 import trimesh
 import trimesh.visual.material
 import os
-from brick_data.brickcolour import Brickcolour
+from brick_data.brickcolour import Brickcolour, search_brickcolour_by_rgb_colour, get_all_brickcolours
 import numpy as np
 from collections import OrderedDict
 # Todo: Change np print settings?
@@ -245,6 +245,29 @@ class Subpart:
             for face in self.colours[key][1]:
                 self.mesh.visual.face_colors[face] = rgba_values
             self.colours[key][0] = colour
+
+    def merge_duplicate_colours(self, apply_after=False):
+        new_colours = OrderedDict()
+        for key in self.colours:
+            colour = self.colours[key][0]
+            if colour.colour_code in new_colours:
+                new_colours[colour.colour_code][1].append(self.colours[key][1])
+            else:
+                new_colours[colour.colour_code] = [colour, self.colours[key][1]]
+        self.colours = new_colours
+        if apply_after:
+            for key in self.colours:
+                self.apply_color(key=key)
+
+    def map_to_ldraw_colours(self, included_colour_categories):
+        colourlist = get_all_brickcolours(included_colour_categories)
+        for key in self.colours:
+            if self.colours[key][0].colour_type == "Direct":
+                #print(self.colours[key][0])
+                rgb_values = self.colours[key][0].rgb_values
+                mappedcolor = search_brickcolour_by_rgb_colour(rgb_values, colourlist)[0]
+                self.colours[key][0] = mappedcolor
+        self.merge_duplicate_colours(True)
 
     def convert_to_dat_file(self, filepath, main_file_name, author, license_line):
         file_name = os.path.basename(filepath)
