@@ -1,7 +1,7 @@
 import trimesh
 import trimesh.visual.material
 import os
-from brick_data.brickcolour import Brickcolour, get_closest_brickcolour_by_rgb_colour, get_all_brickcolours
+from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_closest_brickcolour_by_rgb_colour, get_all_brickcolours
 import numpy as np
 from collections import OrderedDict
 # Todo: Change np print settings?

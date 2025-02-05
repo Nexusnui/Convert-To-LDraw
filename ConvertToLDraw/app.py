@@ -21,9 +21,9 @@ from PyQt6.QtWidgets import (
     QGroupBox
 )
 
-from brick_data.ldrawObject import LdrawObject, default_part_licenses
-from brick_data.brick_categories import brick_categories
-from subpartPanel import SubpartPanel, ColourPanel
+from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, default_part_licenses
+from ConvertToLDraw.brick_data.brick_categories import brick_categories
+from ConvertToLDraw.subpartPanel import SubpartPanel, ColourPanel
 
 basedir = os.path.dirname(__file__)
 
@@ -436,7 +436,7 @@ def mm_float_to_string(number: float | int):
     return f"{number:.2f}mm"
 
 
-if __name__ == "__main__":
+def run():
     app = QApplication([])
     app.setWindowIcon(QIcon(os.path.join(basedir, "icons/ConvertToLDraw_icon.ico")))
 
@@ -445,3 +445,6 @@ if __name__ == "__main__":
     window.show()
 
     app.exec()
+
+if __name__ == "__main__":
+    run()

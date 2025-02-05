@@ -1,4 +1,4 @@
-from brick_data.brickcolour import Brickcolour, get_contrast_colour, is_brickcolour, get_all_brickcolours
+from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_contrast_colour, is_brickcolour, get_all_brickcolours
 from PyQt6.QtWidgets import QWidget, QPushButton, QHBoxLayout, QLabel, QLineEdit, QApplication, QColorDialog, \
     QVBoxLayout, QTabWidget, QTableView
 
