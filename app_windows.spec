@@ -2,10 +2,10 @@
 
 
 a = Analysis(
-    ['src\\app.py'],
+    ['ConvertToLDraw\\app.py'],
     pathex=[],
     binaries=[],
-    datas=[('src\\icons\\ConvertToLDraw_icon.ico','icons'),('src\\icons\\reload-icon.svg','icons'),('src\\brick_data\\colour_definitions.csv','brick_data'),('LICENSE','.')],
+    datas=[('ConvertToLDraw\\icons\\ConvertToLDraw_icon.ico','icons'),('ConvertToLDraw\\icons\\reload-icon.svg','icons'),('ConvertToLDraw\\brick_data\\colour_definitions.csv','brick_data'),('LICENSE','.')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -32,7 +32,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='src\\icons\\ConvertToLDraw_icon.ico',
+    icon='ConvertToLDraw\\icons\\ConvertToLDraw_icon.ico',
 )
 coll = COLLECT(
     exe,

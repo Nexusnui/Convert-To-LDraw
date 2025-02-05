@@ -1,3 +1,4 @@
+# Todo Rewrite for 1.1.0
 # Manual Installation (Windows/Mac/Linux)
 This guide is mainly written for Windows.  
 The parts for Mac and Linux are incomplete.
@@ -17,7 +18,7 @@ https://github.com/Nexusnui/Convert-To-LDraw/releases/latest
    - `venv/bin/activate`(Mac/Linux)
    - [other variants](https://docs.python.org/3/library/venv.html#how-venvs-work)
 7. Install requirements with `pip install -r build-scripts/requirements.txt`
-8. Try to open the application with `python src/app.py` if it opens everything went right
+8. Try to open the application with `python ConvertToLDraw/app.py` if it opens everything went right
 9. close the application and deactivate the virtual Environment with `deactivate`
 
 Creating a Shortcut(Windows)
@@ -31,12 +32,12 @@ Creating a Shortcut(Windows)
 8. Name the shortcut "ConvertToLDraw"
 9. Right click the new shortcut and select "properties"
 10. Remove "\venv\Scripts" from the execute in field
-11. Add "src/app.py" after target -> "...\pythonw.exe src/app.py"
-12. Optionally change the icon to the one in src\icons
+11. Add "ConvertToLDraw/app.py" after target -> "...\pythonw.exe ConvertToLDraw/app.py"
+12. Optionally change the icon to the one in ConvertToLDraw\icons
 13. Save the changes
 14. You can now open the application by double clicking the shortcut
 
 Creating a Shortcut(Mac/Linux):
-- You need to create a link to your "venv/bin/pythonw" opening "src/app.py" running in the "ConvertToLDraw" directory
+- You need to create a link to your "venv/bin/pythonw" opening "ConvertToLDraw/app.py" running in the "ConvertToLDraw" directory
 - On Linux you can manually create a .desktop file in the appropriate location
 - Otherwise you might want try [pyshortcuts](https://newville.github.io/pyshortcuts/)
