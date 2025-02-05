@@ -177,8 +177,16 @@ def get_all_brickcolours(included_color_categories=None):
 
 
 def search_brickcolour_by_rgb_colour(rgb_colour: str, colourlist: list):
-    colourlist.sort(key=lambda c: get_hex_colour_distance(rgb_colour, c.rgb_values))
+    colourlist.sort(key=lambda c: get_hex_colour_weight(rgb_colour, c.rgb_values))
     return colourlist
+
+
+def get_closest_brickcolour_by_rgb_colour(rgb_colour: str, colourlist: list):
+    r_1 = int(rgb_colour[1:3], 16)
+    g_1 = int(rgb_colour[3:5], 16)
+    b_1 = int(rgb_colour[5:7], 16)
+    return min(colourlist, key=lambda c: _get_hex_colour_weight(r_1, g_1, b_1, c.rgb_values))
+
 
 def get_contrast_colour(rgb_values: str):
     r = 0 if int(rgb_values[1:3], 16) < 128 else 1
@@ -198,16 +206,19 @@ def get_complementary_colour(rgb_values: str):
     return f"#{''.join([red, green, blue])}"
 
 
-def get_hex_colour_distance(colour_1: str, colour_2: str) -> float:
+def get_hex_colour_weight(colour_1: str, colour_2: str) -> int:
     if colour_1 == colour_2:
         return 0
     r_1 = int(colour_1[1:3], 16)
     g_1 = int(colour_1[3:5], 16)
     b_1 = int(colour_1[5:7], 16)
-    rgb_1 = np.array((r_1, g_1, b_1))
+
+    return _get_hex_colour_weight(r_1, g_1, b_1, colour_2)
+
+
+def _get_hex_colour_weight(r_1: int, g_1: int, b_1: int, colour_2: str) -> int:
     r_2 = int(colour_2[1:3], 16)
     g_2 = int(colour_2[3:5], 16)
     b_2 = int(colour_2[5:7], 16)
-    rgb_2 = np.array((r_2, g_2, b_2))
-    distance = np.linalg.norm(rgb_1-rgb_2)
-    return distance
+    return (r_1-r_2)**2 + (g_1-g_2)**2 + (b_1-b_2)**2
+

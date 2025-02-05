@@ -1,7 +1,7 @@
 import trimesh
 import trimesh.visual.material
 import os
-from brick_data.brickcolour import Brickcolour, search_brickcolour_by_rgb_colour, get_all_brickcolours
+from brick_data.brickcolour import Brickcolour, get_closest_brickcolour_by_rgb_colour, get_all_brickcolours
 import numpy as np
 from collections import OrderedDict
 # Todo: Change np print settings?
@@ -263,9 +263,8 @@ class Subpart:
         colourlist = get_all_brickcolours(included_colour_categories)
         for key in self.colours:
             if self.colours[key][0].colour_type == "Direct":
-                #print(self.colours[key][0])
                 rgb_values = self.colours[key][0].rgb_values
-                mappedcolor = search_brickcolour_by_rgb_colour(rgb_values, colourlist)[0]
+                mappedcolor = get_closest_brickcolour_by_rgb_colour(rgb_values, colourlist)
                 self.colours[key][0] = mappedcolor
         self.merge_duplicate_colours(True)
 
