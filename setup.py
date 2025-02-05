@@ -27,6 +27,11 @@ setup(
                       "scipy==1.15.1",
                       "trimesh==4.6.1",
                       ],
+    entry_points={
+        'gui_scripts': [
+            'ConvertToLDraw = ConvertToLDraw.app:run',
+        ]
+    },
 
     classifiers=[
         'Development Status :: 1 - Planning',
