@@ -4,7 +4,7 @@ basedir = os.path.dirname(__file__)
 
 
 def is_brickcolour(colour_code: str):
-    if len(colour_code) < 1:
+    if len(colour_code) < 1 or colour_code is None:
         return False, "No Colour Code", "Empty colour code was provided"
     elif not colour_code.startswith("0x2") and not colour_code.startswith("#"):
         if not colour_code.isdigit():

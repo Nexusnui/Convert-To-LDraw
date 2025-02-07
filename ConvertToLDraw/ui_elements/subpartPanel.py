@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import (
     QWidget,
     QApplication,
     QVBoxLayout,
+    QHBoxLayout,
     QFormLayout,
     QLineEdit,
     QPushButton,
@@ -69,6 +70,15 @@ class SubpartTab(QWidget):
         # Override / Set Colour
 
         if self.subpart.multicolour:
+            self.colour_inputs = QWidget()
+            colour_inputs_layout = QHBoxLayout()
+            merge_colours_button = QPushButton("Merge Duplicate Colours")
+            merge_colours_button.clicked.connect(self.merge_duplicate_colours)
+            colour_inputs_layout.addWidget(merge_colours_button)
+
+            self.colour_inputs.setLayout(colour_inputs_layout)
+            self.main_settings.addRow(self.colour_inputs)
+
             main_colour_text = "Override Colours"
             brick_colour = Brickcolour("16")
         else:
@@ -92,8 +102,7 @@ class SubpartTab(QWidget):
             self.multicolour_widget.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
             row_height = self.multicolour_widget.verticalHeader().sectionSize(0)
             column_width = self.multicolour_widget.size().width()
-            print(self.multicolour_widget.verticalHeader().sectionSize(0))
-            new_widget_height = row_height * 6
+            new_widget_height = row_height * 5
             if len(self.subpart.colours) < 5:
                 new_widget_height = (len(self.subpart.colours) + 1) * row_height
             self.multicolour_widget.setMinimumSize(column_width, new_widget_height)
@@ -128,6 +137,7 @@ class SubpartTab(QWidget):
             )
             answer = dlg.exec()
             if answer == QMessageBox.StandardButton.Yes:
+                self.subpart.apply_color(colour)
                 self._change_to_single_colour_view()
             else:
                 self.setDisabled(False)
@@ -135,7 +145,8 @@ class SubpartTab(QWidget):
         elif colour is None:
             print("Invalid Colour")
             return
-        self.subpart.apply_color(colour)
+        else:
+            self.subpart.apply_color(colour)
         self.setDisabled(False)
 
     def show_preview(self):
@@ -145,6 +156,27 @@ class SubpartTab(QWidget):
         b = int(hex_bg_color[5:7], 16)
         self.subpart.mesh.show(smooth=False, resolution=(900, 900),
                                caption="Subpart Preview", background=(r, g, b, 255))
+
+    def changecolour(self, colour: Brickcolour, key):
+        self.subpart.apply_color(colour, key)
+
+    def merge_duplicate_colours(self):
+        self.setDisabled(True)
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("Merge Duplicate Colours?")
+        dlg.setText(f'Merge duplicate colours?\n'
+                    f'(Only reversible by reloading the file)')
+        dlg.setIcon(QMessageBox.Icon.Warning)
+        dlg.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        answer = dlg.exec()
+        if answer == QMessageBox.StandardButton.Yes:
+            self.subpart.merge_duplicate_colours()
+            self.subpartcolourlist.refresh_data()
+            if not self.subpart.multicolour:
+                self._change_to_single_colour_view()
+        self.setDisabled(False)
 
     def _on_select_brickcolour(self, index):
         if index.column() in [0, 2]:
@@ -163,10 +195,10 @@ class SubpartTab(QWidget):
         self.main_colour_input.colour_changed.connect(self.apply_main_colour)
         self.main_settings.removeWidget(self.apply_colour_button)
         self.apply_colour_button.deleteLater()
+        self.main_settings.removeWidget(self.colour_inputs)
+        self.colour_inputs.deleteLater()
         self.main_colour_input.label.setText("Subpart Colour")
-
-    def changecolour(self, colour: Brickcolour, key):
-        self.subpart.apply_color(colour, key)
+        self.main_colour_input.changecolour(self.subpart.main_colour, False)
 
 
 class Subpartcolourlistmodel(QAbstractTableModel):
@@ -220,8 +252,7 @@ class Subpartcolourlistmodel(QAbstractTableModel):
 
     def setData(self, index, value, role):
         if role == Qt.ItemDataRole.EditRole:
-            print(value)
-            if is_brickcolour(value):
+            if is_brickcolour(value)[0]:
                 new_colour = Brickcolour(value)
                 if new_colour.ldrawname == "Undefined":
                     dlg = QMessageBox(self.parent())
@@ -249,6 +280,10 @@ class Subpartcolourlistmodel(QAbstractTableModel):
         elif index.column() == 2:
             return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
+    def refresh_data(self):
+        self.beginResetModel()
+        self._data_keys = list(self._data.colours.keys())
+        self.endResetModel()
 
 if __name__ == "__main__":
     app = QApplication([])
