@@ -258,6 +258,9 @@ class Subpart:
         if apply_after:
             for key in self.colours:
                 self.apply_color(key=key)
+        if len(self.colours) == 1:
+            self.multicolour = False
+            self.main_colour = self.colours.popitem()[1][0]
 
     def map_to_ldraw_colours(self, included_colour_categories):
         colourlist = get_all_brickcolours(included_colour_categories)
