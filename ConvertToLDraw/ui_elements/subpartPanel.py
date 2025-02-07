@@ -128,13 +128,7 @@ class SubpartTab(QWidget):
             )
             answer = dlg.exec()
             if answer == QMessageBox.StandardButton.Yes:
-                self.subpart.multicolour = False
-                self.mainlayout.removeWidget(self.multicolour_widget)
-                self.multicolour_widget.deleteLater()
-                self.main_colour_input.colour_changed.connect(self.apply_main_colour)
-                self.main_settings.removeWidget(self.apply_colour_button)
-                self.apply_colour_button.deleteLater()
-                self.main_colour_input.label.setText("Subpart Colour")
+                self._change_to_single_colour_view()
             else:
                 self.setDisabled(False)
                 return
@@ -161,6 +155,15 @@ class SubpartTab(QWidget):
             color_picker = BrickcolourDialog(initial_color)
             color_picker.accepted.connect(lambda: self.changecolour(color_picker.brickcolour, colour_key))
             color_picker.exec()
+
+    def _change_to_single_colour_view(self):
+        self.subpart.multicolour = False
+        self.mainlayout.removeWidget(self.multicolour_widget)
+        self.multicolour_widget.deleteLater()
+        self.main_colour_input.colour_changed.connect(self.apply_main_colour)
+        self.main_settings.removeWidget(self.apply_colour_button)
+        self.apply_colour_button.deleteLater()
+        self.main_colour_input.label.setText("Subpart Colour")
 
     def changecolour(self, colour: Brickcolour, key):
         self.subpart.apply_color(colour, key)
