@@ -18,7 +18,8 @@ from PyQt6.QtWidgets import (
     QDoubleSpinBox,
     QComboBox,
     QFormLayout,
-    QGroupBox
+    QGroupBox,
+    QTabWidget
 )
 
 from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, default_part_licenses
@@ -46,6 +47,7 @@ class MainWindow(QMainWindow):
 
         self.setWindowTitle("Convert To LDraw")
         self.main_layout = QVBoxLayout()
+        self.settings_tabs = QTabWidget()
 
         top_layout = QHBoxLayout()
 
@@ -188,16 +190,22 @@ class MainWindow(QMainWindow):
         preview_area.addWidget(self.loaded_file_status_label)
 
     # Subpart and Color Editor Area
-        subpart_area = QGroupBox("Subparts and Colour")
+        subpart_area = QWidget()
         self.subpart_area_layout = QVBoxLayout()
         subpart_area.setLayout(self.subpart_area_layout)
 
     # Add Elements to Main Layout
         top_layout.addWidget(part_settings_area)
         top_layout.addWidget(file_select_area)
-        self.main_layout.addLayout(top_layout)
-        self.main_layout.addWidget(self.convert_button)
-        self.main_layout.addWidget(subpart_area)
+        main_settings_widget = QWidget()
+        main_settings_widget.setLayout(top_layout)
+        self.settings_tabs.addTab(main_settings_widget, "Main Part Settings")
+
+        self.main_layout.addWidget(self.settings_tabs)
+        file_select_inputs.addRow(self.convert_button)
+
+        self.settings_tabs.addTab(subpart_area, "Subpart and Colour Settings")
+
         self.main_layout.addLayout(preview_area)
         widget = QWidget()
         widget.setLayout(self.main_layout)

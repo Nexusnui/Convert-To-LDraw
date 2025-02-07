@@ -11,7 +11,8 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QMessageBox,
     QTableView,
-    QHeaderView
+    QHeaderView,
+    QLabel
 )
 
 from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart
@@ -76,10 +77,14 @@ class SubpartTab(QWidget):
             merge_colours_button.clicked.connect(self.merge_duplicate_colours)
             colour_inputs_layout.addWidget(merge_colours_button)
 
+            map_colours_button = QPushButton("Convert to Ldraw Colours")
+            map_colours_button.clicked.connect(self.map_colours_to_LDraw)
+            colour_inputs_layout.addWidget(map_colours_button)
+
             self.colour_inputs.setLayout(colour_inputs_layout)
             self.main_settings.addRow(self.colour_inputs)
 
-            main_colour_text = "Override Colours"
+            main_colour_text = "Override Colour"
             brick_colour = Brickcolour("16")
         else:
             main_colour_text = "Subpart Colour"
@@ -87,7 +92,7 @@ class SubpartTab(QWidget):
         self.main_colour_input = BrickcolourWidget(main_colour_text, brick_colour)
         self.main_settings.addRow(self.main_colour_input)
         if self.subpart.multicolour:
-            self.apply_colour_button = QPushButton("Apply Colour")
+            self.apply_colour_button = QPushButton("Apply Override Colour")
             self.apply_colour_button.clicked.connect(self.apply_main_colour)
             self.main_settings.addRow(self.apply_colour_button)
             self.multicolour_widget = QTableView()
@@ -106,13 +111,19 @@ class SubpartTab(QWidget):
             if len(self.subpart.colours) < 5:
                 new_widget_height = (len(self.subpart.colours) + 1) * row_height
             self.multicolour_widget.setMinimumSize(column_width, new_widget_height)
+            # Model Info Label
+            self.info_label = QLabel(f"{len(self.subpart.colours)} Different Colours")
+            self.info_label.setAlignment(Qt.AlignmentFlag.AlignVCenter|Qt.AlignmentFlag.AlignRight)
         else:
             self.main_colour_input.colour_changed.connect(self.apply_main_colour)
+
+
 
     # Add Elements to Main Layout
         self.mainlayout.addLayout(self.main_settings)
         if self.subpart.multicolour:
             self.mainlayout.addWidget(self.multicolour_widget)
+            self.mainlayout.addWidget(self.info_label)
         if not single_part:
             self.mainlayout.addWidget(self.preview_button)
 
@@ -176,7 +187,13 @@ class SubpartTab(QWidget):
             self.subpartcolourlist.refresh_data()
             if not self.subpart.multicolour:
                 self._change_to_single_colour_view()
+            else:
+                self.info_label.setText(f"{len(self.subpart.colours)} Different Colours")
         self.setDisabled(False)
+
+    def map_colours_to_LDraw(self):
+        pass
+        # Todo: Map Colours to LDraw
 
     def _on_select_brickcolour(self, index):
         if index.column() in [0, 2]:
@@ -197,6 +214,8 @@ class SubpartTab(QWidget):
         self.apply_colour_button.deleteLater()
         self.main_settings.removeWidget(self.colour_inputs)
         self.colour_inputs.deleteLater()
+        self.mainlayout.removeWidget(self.info_label)
+        self.info_label.deleteLater()
         self.main_colour_input.label.setText("Subpart Colour")
         self.main_colour_input.changecolour(self.subpart.main_colour, False)
 
