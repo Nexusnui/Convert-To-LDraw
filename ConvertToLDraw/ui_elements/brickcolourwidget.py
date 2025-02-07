@@ -1,9 +1,30 @@
-from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_contrast_colour, is_brickcolour, get_all_brickcolours
-from PyQt6.QtWidgets import QWidget, QPushButton, QHBoxLayout, QLabel, QLineEdit, QApplication, QColorDialog, \
-    QVBoxLayout, QTabWidget, QTableView
+from ConvertToLDraw.brick_data.brickcolour import (
+    Brickcolour,
+    get_contrast_colour,
+    is_brickcolour,
+    get_all_brickcolours,
+    search_brickcolour_by_rgb_colour,
+    search_by_color_name
+)
+from PyQt6.QtWidgets import (
+    QWidget,
+    QPushButton,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QApplication,
+    QColorDialog,
+    QVBoxLayout,
+    QTabWidget,
+    QTableView,
+    QHeaderView,
+    QComboBox
+)
 
 from PyQt6.QtCore import pyqtSignal, QAbstractTableModel, Qt
 from PyQt6.QtGui import QColor
+
+import re
 
 
 class BrickcolourWidget(QWidget):
@@ -76,6 +97,7 @@ class BrickcolourWidget(QWidget):
 
 
 class BrickcolourDialog(QColorDialog):
+
     def __init__(self, initial_color: Brickcolour = None):
         super().__init__()
 
@@ -87,16 +109,48 @@ class BrickcolourDialog(QColorDialog):
         html_widget.setLayout(self.layout())
 
         # Widget for picking LDraw colour
-        ldraw_widget = QTableView()
-        ldraw_widget.setSelectionMode(QTableView.SelectionMode.SingleSelection)
-        ldraw_widget.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
-        ldraw_widget.setCornerButtonEnabled(False)
+        ldraw_wigdet = QWidget()
+        ldraw_wigdet_layout = QVBoxLayout()
+        ldraw_wigdet.setLayout(ldraw_wigdet_layout)
 
-        self.bickcolourlist = Brickcolourlistmodel(get_all_brickcolours())
-        ldraw_widget.setModel(self.bickcolourlist)
-        ldraw_widget.clicked.connect(self.on_select_brickcolour)
+        search_inputs = QHBoxLayout()
+        self.search_bar = QLineEdit()
+        self.search_bar.setPlaceholderText("LDraw or Lego Name")
+        self.search_bar.textChanged.connect(self.search)
+        search_inputs.addWidget(self.search_bar)
 
-        tab_widget.addTab(ldraw_widget, "LDraw Color")
+        clear_button = QPushButton("🗑️")
+        clear_button.clicked.connect(self.search_bar.clear)
+        clear_button.setStyleSheet("color: white; background-color: red;")
+        search_inputs.addWidget(clear_button)
+
+        self.search_category_input = QComboBox()
+        self.search_category_input.addItems(["Name", "Colour Values"])
+        self.search_category_input.currentIndexChanged.connect(self.update_search_bar)
+        search_inputs.addWidget(self.search_category_input)
+
+        ldraw_wigdet_layout.addLayout(search_inputs)
+
+        self.ldraw_colour_table = QTableView()
+        self.ldraw_colour_table.setSelectionMode(QTableView.SelectionMode.SingleSelection)
+        self.ldraw_colour_table.setSelectionBehavior(QTableView.SelectionBehavior.SelectRows)
+        self.ldraw_colour_table.setCornerButtonEnabled(False)
+
+        self.all_colours = get_all_brickcolours()
+        self.colourslistmodel = Brickcolourlistmodel(self.all_colours)
+        self.ldraw_colour_table.setModel(self.colourslistmodel)
+        self.ldraw_colour_table.clicked.connect(self.on_select_brickcolour)
+        self.ldraw_colour_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        self.ldraw_colour_table.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.ResizeToContents)
+        self.ldraw_colour_table.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.ResizeToContents)
+        self.ldraw_colour_table.horizontalHeader().setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
+        self.ldraw_colour_table.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.ResizeToContents)
+        self.ldraw_colour_table.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.ResizeToContents)
+        self.ldraw_colour_table.horizontalHeader().setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)
+        self.ldraw_colour_table.horizontalHeader().setSectionResizeMode(9, QHeaderView.ResizeMode.Stretch)
+        ldraw_wigdet_layout.addWidget(self.ldraw_colour_table)
+
+        tab_widget.addTab(ldraw_wigdet, "LDraw Color")
 
         tab_widget.addTab(html_widget, "Direct Colour")
         main_layout.addWidget(tab_widget)
@@ -135,8 +189,32 @@ class BrickcolourDialog(QColorDialog):
             self.preview.setText(preview_text)
 
     def on_select_brickcolour(self, index):
-        self.update_brickcolor(self.bickcolourlist.data(index, Qt.ItemDataRole.UserRole))
+        self.update_brickcolor(self.colourslistmodel.data(index, Qt.ItemDataRole.UserRole))
 
+    def search(self, text: str):
+        search_type = self.search_category_input.currentIndex()
+        if len(text) == 0:
+            self.reset_colours()
+        elif search_type == 0:
+            search_results = search_by_color_name(text, self.all_colours)
+            self.colourslistmodel.updateData(search_results)
+        elif search_type == 1:
+            if re.search('^#[a-f,A-F,0-9]{6}$', text):
+                search_brickcolour_by_rgb_colour(text, self.all_colours)
+                self.colourslistmodel.updateData()
+
+    def update_search_bar(self, value):
+        self.search_bar.clear()
+        self.all_colours = get_all_brickcolours()
+        self.colourslistmodel.updateData(self.all_colours)
+        if value == 0:
+            self.search_bar.setPlaceholderText("LDraw or Lego Name")
+        else:
+            self.search_bar.setPlaceholderText("Enter HTML Colour like:#D67923")
+
+    def reset_colours(self):
+        self.all_colours = get_all_brickcolours()
+        self.colourslistmodel.updateData(self.all_colours)
 
 class Brickcolourlistmodel(QAbstractTableModel):
     def __init__(self, colorlist):
@@ -145,13 +223,30 @@ class Brickcolourlistmodel(QAbstractTableModel):
 
     def data(self, index, role):
         if role == Qt.ItemDataRole.DisplayRole:
-            return self._data[index.row()][index.column()]
+            if index.column()==9:
+                return self._data[index.row()][index.column()].split(":")[1]
+            else:
+                return self._data[index.row()][index.column()]
         if role == Qt.ItemDataRole.DecorationRole and index.column() in [0, 2]:
             html_color = self._data[index.row()].rgb_values
             return QColor(html_color)
         if role == Qt.ItemDataRole.DecorationRole and index.column() == 3:
             html_color = self._data[index.row()].rgb_edge
             return QColor(html_color)
+        if role == Qt.ItemDataRole.BackgroundRole:
+            if index.column() == 9 or index.column() == 1:
+                colour_vendor = self._data[index.row()][9].split(":")[0]
+                if colour_vendor == "LDraw":
+                    return QColor("#B40000")
+                else:
+                    return QColor("#FAC80A")
+        if role == Qt.ItemDataRole.ForegroundRole:
+            if index.column() == 9:
+                colour_vendor = self._data[index.row()][9].split(":")[0]
+                if colour_vendor == "LDraw":
+                    return QColor("#ffffff")
+                else:
+                    return QColor("#000000")
         if role == Qt.ItemDataRole.TextAlignmentRole and index.column() in [1, 4, 5, 7]:
             return Qt.AlignmentFlag.AlignVCenter + Qt.AlignmentFlag.AlignRight
         if role == Qt.ItemDataRole.UserRole:
@@ -174,6 +269,12 @@ class Brickcolourlistmodel(QAbstractTableModel):
 
     def columnCount(self, index):
         return 10
+
+    def updateData(self, data=None):
+        self.beginResetModel()
+        if data is not None:
+            self._data = data
+        self.endResetModel()
 
 
 if __name__ == "__main__":

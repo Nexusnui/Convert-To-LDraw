@@ -180,6 +180,17 @@ def search_brickcolour_by_rgb_colour(rgb_colour: str, colourlist: list):
     colourlist.sort(key=lambda c: get_hex_colour_weight(rgb_colour, c.rgb_values))
     return colourlist
 
+def search_by_color_name(name: str, colourlist: list):
+    name = "".join(name.upper().split(" "))
+
+    def matchname(colour: Brickcolour):
+        if name in "".join(colour.ldrawname.upper().split(" ")) or name in "".join(colour.legoname.upper().split(" ")):
+            return True
+        else:
+            return False
+    search_results = [colour for colour in colourlist if matchname(colour)]
+    return search_results
+
 
 def get_closest_brickcolour_by_rgb_colour(rgb_colour: str, colourlist: list):
     r_1 = int(rgb_colour[1:3], 16)

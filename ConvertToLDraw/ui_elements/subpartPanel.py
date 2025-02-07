@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import (
 
 from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart
 from ConvertToLDraw.brick_data.brickcolour import Brickcolour, is_brickcolour, get_contrast_colour
-from ConvertToLDraw.brickcolourwidget import BrickcolourWidget, BrickcolourDialog
+from ConvertToLDraw.ui_elements.brickcolourwidget import BrickcolourWidget, BrickcolourDialog
 
 
 class SubpartPanel(QTabWidget):

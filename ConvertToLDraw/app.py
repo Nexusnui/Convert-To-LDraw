@@ -23,7 +23,7 @@ from PyQt6.QtWidgets import (
 
 from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, default_part_licenses
 from ConvertToLDraw.brick_data.brick_categories import brick_categories
-from ConvertToLDraw.subpartPanel import SubpartPanel, ColourPanel
+from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel, ColourPanel
 
 basedir = os.path.dirname(__file__)
 
