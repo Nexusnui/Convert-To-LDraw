@@ -217,14 +217,12 @@ class MainWindow(QMainWindow):
         filepath = self.input_file_line.text()
         filename = os.path.basename(filepath)
         if reload:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Reload Model?")
-            dlg.setText(f'Reloading resets all colours and other changes\n Reload "{filename}"?')
-            dlg.setIcon(QMessageBox.Icon.Warning)
-            dlg.setStandardButtons(
+            answer = QMessageBox.warning(
+                self,
+                "Reload Model?",
+                f'Reloading resets all colours and other changes\n Reload "{filename}"?',
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
             )
-            answer = dlg.exec()
             if answer == QMessageBox.StandardButton.No:
                 return
         self.disable_settings(True)
@@ -247,11 +245,7 @@ class MainWindow(QMainWindow):
             try:
                 loaded_part = LdrawObject(filepath, scale=scale, multi_object=multi_object, multicolour=multicolour)
             except Exception:
-                dlg = QMessageBox(self)
-                dlg.setWindowTitle("Failed to load file")
-                dlg.setText("File was not a 3D object or the format is unsupported")
-                dlg.setIcon(QMessageBox.Icon.Critical)
-                dlg.exec()
+                QMessageBox.critical(self, "Failed to load file", "Not a 3D object or unsupported file format")
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
                 self.enable_load_settings()
             else:
@@ -350,28 +344,24 @@ class MainWindow(QMainWindow):
         partname = self.partname_line.text()
         if len(partname) == 0:
             partname = "UntitledModel"
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("No Partname")
-            dlg.setText(f"No partname was set.\nWant to save as 'UntitledModel'")
-            dlg.setIcon(QMessageBox.Icon.Warning)
-            dlg.setStandardButtons(
+            answer = QMessageBox.warning(
+                self,
+                "No Partname",
+                f"No partname was set.\nWant to save as 'UntitledModel'",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
             )
-            answer = dlg.exec()
             if answer == QMessageBox.StandardButton.No:
                 self.disable_settings(False)
                 return
         category = self.part_category_input.currentText()
         if category not in brick_categories and len(category) > 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Unofficial Category")
-            dlg.setText(f'The category "{category}" is not one of official LDraw Categories.\n'
-                        f'Do want to use it anyway?')
-            dlg.setIcon(QMessageBox.Icon.Warning)
-            dlg.setStandardButtons(
+            answer = QMessageBox.warning(
+                self,
+                "Unofficial Category",
+                f'The category "{category}" is not one of official LDraw Categories.\n'
+                f'Do want to use it anyway?',
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
             )
-            answer = dlg.exec()
             if answer == QMessageBox.StandardButton.No:
                 self.disable_settings(False)
                 return
@@ -392,47 +382,29 @@ class MainWindow(QMainWindow):
         self.ldraw_object.part_license = part_license
         filepath = self.output_file_line.text()
         if os.path.isfile(filepath):
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("File already Exists")
-            dlg.setText(f"There is already a file with the same name:\n{filepath}\nOverride?")
-            dlg.setIcon(QMessageBox.Icon.Warning)
-            dlg.setStandardButtons(
+            answer = QMessageBox.warning(
+                self,
+                "File already Exists",
+                f"There is already a file with the same name:\n{filepath}\nOverride?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
             )
-            answer = dlg.exec()
             if answer == QMessageBox.StandardButton.No:
                 self.disable_settings(False)
                 return
         elif len(os.path.basename(filepath)) == 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("No Outputfile")
-            dlg.setText("No output file specified")
-            dlg.setIcon(QMessageBox.Icon.Warning)
+            QMessageBox.warning(self, "No Outputfile", "No output file specified")
             self.disable_settings(False)
-            dlg.exec()
             return
         elif not os.path.isdir(os.path.dirname(filepath)):
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Invalid output directory")
-            dlg.setText(f"'{os.path.dirname(filepath)}' is not a valid output directory")
-            dlg.setIcon(QMessageBox.Icon.Warning)
-            dlg.exec()
+            QMessageBox.warning(self, "Invalid directory", f"'{os.path.dirname(filepath)}' is not a valid directory")
             self.disable_settings(False)
             return
         try:
             self.ldraw_object.convert_to_dat_file(filepath)
         except Exception:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Conversion Failed")
-            dlg.setText("Conversion may have failed due to unknown error")
-            dlg.setIcon(QMessageBox.Icon.Critical)
-            dlg.exec()
+            QMessageBox.critical(self, "Conversion Failed", "Conversion failed due to unknown error")
         else:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Conversion Successfull")
-            dlg.setText(f"Model was saved to {filepath}")
-            dlg.setIcon(QMessageBox.Icon.Information)
-            dlg.exec()
+            QMessageBox.information(self, "Conversion Successfull", f"Model was saved to {filepath}")
         self.disable_settings(False)
 
 
