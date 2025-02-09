@@ -323,7 +323,6 @@ class ColourCategoriesDialog(QDialog):
     def get_selected_items(self):
         selected_items = []
         for item in self.items:
-            print(item.checkState())
             if item.checkState() == Qt.CheckState.Checked:
                 selected_items.append(item.text())
         return selected_items

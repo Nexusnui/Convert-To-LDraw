@@ -263,15 +263,15 @@ class MainWindow(QMainWindow):
                     self.subpart_area_layout.removeWidget(self.subpart_panel)
                     self.subpart_panel.deleteLater()
                 if len(self.ldraw_object.subparts) > 1:
-                    self.subpart_panel = SubpartPanel(self.ldraw_object)
+                    self.subpart_panel = SubpartPanel(self.ldraw_object, self)
                 else:
-                    self.subpart_panel = ColourPanel(self.ldraw_object)
+                    self.subpart_panel = ColourPanel(self.ldraw_object, self)
                 self.subpart_area_layout.addWidget(self.subpart_panel)
 
                 x_length = mm_float_to_string(self.ldraw_object.size[0])
                 y_length = mm_float_to_string(self.ldraw_object.size[1])
                 z_length = mm_float_to_string(self.ldraw_object.size[2])
-                self.loaded_file_status_label.setText(f"Current Model: {filename} ({x_length}×{y_length}×{z_length})")
+                self.loaded_file_status_label.setText(f"Current Model: {filename}\n({x_length}×{y_length}×{z_length})")
 
                 if not self.file_loaded:
                     self.file_loaded = True
@@ -330,6 +330,7 @@ class MainWindow(QMainWindow):
         self.part_category_input.setDisabled(value)
         self.part_license_input.setDisabled(value)
         self.keywords_line.setReadOnly(value)
+        self.settings_tabs.tabBar().setDisabled(value)
         if self.file_loaded:
             self.subpart_panel.setDisabled(value)
 

@@ -17,18 +17,19 @@ from PyQt6.QtWidgets import (
 
 from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart
 from ConvertToLDraw.brick_data.brickcolour import Brickcolour, is_brickcolour, get_contrast_colour
-from ConvertToLDraw.ui_elements.brickcolourwidget import BrickcolourWidget, BrickcolourDialog
+from ConvertToLDraw.ui_elements.brickcolourwidget import BrickcolourWidget, BrickcolourDialog, ColourCategoriesDialog
 
 
 class SubpartPanel(QTabWidget):
-    def __init__(self, mainmodel: LdrawObject):
+    def __init__(self, mainmodel: LdrawObject, main_window):
         super().__init__()
 
+        self.main_window = main_window
         for sp in mainmodel.subparts.values():
             self.__add_tab(sp)
 
     def __add_tab(self, subpart: Subpart):
-        tab = SubpartTab(subpart)
+        tab = SubpartTab(subpart, main_window=self.main_window)
         index = self.addTab(tab, subpart.name)
         tab.name_changed.connect(lambda name: self.setTabText(index, name))
 
@@ -38,20 +39,21 @@ class SubpartPanel(QTabWidget):
 
 
 class ColourPanel(QWidget):
-    def __init__(self, mainmodel: LdrawObject):
+    def __init__(self, mainmodel: LdrawObject, main_window):
         super().__init__()
         mainlayout = QVBoxLayout()
         self.setLayout(mainlayout)
         subpart = list(mainmodel.subparts.items())[0][1]
-        mainlayout.addWidget(SubpartTab(subpart, single_part=True))
+        mainlayout.addWidget(SubpartTab(subpart, single_part=True, main_window=main_window))
 
 
 class SubpartTab(QWidget):
     name_changed = pyqtSignal(str)
 
-    def __init__(self, subpart: Subpart, single_part=False):
+    def __init__(self, subpart: Subpart, main_window, single_part=False, ):
         super().__init__()
         self.subpart = subpart
+        self.main_window = main_window
 
         self.mainlayout = QVBoxLayout()
         self.setLayout(self.mainlayout)
@@ -192,8 +194,27 @@ class SubpartTab(QWidget):
         self.setDisabled(False)
 
     def map_colours_to_LDraw(self):
-        pass
-        # Todo: Map Colours to LDraw
+        categories_dialog = ColourCategoriesDialog(
+            message="Select Colour Categories Direct/HTML will be matched with.\n"
+                    "(Only Reversible by reloading and may take a while)"
+        )
+
+        previous_text = self.main_window.loaded_file_status_label.text()
+        self.main_window.loaded_file_status_label.setText("Mapping Colours\nCould take a bit of time")
+
+        if categories_dialog.exec():
+            colour_categories = categories_dialog.get_selected_items()
+            if len(colour_categories) == 0:
+                QMessageBox.warning(self, "Nothing Selected", "No Categories selected\nMapping Aborted")
+                self.main_window.loaded_file_status_label.setText(previous_text)
+                return
+            self.main_window.disable_settings(True)
+            self.subpart.map_to_ldraw_colours(colour_categories)
+            self.subpartcolourlist.refresh_data()
+            self.info_label.setText(f"{len(self.subpart.colours)} Different Colours")
+            self.main_window.loaded_file_status_label.setText(previous_text)
+            self.main_window.disable_settings(False)
+
 
     def _on_select_brickcolour(self, index):
         if index.column() in [0, 2]:
