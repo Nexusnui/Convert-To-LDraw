@@ -5,7 +5,7 @@ a = Analysis(
     ['ConvertToLDraw\\app.py'],
     pathex=[],
     binaries=[],
-    datas=[('ConvertToLDraw\\icons\\ConvertToLDraw_icon.ico','icons'),('ConvertToLDraw\\icons\\reload-icon.svg','icons'),('ConvertToLDraw\\brick_data\\colour_definitions.csv','brick_data')],
+    datas=[('ConvertToLDraw\\icons\\ConvertToLDraw_icon.ico','icons'),('ConvertToLDraw\\icons\\reload-icon.svg','icons'),('ConvertToLDraw\\brick_data\\colour_definitions.csv','ConvertToLDraw\\brick_data')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
