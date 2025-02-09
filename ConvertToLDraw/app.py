@@ -28,11 +28,13 @@ from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel, ColourPanel
 
 basedir = os.path.dirname(__file__)
 
+app_version = "1.2.0"
+
 if platform.system() == "Windows":
     try:
         from ctypes import windll  # Only exists on Windows.
 
-        myappid = "nexusnui.converttoldraw.1.2.0"
+        myappid = f"nexusnui.converttoldraw.{app_version}"
         windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except ImportError:
         pass
@@ -45,7 +47,7 @@ class MainWindow(QMainWindow):
         self.ldraw_object = None
         self.file_loaded = False
 
-        self.setWindowTitle("Convert To LDraw")
+        self.setWindowTitle(f"Convert To LDraw {app_version}")
         self.main_layout = QVBoxLayout()
         self.settings_tabs = QTabWidget()
 
