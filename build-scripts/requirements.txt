@@ -8,6 +8,6 @@ networkx==3.4.2
 pillow==11.1.0
 pycollada==0.8
 pyglet==1.5.29
-PyQt6==6.8.0
+PyQt6==6.8.1
 scipy==1.15.1
 trimesh==4.6.1
