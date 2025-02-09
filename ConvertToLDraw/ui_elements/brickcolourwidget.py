@@ -6,6 +6,9 @@ from ConvertToLDraw.brick_data.brickcolour import (
     search_brickcolour_by_rgb_colour,
     search_by_color_name
 )
+
+from ConvertToLDraw.brick_data.colour_categories import colour_categories
+
 from PyQt6.QtWidgets import (
     QWidget,
     QPushButton,
@@ -18,7 +21,12 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QTableView,
     QHeaderView,
-    QComboBox
+    QComboBox,
+    QDialog,
+    QDialogButtonBox,
+    QListWidget,
+    QCheckBox,
+    QListWidgetItem
 )
 
 from PyQt6.QtCore import pyqtSignal, QAbstractTableModel, Qt
@@ -277,9 +285,61 @@ class Brickcolourlistmodel(QAbstractTableModel):
         self.endResetModel()
 
 
+class ColourCategoriesDialog(QDialog):
+    def __init__(self, parent=None,
+                 title: str = "Colour Categories", message: str = "Select Colour Categories",
+                 buttons=None):
+        super().__init__(parent)
+
+        main_layout = QVBoxLayout()
+
+        self.setWindowTitle(title)
+
+        message_label = QLabel(message)
+        self.list_widget = QListWidget()
+        self.items = []
+        for category in colour_categories:
+            item = QListWidgetItem(category)
+            item.setCheckState(Qt.CheckState.Unchecked)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            self.list_widget.addItem(item)
+            self.items.append(item)
+
+        select_all_button = QPushButton("Select All")
+        select_all_button.clicked.connect(self.check_all_items)
+
+        if buttons is None:
+            buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        button_box = QDialogButtonBox(buttons)
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+
+        main_layout.addWidget(message_label)
+        main_layout.addWidget(self.list_widget)
+        main_layout.addWidget(select_all_button)
+        main_layout.addWidget(button_box)
+        self.setLayout(main_layout)
+
+    def get_selected_items(self):
+        selected_items = []
+        for item in self.items:
+            print(item.checkState())
+            if item.checkState() == Qt.CheckState.Checked:
+                selected_items.append(item.text())
+        return selected_items
+
+    def check_all_items(self):
+        for item in self.items:
+            item.setCheckState(Qt.CheckState.Checked)
+
+
 if __name__ == "__main__":
     app = QApplication([])
     colourwidget = BrickcolourWidget(colour=Brickcolour("27"))
     colourwidget.show()
 
     app.exec()
+
+    colour_cat_dia = ColourCategoriesDialog()
+    colour_cat_dia.exec()
+    print(colour_cat_dia.get_selected_items())
