@@ -107,7 +107,10 @@ class BrickcolourWidget(QWidget):
 class BrickcolourDialog(QColorDialog):
 
     def __init__(self, initial_color: Brickcolour = None):
-        super().__init__()
+        if initial_color is None:
+            super().__init__()
+        else:
+            super().__init__(QColor(initial_color.rgb_values))
 
         main_layout = QVBoxLayout()
         tab_widget = QTabWidget()
@@ -194,6 +197,7 @@ class BrickcolourDialog(QColorDialog):
             preview_text = self.brickcolour.colour_code
             if colour.colour_type == "LDraw":
                 preview_text = f"{preview_text}: {self.brickcolour.ldrawname}"
+            self.setCurrentColor(QColor(colour.rgb_values))
             self.preview.setText(preview_text)
 
     def on_select_brickcolour(self, index):
