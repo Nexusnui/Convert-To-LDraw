@@ -1,4 +1,3 @@
-#!/usr/bin/env xdg-open
 [Desktop Entry]
 
 # The type as listed above
@@ -13,15 +12,11 @@ Name=Convert To LDraw
 # A comment which can/will be used as a tooltip
 Comment=Convert 3D Model to the LDraw Part Format
 
-# The path to the folder in which the executable is run
-#Path=$HOME/
-
 # The executable of the application, possibly with arguments.
 Exec=ConvertToLDraw
 
 # The name of the icon that will be used to display this entry
 Icon=ConvertToLDraw_icon_256x256.png
-#/home/hageta/
 
 # Describes whether this application needs to be run in a terminal or not
 Terminal=false
