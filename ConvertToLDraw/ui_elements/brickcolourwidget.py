@@ -9,6 +9,8 @@ from ConvertToLDraw.brick_data.brickcolour import (
 
 from ConvertToLDraw.brick_data.colour_categories import colour_categories
 
+from colorpicker import ColorPicker
+
 from PyQt6.QtWidgets import (
     QWidget,
     QPushButton,
@@ -16,7 +18,6 @@ from PyQt6.QtWidgets import (
     QLabel,
     QLineEdit,
     QApplication,
-    QColorDialog,
     QVBoxLayout,
     QTabWidget,
     QTableView,
@@ -25,7 +26,6 @@ from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QListWidget,
-    QCheckBox,
     QListWidgetItem
 )
 
@@ -104,20 +104,17 @@ class BrickcolourWidget(QWidget):
         color_picker.exec()
 
 
-class BrickcolourDialog(QColorDialog):
+class BrickcolourDialog(QDialog):
 
-    def __init__(self, initial_color: Brickcolour = None):
-        if initial_color is None:
-            super().__init__()
-        else:
-            super().__init__(QColor(initial_color.rgb_values))
+    def __init__(self, initial_colour: Brickcolour = None):
+        super().__init__()
+        self.setWindowTitle("Select LDraw Colour")
 
         main_layout = QVBoxLayout()
         tab_widget = QTabWidget()
 
         # Widget for picking direct colours
-        html_widget = QWidget()
-        html_widget.setLayout(self.layout())
+        self.direct_color_widget = ColorPicker()
 
         # Widget for picking LDraw colour
         ldraw_wigdet = QWidget()
@@ -163,12 +160,15 @@ class BrickcolourDialog(QColorDialog):
 
         tab_widget.addTab(ldraw_wigdet, "LDraw Color")
 
-        tab_widget.addTab(html_widget, "Direct Colour")
+        tab_widget.addTab(self.direct_color_widget, "Direct Colour")
         main_layout.addWidget(tab_widget)
 
         bottom_layout = QHBoxLayout()
-        dialogbox = html_widget.children().pop()
-        bottom_layout.addWidget(dialogbox)
+        buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        button_box = QDialogButtonBox(buttons)
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+        bottom_layout.addWidget(button_box)
         self.preview = QLineEdit()
         self.preview.setReadOnly(True)
         bottom_layout.addWidget(self.preview)
@@ -176,11 +176,10 @@ class BrickcolourDialog(QColorDialog):
         main_layout.addLayout(bottom_layout)
 
         self.setLayout(main_layout)
-        self.update_brickcolor(self.currentColor())
-        self.currentColorChanged.connect(self.update_brickcolor)
+        self.direct_color_widget.colorChanged.connect(self.update_brickcolor)
 
-        if initial_color is not None:
-            self.update_brickcolor(initial_color)
+        if initial_colour is not None:
+            self.update_brickcolor(initial_colour)
         else:
             self.update_brickcolor(Brickcolour("16"))
 
@@ -191,7 +190,7 @@ class BrickcolourDialog(QColorDialog):
             self.brickcolour = Brickcolour(colour.name())
             self.preview.setText(self.brickcolour.colour_code)
         if isinstance(colour, Brickcolour):
-            self.setCurrentColor(QColor(colour.rgb_values))
+            self.direct_color_widget.setHex(colour.rgb_values[1:])
             text_colour = get_contrast_colour(colour.rgb_values)
             self.preview.setStyleSheet(f"background-color : {colour.rgb_values}; color : {text_colour};")
             self.brickcolour = colour
