@@ -8,10 +8,10 @@ setup(
     author='Nexusnui',
     author_email='nocontact@notaprovider.de',
     license='GPL 3.0',
-    packages=['ConvertToLDraw', 'ConvertToLDraw.brick_data', 'ConvertToLDraw.icons', 'ConvertToLDraw.ui_elements'],
+    packages=['ConvertToLDraw', 'ConvertToLDraw.brick_data', 'ConvertToLDraw.icons', 'ConvertToLDraw.ui_elements', 'colorpicker'],
     package_data={
         'ConvertToLDraw.brick_data': ['*'],
-        'ConvertToLDraw.icons': ['ConvertToLDraw_icon.ico', 'reload-icon.svg']
+        'ConvertToLDraw.icons': ['ConvertToLDraw_icon.ico', 'ConvertToLDraw_icon*.png', 'reload-icon.svg']
     },
     install_requires=["numpy==2.2.2",
                       "cascadio==0.0.15",
