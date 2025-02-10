@@ -8,7 +8,7 @@ setup(
     author='Nexusnui',
     author_email='nocontact@notaprovider.de',
     license='GPL 3.0',
-    packages=['ConvertToLDraw', 'ConvertToLDraw.brick_data', 'ConvertToLDraw.icons'],
+    packages=['ConvertToLDraw', 'ConvertToLDraw.brick_data', 'ConvertToLDraw.icons', 'ConvertToLDraw.ui_elements'],
     package_data={
         'ConvertToLDraw.brick_data': ['*'],
         'ConvertToLDraw.icons': ['ConvertToLDraw_icon.ico', 'reload-icon.svg']
