@@ -191,13 +191,13 @@ class BrickcolourDialog(QColorDialog):
             self.brickcolour = Brickcolour(colour.name())
             self.preview.setText(self.brickcolour.colour_code)
         if isinstance(colour, Brickcolour):
+            self.setCurrentColor(QColor(colour.rgb_values))
             text_colour = get_contrast_colour(colour.rgb_values)
             self.preview.setStyleSheet(f"background-color : {colour.rgb_values}; color : {text_colour};")
             self.brickcolour = colour
             preview_text = self.brickcolour.colour_code
             if colour.colour_type == "LDraw":
                 preview_text = f"{preview_text}: {self.brickcolour.ldrawname}"
-            self.setCurrentColor(QColor(colour.rgb_values))
             self.preview.setText(preview_text)
 
     def on_select_brickcolour(self, index):
@@ -235,7 +235,7 @@ class Brickcolourlistmodel(QAbstractTableModel):
 
     def data(self, index, role):
         if role == Qt.ItemDataRole.DisplayRole:
-            if index.column()==9:
+            if index.column() == 9:
                 return self._data[index.row()][index.column()].split(":")[1]
             else:
                 return self._data[index.row()][index.column()]
