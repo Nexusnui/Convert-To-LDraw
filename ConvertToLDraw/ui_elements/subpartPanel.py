@@ -108,11 +108,11 @@ class SubpartTab(QWidget):
             self.multicolour_widget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
             self.multicolour_widget.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
             row_height = self.multicolour_widget.verticalHeader().sectionSize(0)
-            column_width = self.multicolour_widget.size().width()
+            width = self.multicolour_widget.size().width()
             new_widget_height = row_height * 5
             if len(self.subpart.colours) < 5:
                 new_widget_height = (len(self.subpart.colours) + 1) * row_height
-            self.multicolour_widget.setMinimumSize(column_width, new_widget_height)
+            self.multicolour_widget.setMinimumSize(width, new_widget_height)
             # Model Info Label
             self.info_label = QLabel(f"{len(self.subpart.colours)} Different Colours")
             self.info_label.setAlignment(Qt.AlignmentFlag.AlignVCenter|Qt.AlignmentFlag.AlignRight)

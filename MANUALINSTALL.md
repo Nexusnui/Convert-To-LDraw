@@ -33,7 +33,7 @@ Creating a Shortcut(Windows)
 
 Optional Steps:  
 6. Right-click the new shortcut and select "properties"
-7. Change target to the location your projects are located for example "C:\Users\YourUsername\3D Objects"
+7. Change target to the location your projects are located for example "C:\Users\YourUserName\3D Objects"
 8. Optionally change the icon to the one in
 "C:\Users\YourUserName\pipx\venvs\converttoldraw\Lib\site-packages\ConvertToLDraw\icons\"
 or [downloadable here](ConvertToLDraw/icons/ConvertToLDraw_icon.ico).

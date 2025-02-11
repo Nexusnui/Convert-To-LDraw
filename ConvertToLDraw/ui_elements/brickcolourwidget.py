@@ -109,6 +109,7 @@ class BrickcolourDialog(QDialog):
     def __init__(self, initial_colour: Brickcolour = None):
         super().__init__()
         self.setWindowTitle("Select LDraw Colour")
+        # Todo: Better Initial Size
 
         main_layout = QVBoxLayout()
         tab_widget = QTabWidget()
@@ -157,6 +158,11 @@ class BrickcolourDialog(QDialog):
         self.ldraw_colour_table.horizontalHeader().setSectionResizeMode(7, QHeaderView.ResizeMode.ResizeToContents)
         self.ldraw_colour_table.horizontalHeader().setSectionResizeMode(9, QHeaderView.ResizeMode.Stretch)
         ldraw_wigdet_layout.addWidget(self.ldraw_colour_table)
+        colunm_wdith = self.ldraw_colour_table.horizontalHeader().sectionSize(0)
+        row_height = self.ldraw_colour_table.verticalHeader().sectionSize(0)
+        new_width = int(colunm_wdith*2.5)
+        new_height = row_height*6
+        self.ldraw_colour_table.setMinimumSize(new_width, new_height)
 
         tab_widget.addTab(ldraw_wigdet, "LDraw Color")
 
