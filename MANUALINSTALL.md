@@ -1,5 +1,6 @@
 # Manual Installation (Windows/Linux/Mac)
-This guide was tested on Windows(11) and Linux(Mint), the installation with pipx should also work on Mac(untested).
+This guide was tested on Windows(11) and Linux(Mint),
+the installation with pipx should also work on Mac(not fully functional see known issues).
 
 Prerequisites:
 - Python is installed (tested with 3.12.0 on Windows and 3.10.12 on Linux)
@@ -22,7 +23,13 @@ or on some Linux distros:
 If you are on an Ubuntu based Linux distro and see an error message like this:  
 `qt.qpa.plugin: From 6.5.0 xcb-cursor0 or libxcb-cursor0 is needed to load the Qt xcb platform plugin`  
 Install libxcb-cursor0 with:  
-`sudo apt install libxcb-cursor0`
+`sudo apt install libxcb-cursor0`  
+
+Known issues with Mac OS:
+- Terminal window in the background, since pipx uses it to run a virtual environment
+- Closing the preview closes the window. 
+This is either a problem with the required version of pyglet or a conflict with pytq.
+At this point there is no solution. This may get fixed if a better preview method becomes available.
 
 Creating a Shortcut(Windows)
 1. Open the folder you want to create the shortcut in.
@@ -33,9 +40,9 @@ Creating a Shortcut(Windows)
 
 Optional Steps:  
 6. Right-click the new shortcut and select "properties"
-7. Change target to the location your projects are located for example "C:\Users\YourUserName\3D Objects"
+7. Change target to the location your projects are located for example "C:\Users\{YourUserName}\3D Objects"
 8. Optionally change the icon to the one in
-"C:\Users\YourUserName\pipx\venvs\converttoldraw\Lib\site-packages\ConvertToLDraw\icons\"
+"C:\Users\{YourUserName}\pipx\venvs\converttoldraw\Lib\site-packages\ConvertToLDraw\icons\"
 or [downloadable here](ConvertToLDraw/icons/ConvertToLDraw_icon.ico).
 
 
@@ -46,5 +53,7 @@ or another appropriate location for .desktop files.
 3. [Download the Icon](ConvertToLDraw/icons/ConvertToLDraw_icon_256x256.png)
 and move it to "~/.local/share/icons" (you may need to create that one) or another appropriate location for icons.
 
-Creating a Shortcut(Mac):
-- TBD
+Alias on Mac:
+- pipx creates an alias in  "/Users/{YourUserName}/.local/bin/"
+- you can copy or create another alies to in your application folder
+- icons can be found [here](ConvertToLDraw/icons)
