@@ -12,26 +12,29 @@ from PyQt6.QtWidgets import (
     QWidget,
     QLabel,
     QLineEdit,
-    QFrame,
     QCheckBox,
     QFileDialog,
     QMessageBox,
     QDoubleSpinBox,
     QComboBox,
-    QFormLayout
+    QFormLayout,
+    QGroupBox,
+    QTabWidget
 )
 
-from brick_data.ldrawObject import LdrawObject
-from brick_data.brick_categories import brick_categories
-from subpartPanel import SubpartPanel, ColourPanel
+from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, default_part_licenses
+from ConvertToLDraw.brick_data.brick_categories import brick_categories
+from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel, ColourPanel
 
 basedir = os.path.dirname(__file__)
+
+app_version = "1.2.0"
 
 if platform.system() == "Windows":
     try:
         from ctypes import windll  # Only exists on Windows.
 
-        myappid = "nexusnui.converttoldraw.1.1.0"
+        myappid = f"nexusnui.converttoldraw.{app_version}"
         windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except ImportError:
         pass
@@ -44,22 +47,16 @@ class MainWindow(QMainWindow):
         self.ldraw_object = None
         self.file_loaded = False
 
-        self.setWindowTitle("Convert To LDraw")
+        self.setWindowTitle(f"Convert To LDraw {app_version}")
         self.main_layout = QVBoxLayout()
+        self.settings_tabs = QTabWidget()
 
         top_layout = QHBoxLayout()
 
     # File Selection Area:
-        file_select_area = QVBoxLayout()
-        file_select_label = QLabel("File Selection")
-        file_select_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        file_select_area.addWidget(file_select_label)
-
+        file_select_area = QGroupBox("File Selection")
         file_select_inputs = QFormLayout()
-        file_select_frame = QFrame()
-        file_select_frame.setFrameStyle(1)
-        file_select_frame.setLayout(file_select_inputs)
-        file_select_area.addWidget(file_select_frame)
+        file_select_area.setLayout(file_select_inputs)
 
         # Input File Selection
         input_label = QLabel("Input File")
@@ -79,15 +76,19 @@ class MainWindow(QMainWindow):
 
         # Enable Multicolour Check
         self.multicolour_check = QCheckBox()
-        file_select_inputs.addRow("Multicolour", self.multicolour_check)
+        multicolour_label = QLabel("Multicolour ℹ️")
+        multicolour_label.setToolTip("If deactivated aLL objects are single color")
+        file_select_inputs.addRow(multicolour_label, self.multicolour_check)
         self.multicolour_check.setChecked(True)
-
 
         # Enable Multi Objects Check
         self.multi_object_check = QCheckBox()
-        file_select_inputs.addRow("Multiple Objects", self.multi_object_check)
+        multi_object_label = QLabel("Multiple Objects ℹ️")
+        multi_object_label.setToolTip("If deactivated all submodels will be merged\n"
+                                      "With multicolor unique colors are applied before merging\n"
+                                      "(If the the file does not define colors)")
+        file_select_inputs.addRow(multi_object_label, self.multi_object_check)
         self.multi_object_check.setChecked(True)
-
 
         # Set Scale
         self.scale_input = QDoubleSpinBox()
@@ -95,7 +96,9 @@ class MainWindow(QMainWindow):
         self.scale_input.setMaximum(999.999)
         self.scale_input.setMinimum(0.001)
         self.scale_input.setDecimals(3)
-        file_select_inputs.addRow("Scale", self.scale_input)
+        scale_label = QLabel("Scale ℹ️")
+        scale_label.setToolTip("Factor used to scale the model")
+        file_select_inputs.addRow(scale_label, self.scale_input)
 
         # Reload Button
         self.reload_button = QPushButton("Reload Model")
@@ -104,7 +107,9 @@ class MainWindow(QMainWindow):
         file_select_inputs.addRow(self.reload_button)
 
         # Output File Selection
-        output_label = QLabel("Output File")
+        output_label = QLabel("Output File ℹ️")
+        output_label.setToolTip("Place where the Main File is saved.\n"
+                                "Subparts are saved in 's' subdirectory located in the same directory")
         file_select_inputs.addRow(output_label)
         output_layout = QHBoxLayout()
 
@@ -120,27 +125,24 @@ class MainWindow(QMainWindow):
         file_select_inputs.addRow(output_layout)
 
     # Part Settings Area:
-        part_settings_area = QVBoxLayout()
-        part_settings_area.setAlignment(Qt.AlignmentFlag.AlignTop)
-        part_settings_label = QLabel("Parent Part Settings")
-        part_settings_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        part_settings_area.addWidget(part_settings_label)
-
+        part_settings_area = QGroupBox("Parent Part Settings")
         part_settings_inputs = QFormLayout()
-        part_settings_frame = QFrame()
-        part_settings_frame.setFrameStyle(1)
-        part_settings_frame.setLayout(part_settings_inputs)
-        part_settings_area.addWidget(part_settings_frame)
+        part_settings_area.setLayout(part_settings_inputs)
 
         # Partname Input
         self.partname_line = QLineEdit()
         self.partname_line.setPlaceholderText("UntitledModel")
-        part_settings_inputs.addRow("Descriptive Part Name", self.partname_line)
+        partname_label = QLabel("Descriptive Part Name ℹ️")
+        partname_label.setToolTip("This shows up as the Partname in Editors")
+        part_settings_inputs.addRow(partname_label, self.partname_line)
 
         # Bricklink Number Input
         self.bl_number_line = QLineEdit()
         self.bl_number_line.setPlaceholderText("Bricklinknumber")
-        part_settings_inputs.addRow("BL Number(Optional)", self.bl_number_line)
+        bl_number_label = QLabel("BL Number(Optional) ℹ️")
+        bl_number_label.setToolTip("Bricklink Studio uses this to identify a piece\n"
+                                   "Leave this empty is there is no Bricklink listing")
+        part_settings_inputs.addRow(bl_number_label, self.bl_number_line)
 
         # Author Input
         self.author_line = QLineEdit()
@@ -152,16 +154,30 @@ class MainWindow(QMainWindow):
         self.part_category_input.addItems(brick_categories)
         self.part_category_input.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         self.part_category_input.setEditable(True)
-        part_settings_inputs.addRow("Part Category (Recommended)", self.part_category_input)
+        category_label = QLabel("Part Category (Recommended) ℹ️")
+        category_label.setToolTip("Defines the Category the part appears in.\n"
+                                  "(Currently not supported by Bricklink Studio)")
+        part_settings_inputs.addRow(category_label, self.part_category_input)
 
         # Keywords Input
         self.keywords_line = QLineEdit()
         self.keywords_line.setPlaceholderText("comma seperated: Wheel, Tire, Car")
-        part_settings_inputs.addRow("Keywords (Optional)", self.keywords_line)
+        keywords_label = QLabel("Keywords (Optional) ℹ️")
+        keywords_label.setToolTip("Keywords make a part easier to search.\n"
+                                  "(Currently not supported in Bricklink Studio)")
+        part_settings_inputs.addRow(keywords_label, self.keywords_line)
+
+        # License Input
+        self.part_license_input = QComboBox()
+        self.part_license_input.addItems(default_part_licenses)
+        self.part_license_input.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        self.part_license_input.setEditable(True)
+        part_license_label = QLabel("Part License (Optional) ℹ️")
+        part_license_label.setToolTip("License of the Part, set your own one or use one from the list.")
+        part_settings_inputs.addRow(part_license_label, self.part_license_input)
 
         # Convert Button
         self.convert_button = QPushButton("Convert File")
-        part_settings_area.addWidget(self.convert_button)
         self.convert_button.clicked.connect(self.convert_file)
 
     # Preview Area
@@ -176,23 +192,22 @@ class MainWindow(QMainWindow):
         preview_area.addWidget(self.loaded_file_status_label)
 
     # Subpart and Color Editor Area
-        subpart_area = QVBoxLayout()
-        subpart_area_label = QLabel("Subparts and Colour")
-        subpart_area_label.setAlignment(Qt.AlignmentFlag.AlignBottom)
-        subpart_area.addWidget(subpart_area_label)
-
+        subpart_area = QWidget()
         self.subpart_area_layout = QVBoxLayout()
-        subpart_area_frame = QFrame()
-        subpart_area_frame.setFrameStyle(1)
-        subpart_area_frame.setLayout(self.subpart_area_layout)
-        subpart_area.addWidget(subpart_area_frame)
-
+        subpart_area.setLayout(self.subpart_area_layout)
 
     # Add Elements to Main Layout
-        top_layout.addLayout(part_settings_area)
-        top_layout.addLayout(file_select_area)
-        self.main_layout.addLayout(top_layout)
-        self.main_layout.addLayout(subpart_area)
+        top_layout.addWidget(part_settings_area)
+        top_layout.addWidget(file_select_area)
+        main_settings_widget = QWidget()
+        main_settings_widget.setLayout(top_layout)
+        self.settings_tabs.addTab(main_settings_widget, "Main Part Settings")
+
+        self.main_layout.addWidget(self.settings_tabs)
+        file_select_inputs.addRow(self.convert_button)
+
+        self.settings_tabs.addTab(subpart_area, "Subpart and Colour Settings")
+
         self.main_layout.addLayout(preview_area)
         widget = QWidget()
         widget.setLayout(self.main_layout)
@@ -204,14 +219,12 @@ class MainWindow(QMainWindow):
         filepath = self.input_file_line.text()
         filename = os.path.basename(filepath)
         if reload:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Reload Model?")
-            dlg.setText(f'Reloading resets all colours and other changes\n Reload "{filename}"?')
-            dlg.setIcon(QMessageBox.Icon.Warning)
-            dlg.setStandardButtons(
+            answer = QMessageBox.warning(
+                self,
+                "Reload Model?",
+                f'Reloading resets all colours and other changes\n Reload "{filename}"?',
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
             )
-            answer = dlg.exec()
             if answer == QMessageBox.StandardButton.No:
                 return
         self.disable_settings(True)
@@ -234,11 +247,7 @@ class MainWindow(QMainWindow):
             try:
                 loaded_part = LdrawObject(filepath, scale=scale, multi_object=multi_object, multicolour=multicolour)
             except Exception:
-                dlg = QMessageBox(self)
-                dlg.setWindowTitle("Failed to load file")
-                dlg.setText("File was not a 3D object or the format is unsupported")
-                dlg.setIcon(QMessageBox.Icon.Critical)
-                dlg.exec()
+                QMessageBox.critical(self, "Failed to load file", "Not a 3D object or unsupported file format")
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
                 self.enable_load_settings()
             else:
@@ -256,15 +265,15 @@ class MainWindow(QMainWindow):
                     self.subpart_area_layout.removeWidget(self.subpart_panel)
                     self.subpart_panel.deleteLater()
                 if len(self.ldraw_object.subparts) > 1:
-                    self.subpart_panel = SubpartPanel(self.ldraw_object)
+                    self.subpart_panel = SubpartPanel(self.ldraw_object, self)
                 else:
-                    self.subpart_panel = ColourPanel(self.ldraw_object)
+                    self.subpart_panel = ColourPanel(self.ldraw_object, self)
                 self.subpart_area_layout.addWidget(self.subpart_panel)
 
                 x_length = mm_float_to_string(self.ldraw_object.size[0])
                 y_length = mm_float_to_string(self.ldraw_object.size[1])
                 z_length = mm_float_to_string(self.ldraw_object.size[2])
-                self.loaded_file_status_label.setText(f"Current Model: {filename} ({x_length}×{y_length}×{z_length})")
+                self.loaded_file_status_label.setText(f"Current Model: {filename}\n({x_length}×{y_length}×{z_length})")
 
                 if not self.file_loaded:
                     self.file_loaded = True
@@ -277,7 +286,6 @@ class MainWindow(QMainWindow):
             else:
                 self.loaded_file_status_label.setText("No file loaded")
                 self.enable_load_settings()
-
 
     def select_output_file(self):
         current_path = self.output_file_line.text()
@@ -292,20 +300,20 @@ class MainWindow(QMainWindow):
         if filepath:
             self.output_file_line.setText(filepath)
 
-
-
     def show_preview(self):
         hex_bg_color = self.palette().window().color().name()
         r = int(hex_bg_color[1:3], 16)
         g = int(hex_bg_color[3:5], 16)
         b = int(hex_bg_color[5:7], 16)
-        self.ldraw_object.scene.show(smooth=False, resolution=(900, 900), caption="Part Preview", background=(r, g, b, 255))
+        self.ldraw_object.scene.show(smooth=False, resolution=(900, 900),
+                                     caption="Part Preview", background=(r, g, b, 255))
 
     def reset_part_settings(self):
         self.partname_line.clear()
         self.bl_number_line.clear()
         self.author_line.clear()
         self.part_category_input.clearEditText()
+        self.part_license_input.clearEditText()
         self.keywords_line.clear()
 
     def disable_settings(self, value: bool):
@@ -322,7 +330,9 @@ class MainWindow(QMainWindow):
         self.multi_object_check.setDisabled(value)
         self.scale_input.setDisabled(value)
         self.part_category_input.setDisabled(value)
+        self.part_license_input.setDisabled(value)
         self.keywords_line.setReadOnly(value)
+        self.settings_tabs.tabBar().setDisabled(value)
         if self.file_loaded:
             self.subpart_panel.setDisabled(value)
 
@@ -332,93 +342,72 @@ class MainWindow(QMainWindow):
         self.scale_input.setDisabled(False)
         self.load_input_button.setDisabled(False)
 
-
     def convert_file(self):
         self.disable_settings(True)
         partname = self.partname_line.text()
         if len(partname) == 0:
             partname = "UntitledModel"
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("No Partname")
-            dlg.setText(f"No partname was set.\nWant to save as 'UntitledModel'")
-            dlg.setIcon(QMessageBox.Icon.Warning)
-            dlg.setStandardButtons(
+            answer = QMessageBox.warning(
+                self,
+                "No Partname",
+                f"No partname was set.\nWant to save as 'UntitledModel'",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
             )
-            answer = dlg.exec()
             if answer == QMessageBox.StandardButton.No:
                 self.disable_settings(False)
                 return
         category = self.part_category_input.currentText()
         if category not in brick_categories and len(category) > 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Unofficial Category")
-            dlg.setText(f'The category "{category}" is not one of official LDraw Categories.\n'
-                        f'Do want to use it anyway?')
-            dlg.setIcon(QMessageBox.Icon.Warning)
-            dlg.setStandardButtons(
+            answer = QMessageBox.warning(
+                self,
+                "Unofficial Category",
+                f'The category "{category}" is not one of official LDraw Categories.\n'
+                f'Do want to use it anyway?',
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
             )
-            answer = dlg.exec()
             if answer == QMessageBox.StandardButton.No:
                 self.disable_settings(False)
                 return
         keywords = []
         for kw in self.keywords_line.text().split(","):
-            #Remove redundant spaces
+            # Remove redundant spaces
             word = " ".join([w for w in kw.split(" ") if w != ""])
             if len(word) > 0:
                 keywords.append(word)
         bl_number = self.bl_number_line.text()
         author = self.author_line.text()
+        part_license = self.part_license_input.currentText()
         self.ldraw_object.name = partname
         self.ldraw_object.author = author
         self.ldraw_object.bricklinknumber = bl_number
         self.ldraw_object.category = category
         self.ldraw_object.keywords = keywords
+        self.ldraw_object.part_license = part_license
         filepath = self.output_file_line.text()
         if os.path.isfile(filepath):
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("File already Exists")
-            dlg.setText(f"There is already a file with the same name:\n{filepath}\nOverride?")
-            dlg.setIcon(QMessageBox.Icon.Warning)
-            dlg.setStandardButtons(
+            answer = QMessageBox.warning(
+                self,
+                "File already Exists",
+                f"There is already a file with the same name:\n{filepath}\nOverride?",
                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
             )
-            answer = dlg.exec()
             if answer == QMessageBox.StandardButton.No:
                 self.disable_settings(False)
                 return
         elif len(os.path.basename(filepath)) == 0:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("No Outputfile")
-            dlg.setText("No output file specified")
-            dlg.setIcon(QMessageBox.Icon.Warning)
+            QMessageBox.warning(self, "No Outputfile", "No output file specified")
             self.disable_settings(False)
-            dlg.exec()
             return
         elif not os.path.isdir(os.path.dirname(filepath)):
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Invalid output directory")
-            dlg.setText(f"'{os.path.dirname(filepath)}' is not a valid output directory")
-            dlg.setIcon(QMessageBox.Icon.Warning)
-            dlg.exec()
+            QMessageBox.warning(self, "Invalid directory", f"'{os.path.dirname(filepath)}' is not a valid directory")
             self.disable_settings(False)
             return
         try:
             self.ldraw_object.convert_to_dat_file(filepath)
         except Exception:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Conversion Failed")
-            dlg.setText("Conversion may have failed due to unknown error")
-            dlg.setIcon(QMessageBox.Icon.Critical)
-            dlg.exec()
+            QMessageBox.critical(self, "Conversion Failed", "Conversion failed due to unknown error")
         else:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Conversion Successfull")
-            dlg.setText(f"Model was saved to {filepath}")
-            dlg.setIcon(QMessageBox.Icon.Information)
-            dlg.exec()
+            QMessageBox.information(self, "Conversion Successfull", f"Model was saved to {filepath}")
         self.disable_settings(False)
 
 
@@ -430,7 +419,7 @@ def mm_float_to_string(number: float | int):
     return f"{number:.2f}mm"
 
 
-if __name__ == "__main__":
+def run():
     app = QApplication([])
     app.setWindowIcon(QIcon(os.path.join(basedir, "icons/ConvertToLDraw_icon.ico")))
 
@@ -439,3 +428,6 @@ if __name__ == "__main__":
     window.show()
 
     app.exec()
+
+if __name__ == "__main__":
+    run()

@@ -5,27 +5,31 @@ from PyQt6.QtWidgets import (
     QWidget,
     QApplication,
     QVBoxLayout,
+    QHBoxLayout,
     QFormLayout,
     QLineEdit,
     QPushButton,
     QMessageBox,
     QTableView,
-    QHeaderView
+    QHeaderView,
+    QLabel
 )
 
-from brick_data.ldrawObject import LdrawObject, Subpart
-from brick_data.brickcolour import Brickcolour, is_brickcolour, get_contrast_colour
-from brickcolourwidget import BrickcolourWidget, BrickcolourDialog
+from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart
+from ConvertToLDraw.brick_data.brickcolour import Brickcolour, is_brickcolour, get_contrast_colour
+from ConvertToLDraw.ui_elements.brickcolourwidget import BrickcolourWidget, BrickcolourDialog, ColourCategoriesDialog
+
 
 class SubpartPanel(QTabWidget):
-    def __init__(self, mainmodel: LdrawObject):
+    def __init__(self, mainmodel: LdrawObject, main_window):
         super().__init__()
 
+        self.main_window = main_window
         for sp in mainmodel.subparts.values():
             self.__add_tab(sp)
 
     def __add_tab(self, subpart: Subpart):
-        tab = SubpartTab(subpart)
+        tab = SubpartTab(subpart, main_window=self.main_window)
         index = self.addTab(tab, subpart.name)
         tab.name_changed.connect(lambda name: self.setTabText(index, name))
 
@@ -35,18 +39,21 @@ class SubpartPanel(QTabWidget):
 
 
 class ColourPanel(QWidget):
-    def __init__(self, mainmodel: LdrawObject):
+    def __init__(self, mainmodel: LdrawObject, main_window):
         super().__init__()
         mainlayout = QVBoxLayout()
         self.setLayout(mainlayout)
         subpart = list(mainmodel.subparts.items())[0][1]
-        mainlayout.addWidget(SubpartTab(subpart, single_part=True))
+        mainlayout.addWidget(SubpartTab(subpart, single_part=True, main_window=main_window))
+
 
 class SubpartTab(QWidget):
     name_changed = pyqtSignal(str)
-    def __init__(self, subpart: Subpart, single_part=False):
+
+    def __init__(self, subpart: Subpart, main_window, single_part=False, ):
         super().__init__()
         self.subpart = subpart
+        self.main_window = main_window
 
         self.mainlayout = QVBoxLayout()
         self.setLayout(self.mainlayout)
@@ -54,7 +61,7 @@ class SubpartTab(QWidget):
     # Main Settings Area
         self.main_settings = QFormLayout()
 
-        #Name Input and Subpart Preview Button
+        # Name Input and Subpart Preview Button
         if not single_part:
             self.name_line = QLineEdit()
             self.name_line.setText(self.subpart.name)
@@ -63,10 +70,23 @@ class SubpartTab(QWidget):
             self.preview_button = QPushButton("Show Preview of Subpart")
             self.preview_button.clicked.connect(self.show_preview)
 
-        #Override / Set Colour
+        # Override / Set Colour
 
         if self.subpart.multicolour:
-            main_colour_text = "Override Colours"
+            self.colour_inputs = QWidget()
+            colour_inputs_layout = QHBoxLayout()
+            merge_colours_button = QPushButton("Merge Duplicate Colours")
+            merge_colours_button.clicked.connect(self.merge_duplicate_colours)
+            colour_inputs_layout.addWidget(merge_colours_button)
+
+            map_colours_button = QPushButton("Convert to Ldraw Colours")
+            map_colours_button.clicked.connect(self.map_colours_to_LDraw)
+            colour_inputs_layout.addWidget(map_colours_button)
+
+            self.colour_inputs.setLayout(colour_inputs_layout)
+            self.main_settings.addRow(self.colour_inputs)
+
+            main_colour_text = "Override Colour"
             brick_colour = Brickcolour("16")
         else:
             main_colour_text = "Subpart Colour"
@@ -74,7 +94,7 @@ class SubpartTab(QWidget):
         self.main_colour_input = BrickcolourWidget(main_colour_text, brick_colour)
         self.main_settings.addRow(self.main_colour_input)
         if self.subpart.multicolour:
-            self.apply_colour_button = QPushButton("Apply Colour")
+            self.apply_colour_button = QPushButton("Apply Override Colour")
             self.apply_colour_button.clicked.connect(self.apply_main_colour)
             self.main_settings.addRow(self.apply_colour_button)
             self.multicolour_widget = QTableView()
@@ -88,15 +108,16 @@ class SubpartTab(QWidget):
             self.multicolour_widget.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
             self.multicolour_widget.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
             row_height = self.multicolour_widget.verticalHeader().sectionSize(0)
-            column_width = self.multicolour_widget.size().width()
-            print(self.multicolour_widget.verticalHeader().sectionSize(0))
-            new_widget_height = row_height * 6
+            width = self.multicolour_widget.size().width()
+            new_widget_height = row_height * 5
             if len(self.subpart.colours) < 5:
                 new_widget_height = (len(self.subpart.colours) + 1) * row_height
-            self.multicolour_widget.setMinimumSize(column_width, new_widget_height)
+            self.multicolour_widget.setMinimumSize(width, new_widget_height)
+            # Model Info Label
+            self.info_label = QLabel(f"{len(self.subpart.colours)} Different Colours")
+            self.info_label.setAlignment(Qt.AlignmentFlag.AlignVCenter|Qt.AlignmentFlag.AlignRight)
         else:
             self.main_colour_input.colour_changed.connect(self.apply_main_colour)
-
 
 
 
@@ -104,9 +125,9 @@ class SubpartTab(QWidget):
         self.mainlayout.addLayout(self.main_settings)
         if self.subpart.multicolour:
             self.mainlayout.addWidget(self.multicolour_widget)
+            self.mainlayout.addWidget(self.info_label)
         if not single_part:
             self.mainlayout.addWidget(self.preview_button)
-
 
     def apply_name_change(self, new_name: str):
         self.subpart.name = new_name
@@ -129,20 +150,16 @@ class SubpartTab(QWidget):
             )
             answer = dlg.exec()
             if answer == QMessageBox.StandardButton.Yes:
-                self.subpart.multicolour = False
-                self.mainlayout.removeWidget(self.multicolour_widget)
-                self.multicolour_widget.deleteLater()
-                self.main_colour_input.colour_changed.connect(self.apply_main_colour)
-                self.main_settings.removeWidget(self.apply_colour_button)
-                self.apply_colour_button.deleteLater()
-                self.main_colour_input.label.setText("Subpart Colour")
+                self.subpart.apply_color(colour)
+                self._change_to_single_colour_view()
             else:
                 self.setDisabled(False)
                 return
         elif colour is None:
             print("Invalid Colour")
             return
-        self.subpart.apply_color(colour)
+        else:
+            self.subpart.apply_color(colour)
         self.setDisabled(False)
 
     def show_preview(self):
@@ -150,7 +167,54 @@ class SubpartTab(QWidget):
         r = int(hex_bg_color[1:3], 16)
         g = int(hex_bg_color[3:5], 16)
         b = int(hex_bg_color[5:7], 16)
-        self.subpart.mesh.show(smooth=False, resolution=(900, 900), caption="Subpart Preview", background=(r, g, b, 255))
+        self.subpart.mesh.show(smooth=False, resolution=(900, 900),
+                               caption="Subpart Preview", background=(r, g, b, 255))
+
+    def changecolour(self, colour: Brickcolour, key):
+        self.subpart.apply_color(colour, key)
+
+    def merge_duplicate_colours(self):
+        self.setDisabled(True)
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle("Merge Duplicate Colours?")
+        dlg.setText(f'Merge duplicate colours?\n'
+                    f'(Only reversible by reloading the file)')
+        dlg.setIcon(QMessageBox.Icon.Warning)
+        dlg.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        answer = dlg.exec()
+        if answer == QMessageBox.StandardButton.Yes:
+            self.subpart.merge_duplicate_colours()
+            self.subpartcolourlist.refresh_data()
+            if not self.subpart.multicolour:
+                self._change_to_single_colour_view()
+            else:
+                self.info_label.setText(f"{len(self.subpart.colours)} Different Colours")
+        self.setDisabled(False)
+
+    def map_colours_to_LDraw(self):
+        categories_dialog = ColourCategoriesDialog(
+            message="Select Colour Categories Direct/HTML will be matched with.\n"
+                    "(Only Reversible by reloading and may take a while)"
+        )
+
+        previous_text = self.main_window.loaded_file_status_label.text()
+        self.main_window.loaded_file_status_label.setText("Mapping Colours\nCould take a bit of time")
+
+        if categories_dialog.exec():
+            colour_categories = categories_dialog.get_selected_items()
+            if len(colour_categories) == 0:
+                QMessageBox.warning(self, "Nothing Selected", "No Categories selected\nMapping Aborted")
+                self.main_window.loaded_file_status_label.setText(previous_text)
+                return
+            self.main_window.disable_settings(True)
+            self.subpart.map_to_ldraw_colours(colour_categories)
+            self.subpartcolourlist.refresh_data()
+            self.info_label.setText(f"{len(self.subpart.colours)} Different Colours")
+            self.main_window.loaded_file_status_label.setText(previous_text)
+            self.main_window.disable_settings(False)
+
 
     def _on_select_brickcolour(self, index):
         if index.column() in [0, 2]:
@@ -161,8 +225,21 @@ class SubpartTab(QWidget):
             color_picker = BrickcolourDialog(initial_color)
             color_picker.accepted.connect(lambda: self.changecolour(color_picker.brickcolour, colour_key))
             color_picker.exec()
-    def changecolour(self, colour: Brickcolour, key):
-        self.subpart.apply_color(colour, key)
+
+    def _change_to_single_colour_view(self):
+        self.subpart.multicolour = False
+        self.mainlayout.removeWidget(self.multicolour_widget)
+        self.multicolour_widget.deleteLater()
+        self.main_colour_input.colour_changed.connect(self.apply_main_colour)
+        self.main_settings.removeWidget(self.apply_colour_button)
+        self.apply_colour_button.deleteLater()
+        self.main_settings.removeWidget(self.colour_inputs)
+        self.colour_inputs.deleteLater()
+        self.mainlayout.removeWidget(self.info_label)
+        self.info_label.deleteLater()
+        self.main_colour_input.label.setText("Subpart Colour")
+        self.main_colour_input.changecolour(self.subpart.main_colour, False)
+
 
 class Subpartcolourlistmodel(QAbstractTableModel):
     def __init__(self, subpart: Subpart, button_colour):
@@ -215,8 +292,7 @@ class Subpartcolourlistmodel(QAbstractTableModel):
 
     def setData(self, index, value, role):
         if role == Qt.ItemDataRole.EditRole:
-            print(value)
-            if is_brickcolour(value):
+            if is_brickcolour(value)[0]:
                 new_colour = Brickcolour(value)
                 if new_colour.ldrawname == "Undefined":
                     dlg = QMessageBox(self.parent())
@@ -244,14 +320,18 @@ class Subpartcolourlistmodel(QAbstractTableModel):
         elif index.column() == 2:
             return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
+    def refresh_data(self):
+        self.beginResetModel()
+        self._data_keys = list(self._data.colours.keys())
+        self.endResetModel()
 
 if __name__ == "__main__":
     app = QApplication([])
     testfile = "Path/To/Testfile"
     testmodel = LdrawObject(testfile)
 
-    #subpartpanel = SubpartPanel(testmodel)
-    #subpartpanel.show()
+    # subpartpanel = SubpartPanel(testmodel)
+    # subpartpanel.show()
 
     colourpanel = ColourPanel(testmodel)
     colourpanel.show()

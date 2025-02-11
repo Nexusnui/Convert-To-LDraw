@@ -5,7 +5,7 @@ to the LDraw file format ([.dat](http://www.ldraw.org/article/218)).
 The converted files can be used with LDview, Bricklink Studio/Partdesigner and other compatible software.
 
 The Graphical Userinterface:
-![Screenshot of the GUI](graphical_userinterface.png)
+![Screenshot of the GUI](graphical_userinterface.gif)
 
 After loading the source file the output file and part name are set to the same name(with .dat extension).  
 If defined and found units will be converted to millimeters.
@@ -25,15 +25,17 @@ Some notes about compatibility of multicolour/-part 3D file formats:
 
 If a model has multiple objects, they are saved in a "s" folder, if you only want one file uncheck "Multiple Objects".
 
-This version has no commandline interface, that was available in the previous versions.
-
+This version has no commandline interface, that was available in the previous versions.  
 
 Run/Install:  
-Currently there is only a installer for Windows Version.  
-Under Releases you find an installer and a portable version.
-If have an anti-virus software installed it might warn you, when running the installer.  
-To avoid the problems with an anti-virus or for installation on Mac and Linux follow the [manual installation guide](MANUALINSTALL.md)
+Currently there is only a installer for Windows Version and package installable through pipx/pip.  
+Under Releases you find an installer and portable version for Windows and the package for pipx/pip.
+If have an antivirus software installed it might warn you, when running the installer.  
+To avoid the problems with an antivirus or for installation on Linux and Mac follow the [manual installation guide](MANUALINSTALL.md),
+which explains the installation with pipx.
 
 This was originally a fork of a [python script of Hazen Babcock](https://github.com/HazenBabcock/stl-to-dat).  
 The code that was used from that script was completely rewritten for the 1.0 release of this software.  
 This application was also renamed from "stlToDat" to "Convert To LDraw" to reflect the added capabilities of the new version.
+
+This uses a modified version of the [PyQt Color Picker](https://github.com/nlfmt/pyqt-colorpicker-widget) by nlfmt(Tom F).

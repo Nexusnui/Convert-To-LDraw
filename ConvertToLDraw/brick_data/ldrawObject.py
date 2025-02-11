@@ -1,7 +1,7 @@
 import trimesh
 import trimesh.visual.material
 import os
-from brick_data.brickcolour import Brickcolour
+from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_closest_brickcolour_by_rgb_colour, get_all_brickcolours
 import numpy as np
 from collections import OrderedDict
 # Todo: Change np print settings?
@@ -9,7 +9,8 @@ from collections import OrderedDict
 
 class LdrawObject:
     def __init__(self, filepath: str,
-                 name="", bricklinknumber="", author="", category="", keywords=[],
+                 name="", bricklinknumber="", author="", category="", keywords=None,
+                 part_license=None,
                  scale=1, multi_object=True, multicolour=True):
         self.__load_scene(filepath, scale, multi_object, multicolour)
 
@@ -18,16 +19,14 @@ class LdrawObject:
         self.author = author
         self.category = category
         self.keywords = keywords
+        self.part_license = part_license
 
     def __load_scene(self, filepath, scale=1, multi_object=True, multicolour=True):
         _, file_extension = os.path.splitext(filepath)
 
-        scene = trimesh.load_mesh(filepath)
+        scene = trimesh.load_scene(filepath)
 
-        if not isinstance(scene, trimesh.Scene):
-            scene = trimesh.scene.scene.Scene(scene)
-
-        elif len(scene.geometry) == 1 or not multi_object:
+        if len(scene.geometry) == 1 or not multi_object:
             if len(scene.geometry) > 1 and multicolour:
                 recolour = True
                 if len(scene.geometry) == 1:
@@ -44,7 +43,7 @@ class LdrawObject:
                         first_colour = geometry.visual.face_colors[0]
                         for colour in geometry.visual.face_colors:
                             c_check = first_colour == colour
-                            if not(c_check[0] and c_check[1] and c_check[2] and c_check[3]):
+                            if not (c_check[0] and c_check[1] and c_check[2] and c_check[3]):
                                 has_multiple_colours = True
                                 break
 
@@ -54,7 +53,7 @@ class LdrawObject:
                             recolour = False
                             break
                     except Exception:
-                        #No or invalid color data
+                        # Invalid or no color data (is fixed at a later point)
                         pass
                 if recolour:
                     colorrange = [0, 63, 127, 191, 255]
@@ -83,8 +82,7 @@ class LdrawObject:
             scene = scene.scaled(scale)
         self.size = scene.extents
 
-
-        #Convert to LDraw Units
+        # Convert to LDraw Units
         scene = scene.scaled(2.5)
 
         self.subparts = OrderedDict()
@@ -123,12 +121,9 @@ class LdrawObject:
             bricklinknumberline = f"0 BL_Item_No {self.bricklinknumber}\n\n"
         categoryline = ""
         if len(self.category) > 0:
-            if len(self.keywords) > 0:
-                categoryline = f"0 !CATEGORY {self.category}\n"
-            else:
-                categoryline = f"0 !CATEGORY {self.category}\n\n"
+            categoryline = f"\n0 !CATEGORY {self.category}\n"
         keyword_lines = ""
-        if len(self.keywords) > 0:
+        if self.keywords is not None and len(self.keywords) > 0:
             keyword_lines = []
             current_line = f"0 !KEYWORDS {self.keywords[0]}"
             for kw in self.keywords[1:]:
@@ -137,17 +132,21 @@ class LdrawObject:
                     current_line = f"0 !KEYWORDS {kw}"
                 else:
                     current_line = f"{current_line}, {kw}"
-            keyword_lines.append(f"{current_line}\n\n")
+            keyword_lines.append(f"{current_line}\n")
             keyword_lines = "\n".join(keyword_lines)
-
+        license_line = ""
+        if self.part_license is not None and len(self.part_license) > 0:
+            license_line = f"0 !LICENSE {self.part_license}\n"
         header = (f"0 FILE {filename}\n"
                   f"0 {self.name}\n"
                   f"0 Name:  {filename}\n"
-                  f"0 Author:  {self.author}\n\n"
+                  f"0 Author:  {self.author}\n"
+                  f"0 !LDRAW_ORG Unofficial_Part\n"
+                  f"{license_line}\n"
                   f"{bricklinknumberline}"
-                  f"0 BFC CERTIFY CCW\n\n"
+                  f"0 BFC CERTIFY CCW\n"
                   f"{categoryline}"
-                  f"{keyword_lines}")
+                  f"{keyword_lines}\n")
         with open(filepath, "w", encoding="utf-8") as file:
             file.write(header)
             if len(self.subparts) == 1:
@@ -160,7 +159,7 @@ class LdrawObject:
                 for count, part in enumerate(self.subparts.values()):
                     subfilename = f"{basename}s{count:03d}.dat"
                     subfilepath = f"{sub_dir}{subfilename}"
-                    part.convert_to_dat_file(subfilepath, filename, self.author)
+                    part.convert_to_dat_file(subfilepath, filename, self.author, license_line)
                     tm_a = f"{part.transformation_matrix[0][0]:f}"
                     tm_b = f"{part.transformation_matrix[0][1]:f}"
                     tm_c = f"{part.transformation_matrix[0][2]:f}"
@@ -247,11 +246,38 @@ class Subpart:
                 self.mesh.visual.face_colors[face] = rgba_values
             self.colours[key][0] = colour
 
-    def convert_to_dat_file(self, filepath, main_file_name, author):
+    def merge_duplicate_colours(self, apply_after=False):
+        new_colours = OrderedDict()
+        for key in self.colours:
+            colour = self.colours[key][0]
+            if colour.colour_code in new_colours:
+                new_colours[colour.colour_code][1].append(self.colours[key][1])
+            else:
+                new_colours[colour.colour_code] = [colour, self.colours[key][1]]
+        self.colours = new_colours
+        if apply_after:
+            for key in self.colours:
+                self.apply_color(key=key)
+        if len(self.colours) == 1:
+            self.multicolour = False
+            self.main_colour = self.colours.popitem()[1][0]
+
+    def map_to_ldraw_colours(self, included_colour_categories):
+        colourlist = get_all_brickcolours(included_colour_categories)
+        for key in self.colours:
+            if self.colours[key][0].colour_type == "Direct":
+                rgb_values = self.colours[key][0].rgb_values
+                mappedcolor = get_closest_brickcolour_by_rgb_colour(rgb_values, colourlist)
+                self.colours[key][0] = mappedcolor
+        self.merge_duplicate_colours(True)
+
+    def convert_to_dat_file(self, filepath, main_file_name, author, license_line):
         file_name = os.path.basename(filepath)
         header = (f"0 ~{self.name}: Subpart of {main_file_name}\n"
                   f"0 Name: s/{file_name}\n"
                   f"0 Author:  {author}\n"
+                  f"0 !LDRAW_ORG Unofficial_Subpart\n"
+                  f"{license_line}"
                   f"0 BFC CERTIFY CCW\n")
         with open(filepath, "w", encoding="utf-8") as file:
             file.write(header)
@@ -291,3 +317,11 @@ def rgba_to_hex(color):
     b = __color_to_hex(color[2])
     a = __color_to_hex(color[3])
     return f"#{r}{g}{b}{a}"
+
+
+default_part_licenses = [
+    "Licensed under CC BY 4.0 : see CAreadme.txt ",
+    "Licensed under CC BY 2.0 and CC BY 4.0 : see CAreadme.txt",
+    "Redistributable under CCAL version 2.0 : see CAreadme.txt",
+    "Not redistributable : see NonCAreadme.txt"
+]
