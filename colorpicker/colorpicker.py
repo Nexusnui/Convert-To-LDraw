@@ -59,11 +59,11 @@ class ColorPicker(QWidget):
     ## Main Functions ##
     def getHSV(self, hrange=100, svrange=100):
         h, s, v = self.color
-        return (h * (hrange / 100.0), s * (svrange / 100.0), v * (svrange / 100.0))
+        return h * (hrange / 100.0), s * (svrange / 100.0), v * (svrange / 100.0)
 
     def getRGB(self, range=255):
         r, g, b = self.i(self.ui.red.text()), self.i(self.ui.green.text()), self.i(self.ui.blue.text())
-        return (r * (range / 255.0), g * (range / 255.0), b * (range / 255.0))
+        return r * (range / 255.0), g * (range / 255.0), b * (range / 255.0)
 
     def getHex(self, ht=False):
         rgb = (self.i(self.ui.red.text()), self.i(self.ui.green.text()), self.i(self.ui.blue.text()))
@@ -75,7 +75,7 @@ class ColorPicker(QWidget):
     ## Update Functions ##
     def hsvChanged(self):
         h, s, v = (
-        100 - self.ui.hue_selector.y() / 1.85, (self.ui.selector.x() + 6) / 2.0, (194 - self.ui.selector.y()) / 2.0)
+            100 - self.ui.hue_selector.y() / 1.85, (self.ui.selector.x() + 6) / 2.0, (194 - self.ui.selector.y()) / 2.0)
         r, g, b = self.hsv2rgb(h, s, v)
         self.color = (h, s, v)
         self._setRGB((r, g, b))
@@ -146,14 +146,14 @@ class ColorPicker(QWidget):
         else:
             r = r_or_color
         h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
-        return (h * 100, s * 100, v * 100)
+        return h * 100, s * 100, v * 100
 
-    def hex2rgb(self, hex):
-        if len(hex) < 6:
-            hex += "0" * (6 - len(hex))
-        elif len(hex) > 6:
-            hex = hex[0:6]
-        rgb = tuple(int(hex[i:i + 2], 16) for i in (0, 2, 4))
+    def hex2rgb(self, hex_value):
+        if len(hex_value) < 6:
+            hex_value += "0" * (6 - len(hex_value))
+        elif len(hex_value) > 6:
+            hex_value = hex_value[0:6]
+        rgb = tuple(int(hex_value[i:i + 2], 16) for i in (0, 2, 4))
         return rgb
 
     def rgb2hex(self, r_or_color, g=0, b=0):
@@ -161,11 +161,11 @@ class ColorPicker(QWidget):
             r, g, b = r_or_color
         else:
             r = r_or_color
-        hex = '%02x%02x%02x' % (int(r), int(g), int(b))
-        return hex
+        hex_value = '%02x%02x%02x' % (int(r), int(g), int(b))
+        return hex_value
 
-    def hex2hsv(self, hex):
-        return self.rgb2hsv(self.hex2rgb(hex))
+    def hex2hsv(self, hex_value):
+        return self.rgb2hsv(self.hex2rgb(hex_value))
 
     def hsv2hex(self, h_or_color, s=0, v=0):
         if type(h_or_color).__name__ == "tuple":
@@ -178,18 +178,24 @@ class ColorPicker(QWidget):
     def moveSVSelector(self, event):
         if event.buttons() == Qt.MouseButton.LeftButton:
             pos = event.position()
-            if pos.x() < 0: pos.setX(0)
-            if pos.y() < 0: pos.setY(0)
-            if pos.x() > 200: pos.setX(200)
-            if pos.y() > 200: pos.setY(200)
+            if pos.x() < 0:
+                pos.setX(0)
+            if pos.y() < 0:
+                pos.setY(0)
+            if pos.x() > 200:
+                pos.setX(200)
+            if pos.y() > 200:
+                pos.setY(200)
             self.ui.selector.move(QPointF(pos.x() - 6, pos.y() - 6).toPoint())
             self.hsvChanged()
 
     def moveHueSelector(self, event):
         if event.buttons() == Qt.MouseButton.LeftButton:
             pos = event.position().y() - 7
-            if pos < 0: pos = 0
-            if pos > 185: pos = 185
+            if pos < 0:
+                pos = 0
+            if pos > 185:
+                pos = 185
             self.ui.hue_selector.move(QPointF(7, pos).toPoint())
             self.hsvChanged()
 
@@ -201,10 +207,16 @@ class ColorPicker(QWidget):
 
     def clampRGB(self, rgb):
         r, g, b = rgb
-        if r < 0.0001: r = 0
-        if g < 0.0001: g = 0
-        if b < 0.0001: b = 0
-        if r > 255: r = 255
-        if g > 255: g = 255
-        if b > 255: b = 255
-        return (r, g, b)
+        if r < 0.0001:
+            r = 0
+        if g < 0.0001:
+            g = 0
+        if b < 0.0001:
+            b = 0
+        if r > 255:
+            r = 255
+        if g > 255:
+            g = 255
+        if b > 255:
+            b = 255
+        return r, g, b
