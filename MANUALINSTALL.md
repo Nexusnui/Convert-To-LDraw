@@ -7,10 +7,10 @@ Prerequisites:
 - pipx is installed (+ ensurepath activated)
 
 Installation:  
-1. installation with pix through console/terminal:  
+1. installation with pipx through console/terminal:  
 `pipx install https://github.com/Nexusnui/Convert-To-LDraw/releases/latest/download/converttoldraw.tar.gz`  
 or on some Linux Distro like this:  
-`python3 -m pipx https://github.com/Nexusnui/Convert-To-LDraw/releases/latest/download/converttoldraw.tar.gz`
+`python3 -m pipx install https://github.com/Nexusnui/Convert-To-LDraw/releases/latest/download/converttoldraw.tar.gz`
 2. You can now run it by with typing `ConvertToLDraw`
 
 Troubleshooting:  
