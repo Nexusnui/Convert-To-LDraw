@@ -4,8 +4,11 @@ from PyQt6.QtWidgets import (
 )
 
 from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
+from PyQt6.QtCore import QBuffer, QIODevice, QUrl
 from trimesh import viewer
 from trimesh.scene.scene import Scene
+
 
 
 class PreviewPanel(QWidget):
@@ -19,13 +22,14 @@ class PreviewPanel(QWidget):
         self.main_layout = QVBoxLayout()
 
         self.web_view = QWebEngineView()
+        self.html_handler = HtmlHandler()
+        self.web_view.page().profile().installUrlSchemeHandler(b"model", self.html_handler)
         if self.main_model is not None:
             self.load_main_model()
 
         self.main_layout.addWidget(self.web_view)
 
         self.setLayout(self.main_layout)
-        print("panel: ", __file__)
 
     def load_model(self, name: str, model: Scene):
         self.current_model = model
@@ -39,11 +43,31 @@ class PreviewPanel(QWidget):
             html_code = viewer.scene_to_html(self.current_model)
             html_code = html_code.replace('scene.background=new THREE.Color(0xffffff)',
                                           f'scene.background=new THREE.Color(0x{self.background_color})')
-            print(len(html_code))
-            self.web_view.setHtml(html_code)
+            self.html_handler.set_html(html_code)
+            self.web_view.load(QUrl("model://init"))
 
     def load_main_model(self):
         self.current_model = self.main_model
         self.refresh_model()
+
+
+class HtmlHandler(QWebEngineUrlSchemeHandler):
+    def __init__(self, parent= None):
+        super().__init__(parent)
+        self.html = ""
+
+    def requestStarted(self, request: QWebEngineUrlRequestJob):
+        buf = QBuffer(parent=self)
+        request.destroyed.connect(buf.deleteLater)
+        buf.open(QIODevice.OpenModeFlag.WriteOnly)
+        buf.write(self.html)
+        buf.seek(0)
+        buf.close()
+        request.destroyed.connect(buf.deleteLater)
+        request.reply(b"text/html", buf)
+        return
+
+    def set_html(self, html: str):
+        self.html = html.encode("utf-8")
 
 # Todo: Improve scene lighting
