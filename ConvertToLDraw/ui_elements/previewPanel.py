@@ -10,7 +10,6 @@ from trimesh import viewer
 from trimesh.scene.scene import Scene
 
 
-
 class PreviewPanel(QWidget):
 
     def __init__(self, main_name: str = None, main_model: Scene = None, background_color: str = "ffffff"):
@@ -43,6 +42,8 @@ class PreviewPanel(QWidget):
             html_code = viewer.scene_to_html(self.current_model)
             html_code = html_code.replace('scene.background=new THREE.Color(0xffffff)',
                                           f'scene.background=new THREE.Color(0x{self.background_color})')
+            html_code = html_code.replace('tracklight=new THREE.DirectionalLight(0xffffff,1.75)',
+                                          f'tracklight=new THREE.DirectionalLight(0xffffff,3)')
             self.html_handler.set_html(html_code)
             self.web_view.load(QUrl("model://init"))
 
@@ -63,7 +64,6 @@ class HtmlHandler(QWebEngineUrlSchemeHandler):
         buf.write(self.html)
         buf.seek(0)
         buf.close()
-        request.destroyed.connect(buf.deleteLater)
         request.reply(b"text/html", buf)
         return
 
