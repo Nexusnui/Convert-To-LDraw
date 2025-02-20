@@ -1,18 +1,19 @@
 import os
+import base64
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
     QPushButton
 )
-from PyQt6.QtGui import QIcon, QColor
+from PyQt6.QtGui import QIcon
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
 from PyQt6.QtCore import QBuffer, QIODevice, QUrl, Qt
-from trimesh import viewer
 from trimesh.scene.scene import Scene
 
 basedir = os.path.dirname(__file__).strip("ui_elements")
+viewer_template_html = os.path.join(os.path.dirname(__file__), "viewer_template.html")
 
 empty_html = ('<!DOCTYPE html>'
               '<html lang="en">'
@@ -73,11 +74,8 @@ class PreviewPanel(QWidget):
 
     def refresh_model(self):
         if self.current_model is not None:
-            html_code = viewer.scene_to_html(self.current_model)
-            html_code = html_code.replace('scene.background=new THREE.Color(0xffffff)',
-                                          f'scene.background=new THREE.Color(0x{self.background_color})')
-            html_code = html_code.replace('tracklight=new THREE.DirectionalLight(0xffffff,1.75)',
-                                          f'tracklight=new THREE.DirectionalLight(0xffffff,3)')
+            html_code = scene_to_html(self.current_model)
+            html_code = html_code.replace('$BGC', f'0x{self.background_color})')
             self.html_handler.set_html(html_code)
             self.web_view.load(QUrl("model://init"))
 
@@ -104,3 +102,35 @@ class HtmlHandler(QWebEngineUrlSchemeHandler):
 
     def set_html(self, html: str):
         self.html = html.encode("utf-8")
+
+
+# scene_to_html function copied from viewer since importing viewser one crashes QFiledialog on execution
+def scene_to_html(scene):
+    """
+    Return HTML that will render the scene using
+    GLTF/GLB encoded to base64 loaded by three.js
+
+    Parameters
+    --------------
+    scene : trimesh.Scene
+      Source geometry
+
+    Returns
+    --------------
+    html : str
+      HTML containing embedded geometry
+    """
+    # Modified Viewer Template from Trimesh
+    with open(viewer_template_html, "r", encoding="utf-8") as file:
+        base = file.read()
+
+    # make sure scene has camera populated before export
+    _ = scene.camera
+    # get export as bytes
+    data = scene.export(file_type="glb")
+    # encode as base64 string
+    encoded = base64.b64encode(data).decode("utf-8")
+    # replace keyword with our scene data
+    result = base.replace("$B64GLTF", encoded)
+
+    return result
