@@ -69,8 +69,12 @@ class PreviewPanel(QWidget):
         self.show_main_model_button.setDisabled(False)
         self.refresh_model()
 
-    def set_main_model(self, name: str, model: Scene):
+    def set_main_model(self, name: str, model: Scene, refresh=False):
         self.main_model = model
+        if refresh:
+            self.show_main_model_button.setDisabled(True)
+            self.current_model = self.main_model
+            self.refresh_model()
 
     def refresh_model(self):
         if self.current_model is not None:

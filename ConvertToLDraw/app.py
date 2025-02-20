@@ -25,6 +25,7 @@ from PyQt6.QtWidgets import (
 from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, default_part_licenses
 from ConvertToLDraw.brick_data.brick_categories import brick_categories
 from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel, ColourPanel
+from ConvertToLDraw.ui_elements.previewPanel import PreviewPanel
 
 basedir = os.path.dirname(__file__)
 
@@ -102,7 +103,7 @@ class MainWindow(QMainWindow):
 
         # Reload Button
         self.reload_button = QPushButton("Reload Model")
-        self.reload_button.setIcon(QIcon(os.path.join(basedir, "icons/reload-icon.svg")))
+        self.reload_button.setIcon(QIcon(os.path.join(basedir, "icons", "reload-icon.svg")))
         self.reload_button.clicked.connect(lambda a: self.load_file(True))
         file_select_inputs.addRow(self.reload_button)
 
@@ -180,7 +181,7 @@ class MainWindow(QMainWindow):
         self.convert_button = QPushButton("Convert File")
         self.convert_button.clicked.connect(self.convert_file)
 
-    # Preview Area
+    # Preview Area (Legacy to be removed)
         preview_area = QHBoxLayout()
 
         self.preview_button = QPushButton("Show Preview")
@@ -191,10 +192,14 @@ class MainWindow(QMainWindow):
         self.loaded_file_status_label = QLabel("No file loaded")
         preview_area.addWidget(self.loaded_file_status_label)
 
-    # Subpart and Color Editor Area
+    # Subpart and Color Editor Panel
         subpart_area = QWidget()
         self.subpart_area_layout = QVBoxLayout()
         subpart_area.setLayout(self.subpart_area_layout)
+
+    # Preview Panel
+        hex_bg_color = self.palette().window().color().name().strip("#")
+        self.preview_panel = PreviewPanel(background_color=hex_bg_color)
 
     # Add Elements to Main Layout
         top_layout.addWidget(part_settings_area)
@@ -207,6 +212,7 @@ class MainWindow(QMainWindow):
         file_select_inputs.addRow(self.convert_button)
 
         self.settings_tabs.addTab(subpart_area, "Subpart and Colour Settings")
+        self.settings_tabs.addTab(self.preview_panel, "Part Preview")
 
         self.main_layout.addLayout(preview_area)
         widget = QWidget()
@@ -277,6 +283,8 @@ class MainWindow(QMainWindow):
 
                 if not self.file_loaded:
                     self.file_loaded = True
+                # Todo: Better initial Name?
+                self.preview_panel.set_main_model("Main Model", self.ldraw_object.scene, True)
                 self.disable_settings(False)
         # No file Selected
         else:
@@ -420,14 +428,15 @@ def mm_float_to_string(number: float | int):
 
 
 def run():
-    app = QApplication([])
-    app.setWindowIcon(QIcon(os.path.join(basedir, "icons/ConvertToLDraw_icon.ico")))
+    app = QApplication([0])
+    app.setWindowIcon(QIcon(os.path.join(basedir, "icons", "ConvertToLDraw_icon.ico")))
 
     window = MainWindow()
 
     window.show()
 
     app.exec()
+
 
 if __name__ == "__main__":
     run()
