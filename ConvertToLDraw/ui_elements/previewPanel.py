@@ -1,13 +1,29 @@
+import os
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
+    QHBoxLayout,
+    QPushButton
 )
-
+from PyQt6.QtGui import QIcon, QColor
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
-from PyQt6.QtCore import QBuffer, QIODevice, QUrl
+from PyQt6.QtCore import QBuffer, QIODevice, QUrl, Qt
 from trimesh import viewer
 from trimesh.scene.scene import Scene
+
+basedir = os.path.dirname(__file__).strip("ui_elements")
+
+empty_html = ('<!DOCTYPE html>'
+              '<html lang="en">'
+              '<head>'
+              '<title>no model</title>'
+              '<meta charset="utf-8">'
+              '<meta name="viewport" content="width=device-width,user-scalable=no,minimum-scale=1.0,maximum-scale=1.0">'
+              '<style>body {margin: 0px;overflow: hidden;background-color: template_color;}</style>'
+              '</head>'
+              '<body></body>'
+              '</html>')
 
 
 class PreviewPanel(QWidget):
@@ -20,11 +36,28 @@ class PreviewPanel(QWidget):
         self.main_name = main_name
         self.main_layout = QVBoxLayout()
 
+        self.controls_layout = QHBoxLayout()
+        reload_button = QPushButton()
+        reload_button.setIcon(QIcon(os.path.join(basedir, "icons", "reload-icon.svg")))
+        reload_button.clicked.connect(self.refresh_model)
+        self.controls_layout.addWidget(reload_button)
+
+        self.show_main_model_button = QPushButton("Show Main Model")
+        self.show_main_model_button.clicked.connect(self.load_main_model)
+        self.show_main_model_button.setDisabled(True)
+        self.controls_layout.addWidget(self.show_main_model_button)
+
+        self.main_layout.addLayout(self.controls_layout)
+
         self.web_view = QWebEngineView()
+        self.web_view.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
+        self.web_view.setStyleSheet(f"color: #{background_color};background-color: #{background_color};")
         self.html_handler = HtmlHandler()
         self.web_view.page().profile().installUrlSchemeHandler(b"model", self.html_handler)
         if self.main_model is not None:
             self.load_main_model()
+        else:
+            self.web_view.setHtml(empty_html.replace("template_color", f"#{background_color}"))
 
         self.main_layout.addWidget(self.web_view)
 
@@ -32,6 +65,7 @@ class PreviewPanel(QWidget):
 
     def load_model(self, name: str, model: Scene):
         self.current_model = model
+        self.show_main_model_button.setDisabled(False)
         self.refresh_model()
 
     def set_main_model(self, name: str, model: Scene):
@@ -49,6 +83,7 @@ class PreviewPanel(QWidget):
 
     def load_main_model(self):
         self.current_model = self.main_model
+        self.show_main_model_button.setDisabled(True)
         self.refresh_model()
 
 
@@ -69,5 +104,3 @@ class HtmlHandler(QWebEngineUrlSchemeHandler):
 
     def set_html(self, html: str):
         self.html = html.encode("utf-8")
-
-# Todo: Improve scene lighting
