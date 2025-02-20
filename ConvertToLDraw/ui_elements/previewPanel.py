@@ -79,7 +79,7 @@ class PreviewPanel(QWidget):
     def refresh_model(self):
         if self.current_model is not None:
             html_code = scene_to_html(self.current_model)
-            html_code = html_code.replace('$BGC', f'0x{self.background_color})')
+            html_code = html_code.replace("$BGC", f"0x{self.background_color}")
             self.html_handler.set_html(html_code)
             self.web_view.load(QUrl("model://init"))
 
