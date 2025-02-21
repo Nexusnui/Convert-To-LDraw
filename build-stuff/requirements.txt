@@ -1,6 +1,6 @@
 numpy==2.2.3
 cascadio==0.0.16
-"chardet==5.2.0
+charset-normalizer==3.4.1
 lxml==5.3.1
 manifold3d==3.0.1
 meshio==5.3.5

@@ -16,7 +16,7 @@ setup(
     },
     install_requires=["numpy==2.2.3",
                       "cascadio==0.0.16",
-                      "chardet==5.2.0",
+                      "charset-normalizer==3.4.1",
                       "lxml==5.3.1",
                       "manifold3d==3.0.1",
                       "meshio==5.3.5",
@@ -26,7 +26,7 @@ setup(
                       "PyQt6==6.8.1",
                       "PyQt6-WebEngine==6.8.0",
                       "scipy==1.15.2",
-                      "trimesh==4.6.1",
+                      "trimesh==4.6.3",
                       ],
     entry_points={
         'gui_scripts': [
