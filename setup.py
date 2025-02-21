@@ -23,7 +23,6 @@ setup(
                       "networkx==3.4.2",
                       "pillow==11.1.0",
                       "pycollada==0.9",
-                      "pyglet==1.5.29",
                       "PyQt6==6.8.1",
                       "PyQt6-WebEngine==6.8.0",
                       "scipy==1.15.2",
