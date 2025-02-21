@@ -7,6 +7,7 @@ a = Analysis(
     binaries=[],
     datas=[('ConvertToLDraw\\icons\\ConvertToLDraw_icon.ico','icons'),
            ('ConvertToLDraw\\icons\\reload-icon.svg','icons'),
+           ('ConvertToLDraw\\icons\\reload-icon.svg','ConvertToLDraw\\icons'),
            ('ConvertToLDraw\\brick_data\\colour_definitions.csv','ConvertToLDraw\\brick_data'),
            ('LICENSE','.'),
            ('ConvertToLDraw\\ui_elements\\viewer_template.html','ConvertToLDraw\\ui_elements')],
