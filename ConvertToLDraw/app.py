@@ -182,16 +182,10 @@ class MainWindow(QMainWindow):
         self.convert_button = QPushButton("Convert File")
         self.convert_button.clicked.connect(self.convert_file)
 
-    # Preview Area (Legacy to be removed)
-        preview_area = QHBoxLayout()
-
-        self.preview_button = QPushButton("Show Preview")
-        self.preview_button.clicked.connect(self.show_preview)
-        self.preview_button.setDisabled(True)
-        preview_area.addWidget(self.preview_button)
+    # Loaded File Status Label
 
         self.loaded_file_status_label = QLabel("No file loaded")
-        preview_area.addWidget(self.loaded_file_status_label)
+        self.loaded_file_status_label.setAlignment(Qt.AlignmentFlag.AlignVCenter|Qt.AlignmentFlag.AlignRight)
 
     # Subpart and Color Editor Panel
         subpart_area = QWidget()
@@ -216,7 +210,7 @@ class MainWindow(QMainWindow):
         self.settings_tabs.addTab(self.preview_panel, "Part Preview")
         self.settings_tabs.currentChanged.connect(self.tab_changed_actions)
 
-        self.main_layout.addLayout(preview_area)
+        self.main_layout.addWidget(self.loaded_file_status_label)
         widget = QWidget()
         widget.setLayout(self.main_layout)
         self.disable_settings(True)
@@ -283,7 +277,7 @@ class MainWindow(QMainWindow):
                 x_length = mm_float_to_string(self.ldraw_object.size[0])
                 y_length = mm_float_to_string(self.ldraw_object.size[1])
                 z_length = mm_float_to_string(self.ldraw_object.size[2])
-                self.loaded_file_status_label.setText(f"Current Model: {filename}\n({x_length}×{y_length}×{z_length})")
+                self.loaded_file_status_label.setText(f"Current Model: {filename} ({x_length}×{y_length}×{z_length})")
 
                 if not self.file_loaded:
                     self.file_loaded = True
@@ -311,14 +305,6 @@ class MainWindow(QMainWindow):
         if filepath:
             self.output_file_line.setText(filepath)
 
-    """def show_preview(self):
-        hex_bg_color = self.palette().window().color().name()
-        r = int(hex_bg_color[1:3], 16)
-        g = int(hex_bg_color[3:5], 16)
-        b = int(hex_bg_color[5:7], 16)
-        self.ldraw_object.scene.show(smooth=False, resolution=(900, 900),
-                                     caption="Part Preview", background=(r, g, b, 255))"""
-
     def show_preview(self, subpart: Subpart):
         self.preview_panel.load_subpart(subpart)
         self.refresh_preview = False
@@ -336,7 +322,6 @@ class MainWindow(QMainWindow):
         self.load_input_button.setDisabled(value)
         self.output_file_line.setReadOnly(value)
         self.select_output_button.setDisabled(value)
-        self.preview_button.setDisabled(value)
         self.convert_button.setDisabled(value)
         self.partname_line.setReadOnly(value)
         self.bl_number_line.setReadOnly(value)
