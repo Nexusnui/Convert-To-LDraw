@@ -4,7 +4,8 @@ from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
-    QPushButton
+    QPushButton,
+    QLabel
 )
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWebEngineWidgets import QWebEngineView
@@ -43,11 +44,13 @@ class PreviewPanel(QWidget):
         reload_button.clicked.connect(self.refresh_model)
         self.controls_layout.addWidget(reload_button)
 
-        self.show_main_model_button = QPushButton("Show Main Model")
+        self.show_main_model_button = QPushButton("Show Main Part")
         self.show_main_model_button.clicked.connect(self.load_main_model)
         self.show_main_model_button.setDisabled(True)
         self.controls_layout.addWidget(self.show_main_model_button)
 
+        self.status_label = QLabel("No Model Loaded")
+        self.main_layout.addWidget(self.status_label)
         self.main_layout.addLayout(self.controls_layout)
 
         self.web_view = QWebEngineView()
@@ -67,6 +70,7 @@ class PreviewPanel(QWidget):
     def load_model(self, name: str, model: Scene):
         self.current_model = model
         self.show_main_model_button.setDisabled(False)
+        self.status_label.setText(f"Showing Subpart: '{name}'")
         self.refresh_model()
 
     def set_main_model(self, name: str, model: Scene, refresh=False):
@@ -74,6 +78,7 @@ class PreviewPanel(QWidget):
         if refresh:
             self.show_main_model_button.setDisabled(True)
             self.current_model = self.main_model
+            self.status_label.setText(f"Showing Main Part")
             self.refresh_model()
 
     def refresh_model(self):
@@ -86,6 +91,7 @@ class PreviewPanel(QWidget):
     def load_main_model(self):
         self.current_model = self.main_model
         self.show_main_model_button.setDisabled(True)
+        self.status_label.setText(f"Showing Main Part")
         self.refresh_model()
 
 
