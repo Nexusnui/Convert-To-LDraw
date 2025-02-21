@@ -223,7 +223,11 @@ class Subpart:
                 else:
                     self.main_colour = main_colour
             else:
-                self.main_colour = self.colours.popitem()[1][0]
+                if main_colour is not None:
+                    self.main_colour = main_colour
+                    self.apply_color()
+                else:
+                    self.main_colour = self.colours.popitem()[1][0]
             if is_invisible:
                 for key, value in self.colours.items():
                     value[0].alpha = "255"
