@@ -12,6 +12,7 @@ from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
 from PyQt6.QtCore import QBuffer, QIODevice, QUrl, Qt
 from trimesh.scene.scene import Scene
+from ConvertToLDraw.brick_data.ldrawObject import Subpart
 
 basedir = os.path.dirname(__file__).strip("ui_elements")
 viewer_template_html = os.path.join(os.path.dirname(__file__), "viewer_template.html")
@@ -67,13 +68,12 @@ class PreviewPanel(QWidget):
 
         self.setLayout(self.main_layout)
 
-    def load_model(self, name: str, model: Scene):
+    def load_subpart(self, model: Subpart):
         self.current_model = model
         self.show_main_model_button.setDisabled(False)
-        self.status_label.setText(f"Showing Subpart: '{name}'")
         self.refresh_model()
 
-    def set_main_model(self, name: str, model: Scene, refresh=False):
+    def set_main_model(self, model: Scene, refresh=False):
         self.main_model = model
         if refresh:
             self.show_main_model_button.setDisabled(True)
@@ -83,7 +83,11 @@ class PreviewPanel(QWidget):
 
     def refresh_model(self):
         if self.current_model is not None:
-            html_code = scene_to_html(self.current_model)
+            if isinstance(self.current_model, Subpart):
+                html_code = scene_to_html(self.current_model.mesh.scene())
+                self.status_label.setText(f"Showing Subpart: '{self.current_model.name}'")
+            else:
+                html_code = scene_to_html(self.current_model)
             html_code = html_code.replace("$BGC", f"0x{self.background_color}")
             self.html_handler.set_html(html_code)
             self.web_view.load(QUrl("model://init"))

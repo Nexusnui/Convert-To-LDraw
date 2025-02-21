@@ -22,7 +22,7 @@ from PyQt6.QtWidgets import (
     QTabWidget
 )
 
-from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, default_part_licenses
+from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart, default_part_licenses
 from ConvertToLDraw.brick_data.brick_categories import brick_categories
 from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel, ColourPanel
 from ConvertToLDraw.ui_elements.previewPanel import PreviewPanel
@@ -47,6 +47,7 @@ class MainWindow(QMainWindow):
 
         self.ldraw_object = None
         self.file_loaded = False
+        self.refresh_preview = False
 
         self.setWindowTitle(f"Convert To LDraw {app_version}")
         self.main_layout = QVBoxLayout()
@@ -213,6 +214,7 @@ class MainWindow(QMainWindow):
 
         self.settings_tabs.addTab(subpart_area, "Subpart and Colour Settings")
         self.settings_tabs.addTab(self.preview_panel, "Part Preview")
+        self.settings_tabs.currentChanged.connect(self.tab_changed_actions)
 
         self.main_layout.addLayout(preview_area)
         widget = QWidget()
@@ -272,9 +274,11 @@ class MainWindow(QMainWindow):
                     self.subpart_panel.deleteLater()
                 if len(self.ldraw_object.subparts) > 1:
                     self.subpart_panel = SubpartPanel(self.ldraw_object, self)
+                    self.subpart_panel.show_preview.connect(self.show_preview)
                 else:
                     self.subpart_panel = ColourPanel(self.ldraw_object, self)
                 self.subpart_area_layout.addWidget(self.subpart_panel)
+                self.subpart_panel.model_updated.connect(self.enable_refresh)
 
                 x_length = mm_float_to_string(self.ldraw_object.size[0])
                 y_length = mm_float_to_string(self.ldraw_object.size[1])
@@ -283,8 +287,7 @@ class MainWindow(QMainWindow):
 
                 if not self.file_loaded:
                     self.file_loaded = True
-                # Todo: Better initial Name?
-                self.preview_panel.set_main_model("Main Model", self.ldraw_object.scene, True)
+                self.preview_panel.set_main_model(self.ldraw_object.scene, True)
                 self.disable_settings(False)
         # No file Selected
         else:
@@ -308,13 +311,18 @@ class MainWindow(QMainWindow):
         if filepath:
             self.output_file_line.setText(filepath)
 
-    def show_preview(self):
+    """def show_preview(self):
         hex_bg_color = self.palette().window().color().name()
         r = int(hex_bg_color[1:3], 16)
         g = int(hex_bg_color[3:5], 16)
         b = int(hex_bg_color[5:7], 16)
         self.ldraw_object.scene.show(smooth=False, resolution=(900, 900),
-                                     caption="Part Preview", background=(r, g, b, 255))
+                                     caption="Part Preview", background=(r, g, b, 255))"""
+
+    def show_preview(self, subpart: Subpart):
+        self.preview_panel.load_subpart(subpart)
+        self.refresh_preview = False
+        self.settings_tabs.setCurrentIndex(2)
 
     def reset_part_settings(self):
         self.partname_line.clear()
@@ -349,6 +357,14 @@ class MainWindow(QMainWindow):
         self.multi_object_check.setDisabled(False)
         self.scale_input.setDisabled(False)
         self.load_input_button.setDisabled(False)
+
+    def enable_refresh(self):
+        self.refresh_preview = True
+
+    def tab_changed_actions(self, tab_index):
+        if tab_index == 2 and self.refresh_preview:
+            self.preview_panel.refresh_model()
+            self.refresh_preview = False
 
     def convert_file(self):
         self.disable_settings(True)
