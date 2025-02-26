@@ -13,6 +13,7 @@ from PyQt6.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlReque
 from PyQt6.QtCore import QBuffer, QIODevice, QUrl, Qt
 from trimesh.scene.scene import Scene
 from ConvertToLDraw.brick_data.ldrawObject import Subpart
+from ConvertToLDraw.model_processors.glb_export import export_glb
 
 basedir = os.path.dirname(__file__).strip("ui_elements")
 viewer_template_html = os.path.join(os.path.dirname(__file__), "viewer_template.html")
@@ -141,7 +142,8 @@ def scene_to_html(scene):
     # make sure scene has camera populated before export
     _ = scene.camera
     # get export as bytes
-    data = scene.export(file_type="glb")
+    data = export_glb(scene)
+
     # encode as base64 string
     encoded = base64.b64encode(data).decode("utf-8")
     # replace keyword with our scene data
