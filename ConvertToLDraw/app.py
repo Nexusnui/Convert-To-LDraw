@@ -281,7 +281,7 @@ class MainWindow(QMainWindow):
 
                 if not self.file_loaded:
                     self.file_loaded = True
-                self.preview_panel.set_main_model(self.ldraw_object.scene, True)
+                self.preview_panel.set_main_model(self.ldraw_object, True)
                 self.disable_settings(False)
         # No file Selected
         else:

@@ -1,5 +1,5 @@
 import os
-import base64
+import urllib.parse
 from PyQt6.QtWidgets import (
     QWidget,
     QVBoxLayout,
@@ -11,9 +11,7 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
 from PyQt6.QtCore import QBuffer, QIODevice, QUrl, Qt
-from trimesh.scene.scene import Scene
-from ConvertToLDraw.brick_data.ldrawObject import Subpart
-from ConvertToLDraw.model_processors.glb_export import export_glb
+from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart
 
 basedir = os.path.dirname(__file__).strip("ui_elements")
 viewer_template_html = os.path.join(os.path.dirname(__file__), "viewer_template.html")
@@ -32,7 +30,7 @@ empty_html = ('<!DOCTYPE html>'
 
 class PreviewPanel(QWidget):
 
-    def __init__(self, main_name: str = None, main_model: Scene = None, background_color: str = "ffffff"):
+    def __init__(self, main_name: str = None, main_model: LdrawObject = None, background_color: str = "ffffff"):
         super().__init__()
         self.main_model = main_model
         self.current_model = main_model
@@ -74,7 +72,7 @@ class PreviewPanel(QWidget):
         self.show_main_model_button.setDisabled(False)
         self.refresh_model()
 
-    def set_main_model(self, model: Scene, refresh=False):
+    def set_main_model(self, model: LdrawObject, refresh=False):
         self.main_model = model
         if refresh:
             self.show_main_model_button.setDisabled(True)
@@ -84,11 +82,9 @@ class PreviewPanel(QWidget):
 
     def refresh_model(self):
         if self.current_model is not None:
+            html_code = part_to_html(self.current_model)
             if isinstance(self.current_model, Subpart):
-                html_code = scene_to_html(self.current_model.mesh.scene())
                 self.status_label.setText(f"Showing Subpart: '{self.current_model.name}'")
-            else:
-                html_code = scene_to_html(self.current_model)
             html_code = html_code.replace("$BGC", f"0x{self.background_color}")
             self.html_handler.set_html(html_code)
             self.web_view.load(QUrl("model://init"))
@@ -120,14 +116,14 @@ class HtmlHandler(QWebEngineUrlSchemeHandler):
 
 
 # scene_to_html function copied from viewer since importing viewser one crashes QFiledialog on execution
-def scene_to_html(scene):
+def part_to_html(part: LdrawObject | Subpart):
     """
     Return HTML that will render the scene using
-    GLTF/GLB encoded to base64 loaded by three.js
+    LDraw format that is url encoded loaded by three.js
 
     Parameters
     --------------
-    scene : trimesh.Scene
+    part : LdrawObject or Subpart
       Source geometry
 
     Returns
@@ -139,14 +135,23 @@ def scene_to_html(scene):
     with open(viewer_template_html, "r", encoding="utf-8") as file:
         base = file.read()
 
-    # make sure scene has camera populated before export
-    _ = scene.camera
-    # get export as bytes
-    data = export_glb(scene)
+    # Todo: Correct Camera position
+    #_ = part.camera
 
-    # encode as base64 string
-    encoded = base64.b64encode(data).decode("utf-8")
-    # replace keyword with our scene data
+    if isinstance(part, LdrawObject):
+        data = part.convert_to_dat_file()
+    else:
+        data = [part.get_ldraw_header("Preview", "Main Part", "", "", True)]
+        code = "16"
+        if not part.multicolour:
+            code = part.main_colour.colour_code
+        for line in part.to_ldraw_lines(code):
+            data.append(line)
+        data = "".join(data)
+
+    # url encoded string
+    encoded = urllib.parse.quote(data, safe="")
+    # replace keyword with part data
     result = base.replace("$B64GLTF", encoded)
 
     return result
