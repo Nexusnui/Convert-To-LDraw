@@ -12,6 +12,7 @@ class LdrawObject:
                  name="", bricklinknumber="", author="", category="", keywords=None,
                  part_license=None,
                  scale=1, multi_object=True, multicolour=True):
+        self.cached_colour_definitions = OrderedDict()
         self.__load_scene(filepath, scale, multi_object, multicolour)
 
         self.name = name
@@ -111,11 +112,15 @@ class LdrawObject:
                     geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8)*255
                     main_colour = Brickcolour("16")
                 transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
-                self.subparts[key] = Subpart(geometry, transformation_matrix, key, main_colour)
+                self.subparts[key] = Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions)
         self.scene = scene
 
-    def convert_to_dat_file(self, filepath):
-        filename = os.path.basename(filepath)
+    def convert_to_dat_file(self, filepath=None, one_file=False):
+        if filepath is None:
+            one_file = True
+            filename = self.name.replace(" ", "_")
+        else:
+            filename = os.path.basename(filepath)
         bricklinknumberline = ""
         if len(self.bricklinknumber) > 0:
             bricklinknumberline = f"0 BL_Item_No {self.bricklinknumber}\n\n"
@@ -137,6 +142,12 @@ class LdrawObject:
         license_line = ""
         if self.part_license is not None and len(self.part_license) > 0:
             license_line = f"0 !LICENSE {self.part_license}\n"
+        colour_definitions = ""
+        if one_file:
+            for definition_line in self.cached_colour_definitions.values():
+                colour_definitions += definition_line
+            if len(colour_definitions) > 0:
+                colour_definitions += "\n"
         header = (f"0 FILE {filename}\n"
                   f"0 {self.name}\n"
                   f"0 Name:  {filename}\n"
@@ -144,22 +155,29 @@ class LdrawObject:
                   f"0 !LDRAW_ORG Unofficial_Part\n"
                   f"{license_line}\n"
                   f"{bricklinknumberline}"
+                  f"{colour_definitions}"
                   f"0 BFC CERTIFY CCW\n"
                   f"{categoryline}"
                   f"{keyword_lines}\n")
-        with open(filepath, "w", encoding="utf-8") as file:
+
+        with ResultWriter(filepath) as file:
             file.write(header)
             if len(self.subparts) == 1:
                 for line in list(self.subparts.values())[0].to_ldraw_lines():
                     file.write(line)
             else:
-                sub_dir = f"{os.path.dirname(filepath)}/s/"
-                os.makedirs(sub_dir, exist_ok=True)
+                if one_file:
+                    subparts_lines = ""
+                else:
+                    sub_dir = f"{os.path.dirname(filepath)}/s/"
+                    os.makedirs(sub_dir, exist_ok=True)
                 basename = filename.split(".dat")[0]
                 for count, part in enumerate(self.subparts.values()):
                     subfilename = f"{basename}s{count:03d}.dat"
-                    subfilepath = f"{sub_dir}{subfilename}"
-                    part.convert_to_dat_file(subfilepath, filename, self.author, license_line)
+                    if not one_file:
+                        # Todo: Case filepath = None
+                        subfilepath = f"{sub_dir}{subfilename}"
+                        part.convert_to_dat_file(subfilepath, filename, self.author, license_line)
                     tm_a = f"{part.transformation_matrix[0][0]:f}"
                     tm_b = f"{part.transformation_matrix[0][1]:f}"
                     tm_c = f"{part.transformation_matrix[0][2]:f}"
@@ -172,15 +190,23 @@ class LdrawObject:
                     tm_x = f"{part.transformation_matrix[0][3]:f}"
                     tm_y = f"{part.transformation_matrix[1][3]:f}"
                     tm_z = f"{part.transformation_matrix[2][3]:f}"
-                    # Todo: Improve precision of floats to string conversion
-                    np.float64(1)
+                    # Todo: Improve precision of floats to string conversion (np.float64(1))
                     code = part.main_colour.colour_code
+                    if not one_file:
+                        subfilename = f"s/{subfilename}"
                     file.write(f"0 //~{part.name}\n"
                                f"1 {code} {tm_x} {tm_y} {tm_z}"
                                f" {tm_a} {tm_b} {tm_c}"
                                f" {tm_d} {tm_e} {tm_f}"
                                f" {tm_g} {tm_h} {tm_i}"
-                               f" s/{subfilename}\n")
+                               f" {subfilename}\n")
+                    if one_file:
+                        subparts_lines += f"\n{part.get_ldraw_header(subfilename, filename, self.author, license_line)}"
+                        for line in part.to_ldraw_lines():
+                            subparts_lines += line
+                file.write(subparts_lines)
+            if filepath is None:
+                return file.get_result()
 
     def set_main_colour(self, colour: Brickcolour):
         self.main_colour = colour
@@ -189,16 +215,24 @@ class LdrawObject:
 
 
 class Subpart:
-    def __init__(self, mesh: trimesh.base.Trimesh, transformation_matrix, name, main_colour: Brickcolour = None):
+    def __init__(self, mesh: trimesh.base.Trimesh,
+                 transformation_matrix,
+                 name,
+                 main_colour: Brickcolour = None,
+                 cached_colour_definitions: OrderedDict = OrderedDict()):
         self.mesh = mesh
         self.name = name
         self.transformation_matrix = transformation_matrix
+        self.cached_colour_definitions = cached_colour_definitions
         self.multicolour = False
         if not self.mesh.visual.defined:
             if main_colour is not None:
                 self.main_colour = main_colour
+                if self.main_colour.colour_type == "LDraw" and self.main_colour.ldrawname != "Undefined":
+                    self.cached_colour_definitions[self.main_colour.colour_code] = self.main_colour.get_ldraw_line()
             else:
                 self.main_colour = Brickcolour("16")
+                self.cached_colour_definitions["16"] = self.main_colour.get_ldraw_line()
             self.apply_color()
         else:
             self.colours = OrderedDict()
@@ -220,11 +254,17 @@ class Subpart:
                 self.multicolour = True
                 if main_colour is None:
                     self.main_colour = Brickcolour("16")
+                    self.cached_colour_definitions["16"] = self.main_colour.get_ldraw_line()
                 else:
                     self.main_colour = main_colour
+                    if self.main_colour:
+                        if self.main_colour.colour_type == "LDraw" and self.main_colour.ldrawname != "Undefined":
+                            self.cached_colour_definitions[self.main_colour.colour_code] = self.main_colour.get_ldraw_line()
             else:
                 if main_colour is not None:
                     self.main_colour = main_colour
+                    if self.main_colour.colour_type == "LDraw" and self.main_colour.ldrawname != "Undefined":
+                        self.cached_colour_definitions[self.main_colour.colour_code] = self.main_colour.get_ldraw_line()
                     self.apply_color()
                 else:
                     self.main_colour = self.colours.popitem()[1][0]
@@ -234,6 +274,10 @@ class Subpart:
                     self.apply_color(key=key)
 
     def apply_color(self, colour: Brickcolour = None, key=None):
+        if colour is not None:
+            if (colour.colour_code not in self.cached_colour_definitions
+                    and colour.colour_type == "LDraw" and colour.ldrawname != "Undefined"):
+                self.cached_colour_definitions[colour.colour_code] = colour.get_ldraw_line()
         if not self.multicolour or key is None:
             if colour is None:
                 colour = self.main_colour
@@ -276,19 +320,31 @@ class Subpart:
         self.merge_duplicate_colours(True)
 
     def convert_to_dat_file(self, filepath, main_file_name, author, license_line):
-        file_name = os.path.basename(filepath)
-        header = (f"0 ~{self.name}: Subpart of {main_file_name}\n"
-                  f"0 Name: s/{file_name}\n"
-                  f"0 Author:  {author}\n"
-                  f"0 !LDRAW_ORG Unofficial_Subpart\n"
-                  f"{license_line}"
-                  f"0 BFC CERTIFY CCW\n")
+        filename = f"s/{os.path.basename(filepath)}"
+        header = self.get_ldraw_header(filename, main_file_name, author, license_line)
         with open(filepath, "w", encoding="utf-8") as file:
             file.write(header)
             for line in self.to_ldraw_lines():
                 file.write(line)
 
-    def to_ldraw_lines(self):
+    def get_ldraw_header(self, filename, main_file_name, author, license_line, define_colours=False):
+        colour_definitions = ""
+        if define_colours:
+            for definition_line in self.cached_colour_definitions.values():
+                colour_definitions += definition_line
+            if len(colour_definitions) > 0:
+                colour_definitions += "\n"
+        header = (f"0 FILE {filename}\n"
+                  f"0 ~{self.name}: Subpart of {main_file_name}\n"
+                  f"0 Name: {filename}\n"
+                  f"0 Author:  {author}\n"
+                  f"0 !LDRAW_ORG Unofficial_Subpart\n"
+                  f"{license_line}\n"
+                  f"{colour_definitions}"
+                  f"0 BFC CERTIFY CCW\n")
+        return header
+
+    def to_ldraw_lines(self, color_code="16"):
         if self.multicolour:
             for colour, faces in self.colours.values():
                 code = colour.colour_code
@@ -303,7 +359,35 @@ class Subpart:
                 coordinate_a = ' '.join(map(str, self.mesh.vertices[face[0]]))
                 coordinate_b = ' '.join(map(str, self.mesh.vertices[face[1]]))
                 coordinate_c = ' '.join(map(str, self.mesh.vertices[face[2]]))
-                yield f"3 16 {coordinate_a} {coordinate_b} {coordinate_c}\n"
+                yield f"3 {color_code} {coordinate_a} {coordinate_b} {coordinate_c}\n"
+
+
+class ResultWriter:
+    def __init__(self, filepath: str = None):
+        self._is_file_writer = filepath is not None
+        self.filepath = filepath
+
+    def __enter__(self):
+        if self._is_file_writer:
+            self._result = open(self.filepath, "w", encoding="utf-8")
+        else:
+            self._result = []
+        return self
+
+    def __exit__(self, *args):
+        if self._is_file_writer:
+            self._result.close()
+
+    def write(self, lines: str):
+        if self._is_file_writer:
+            self._result.write(lines)
+        else:
+            self._result.append(lines)
+
+    def get_result(self):
+        if not self._is_file_writer:
+            return "".join(self._result)
+        return None
 
 
 def rgba_to_hex(color):
