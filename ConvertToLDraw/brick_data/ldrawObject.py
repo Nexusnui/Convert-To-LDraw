@@ -1,9 +1,12 @@
 import trimesh
 import trimesh.visual.material
 import os
-from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_closest_brickcolour_by_rgb_colour, get_all_brickcolours
+from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_closest_brickcolour_by_rgb_colour, \
+    get_all_brickcolours
 import numpy as np
 from collections import OrderedDict
+
+
 # Todo: Change np print settings?
 
 
@@ -106,10 +109,10 @@ class LdrawObject:
                         geometry.visual.face_colors
                     except Exception:
                         # Invalid Color Data -> can occur when loading step files
-                        geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8)*255
+                        geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * 255
                         main_colour = Brickcolour("16")
                 else:
-                    geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8)*255
+                    geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * 255
                     main_colour = Brickcolour("16")
                 transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
                 self.subparts[key] = Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions)
@@ -163,11 +166,15 @@ class LdrawObject:
         with ResultWriter(filepath) as file:
             file.write(header)
             if len(self.subparts) == 1:
-                for line in list(self.subparts.values())[0].to_ldraw_lines():
+                subpart = list(self.subparts.values())[0]
+                color_code = "16"
+                if not subpart.multicolour:
+                    color_code = subpart.main_colour.colour_code
+                for line in subpart.to_ldraw_lines(color_code):
                     file.write(line)
             else:
                 if one_file:
-                    subparts_lines = ""
+                    subparts_lines = []
                 else:
                     sub_dir = f"{os.path.dirname(filepath)}/s/"
                     os.makedirs(sub_dir, exist_ok=True)
@@ -201,10 +208,11 @@ class LdrawObject:
                                f" {tm_g} {tm_h} {tm_i}"
                                f" {subfilename}\n")
                     if one_file:
-                        subparts_lines += f"\n{part.get_ldraw_header(subfilename, filename, self.author, license_line)}"
+                        subparts_lines.append(
+                            f"\n{part.get_ldraw_header(subfilename, filename, self.author, license_line)}")
                         for line in part.to_ldraw_lines():
-                            subparts_lines += line
-                file.write(subparts_lines)
+                            subparts_lines.append(line)
+                file.write_list(subparts_lines)
             if filepath is None:
                 return file.get_result()
 
@@ -278,20 +286,21 @@ class Subpart:
             if (colour.colour_code not in self.cached_colour_definitions
                     and colour.colour_type == "LDraw" and colour.ldrawname != "Undefined"):
                 self.cached_colour_definitions[colour.colour_code] = colour.get_ldraw_line()
+
         if not self.multicolour or key is None:
             if colour is None:
                 colour = self.main_colour
-            self.mesh.visual.face_colors[0:] = np.array(colour.get_int_rgba())
+            # self.mesh.visual.face_colors[0:] = np.array(colour.get_int_rgba())
             self.main_colour = colour
             if self.multicolour:
-                for value in self.colours.values():
-                    value[0] = colour
+                self.multicolour = False
+                self.colours = None
         elif key is not None:
             if colour is None:
                 colour = self.colours[key][0]
-            rgba_values = colour.get_int_rgba()
-            for face in self.colours[key][1]:
-                self.mesh.visual.face_colors[face] = rgba_values
+                if (colour.colour_code not in self.cached_colour_definitions
+                        and colour.colour_type == "LDraw" and colour.ldrawname != "Undefined"):
+                    self.cached_colour_definitions[colour.colour_code] = colour.get_ldraw_line()
             self.colours[key][0] = colour
 
     def merge_duplicate_colours(self, apply_after=False):
@@ -299,7 +308,7 @@ class Subpart:
         for key in self.colours:
             colour = self.colours[key][0]
             if colour.colour_code in new_colours:
-                new_colours[colour.colour_code][1].append(self.colours[key][1])
+                new_colours[colour.colour_code][1].extend(self.colours[key][1])
             else:
                 new_colours[colour.colour_code] = [colour, self.colours[key][1]]
         self.colours = new_colours
@@ -383,6 +392,13 @@ class ResultWriter:
             self._result.write(lines)
         else:
             self._result.append(lines)
+
+    def write_list(self, lines: list):
+        if self._is_file_writer:
+            for line in lines:
+                self._result.write(line)
+        else:
+            self._result.extend(lines)
 
     def get_result(self):
         if not self._is_file_writer:
