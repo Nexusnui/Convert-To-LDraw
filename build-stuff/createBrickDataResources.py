@@ -62,7 +62,7 @@ def parse_bl_studio_color_definition(definition_path):
         for line in source:
             values = line.split("\t")
             if values[0] != "":
-                name = values[4]
+                name = values[4].replace(" ", "_")
                 code = f"100{values[3]}"
                 rgb_values = values[8]
                 # edge value for all bricklink colors is the one for black.
