@@ -29,7 +29,7 @@ from ConvertToLDraw.ui_elements.previewPanel import PreviewPanel, register_schem
 
 basedir = os.path.dirname(__file__)
 
-app_version = "1.2.0"
+app_version = "1.3.0"
 
 if platform.system() == "Windows":
     try:
