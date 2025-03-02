@@ -34,6 +34,10 @@ If have an antivirus software installed it might warn you, when running the inst
 To avoid the problems with an antivirus or for installation on Linux and Mac follow the [manual installation guide](MANUALINSTALL.md),
 which explains the installation with pipx.
 
+Known "Issues":  
+- The preview may not show objects properly if they are larger the 20 meters(for what could you need a piece that big anyway?).
+- On MacOS: Terminal window in the background, since pipx uses it to run a virtual environment
+
 This was originally a fork of a [python script of Hazen Babcock](https://github.com/HazenBabcock/stl-to-dat).  
 The code that was used from that script was completely rewritten for the 1.0 release of this software.  
 This application was also renamed from "stlToDat" to "Convert To LDraw" to reflect the added capabilities of the new version.

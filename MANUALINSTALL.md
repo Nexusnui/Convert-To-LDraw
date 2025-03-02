@@ -25,12 +25,6 @@ If you are on an Ubuntu based Linux distro and see an error message like this:
 Install libxcb-cursor0 with:  
 `sudo apt install libxcb-cursor0`  
 
-Known issues with Mac OS:
-- Terminal window in the background, since pipx uses it to run a virtual environment
-- Closing the preview closes the window. 
-This is either a problem with the required version of pyglet or a conflict with pytq.
-At this point there is no solution. This may get fixed if a better preview method becomes available.
-
 Creating a Shortcut(Windows)
 1. Open the folder you want to create the shortcut in.
 2. Click on "new" and "shortcut"
