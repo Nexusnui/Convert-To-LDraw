@@ -16,17 +16,6 @@ from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart
 basedir = os.path.dirname(__file__).strip("ui_elements")
 template_html_path = os.path.join(os.path.dirname(__file__), "viewer_template.html")
 
-empty_html = ('<!DOCTYPE html>'
-              '<html lang="en">'
-              '<head>'
-              '<title>no model</title>'
-              '<meta charset="utf-8">'
-              '<meta name="viewport" content="width=device-width,user-scalable=no,minimum-scale=1.0,maximum-scale=1.0">'
-              '<style>body {margin: 0px;overflow: hidden;background-color: template_color;}</style>'
-              '</head>'
-              '<body></body>'
-              '</html>')
-
 
 class PreviewPanel(QWidget):
 
@@ -65,7 +54,7 @@ class PreviewPanel(QWidget):
         if self.main_model is not None:
             self.load_main_model()
         else:
-            self.web_view.setHtml(empty_html.replace("template_color", f"#{background_color}"))
+            self.web_view.load(self.viewer_url)
 
         self.main_layout.addWidget(self.web_view)
 
@@ -102,7 +91,7 @@ class PreviewPanel(QWidget):
 class LDrawHandler(QWebEngineUrlSchemeHandler):
     def __init__(self, parent= None):
         super().__init__(parent)
-        self.file = ""
+        self.file = b""
 
     def requestStarted(self, request: QWebEngineUrlRequestJob):
         buf = QBuffer(parent=self)
