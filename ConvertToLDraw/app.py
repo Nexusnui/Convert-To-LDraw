@@ -25,7 +25,7 @@ from PyQt6.QtWidgets import (
 from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart, default_part_licenses
 from ConvertToLDraw.brick_data.brick_categories import brick_categories
 from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel, ColourPanel
-from ConvertToLDraw.ui_elements.previewPanel import PreviewPanel
+from ConvertToLDraw.ui_elements.previewPanel import PreviewPanel, register_scheme
 
 basedir = os.path.dirname(__file__)
 
@@ -193,7 +193,7 @@ class MainWindow(QMainWindow):
         subpart_area.setLayout(self.subpart_area_layout)
 
     # Preview Panel
-        hex_bg_color = self.palette().window().color().name().strip("#")
+        hex_bg_color = self.palette().window().color().name()
         self.preview_panel = PreviewPanel(background_color=hex_bg_color)
 
     # Add Elements to Main Layout
@@ -429,6 +429,7 @@ def mm_float_to_string(number: float | int):
 
 
 def run():
+    register_scheme()
     app = QApplication([0])
     app.setWindowIcon(QIcon(os.path.join(basedir, "icons", "ConvertToLDraw_icon.ico")))
 

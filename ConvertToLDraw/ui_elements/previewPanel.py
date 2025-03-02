@@ -9,12 +9,12 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWebEngineWidgets import QWebEngineView
-from PyQt6.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob
+from PyQt6.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob, QWebEngineUrlScheme
 from PyQt6.QtCore import QBuffer, QIODevice, QUrl, Qt
 from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart
 
 basedir = os.path.dirname(__file__).strip("ui_elements")
-viewer_template_html = os.path.join(os.path.dirname(__file__), "viewer_template.html")
+template_html_path = os.path.join(os.path.dirname(__file__), "viewer_template.html")
 
 empty_html = ('<!DOCTYPE html>'
               '<html lang="en">'
@@ -35,6 +35,10 @@ class PreviewPanel(QWidget):
         self.main_model = main_model
         self.current_model = main_model
         self.background_color = background_color
+        viewer_url = QUrl.fromLocalFile(template_html_path)
+        viewer_url.setUrl(f"{viewer_url.url()}?color={urllib.parse.quote(background_color)}")
+        self.viewer_url = viewer_url
+
         self.main_name = main_name
         self.main_layout = QVBoxLayout()
 
@@ -55,9 +59,9 @@ class PreviewPanel(QWidget):
 
         self.web_view = QWebEngineView()
         self.web_view.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
-        self.web_view.setStyleSheet(f"color: #{background_color};background-color: #{background_color};")
-        self.html_handler = HtmlHandler()
-        self.web_view.page().profile().installUrlSchemeHandler(b"model", self.html_handler)
+        self.web_view.setStyleSheet(f"background-color: {background_color};")
+        self.html_handler = LDrawHandler()
+        self.web_view.page().profile().installUrlSchemeHandler(b"ldraw", self.html_handler)
         if self.main_model is not None:
             self.load_main_model()
         else:
@@ -82,12 +86,11 @@ class PreviewPanel(QWidget):
 
     def refresh_model(self):
         if self.current_model is not None:
-            html_code = part_to_html(self.current_model)
             if isinstance(self.current_model, Subpart):
                 self.status_label.setText(f"Showing Subpart: '{self.current_model.name}'")
-            html_code = html_code.replace("$BGC", f"0x{self.background_color}")
-            self.html_handler.set_html(html_code)
-            self.web_view.load(QUrl("model://init"))
+            ldraw_data = get_ldraw_data(self.current_model)
+            self.html_handler.set_ldraw_file(ldraw_data)
+            self.web_view.load(self.viewer_url)
 
     def load_main_model(self):
         self.current_model = self.main_model
@@ -96,48 +99,26 @@ class PreviewPanel(QWidget):
         self.refresh_model()
 
 
-class HtmlHandler(QWebEngineUrlSchemeHandler):
+class LDrawHandler(QWebEngineUrlSchemeHandler):
     def __init__(self, parent= None):
         super().__init__(parent)
-        self.html = ""
+        self.file = ""
 
     def requestStarted(self, request: QWebEngineUrlRequestJob):
         buf = QBuffer(parent=self)
         request.destroyed.connect(buf.deleteLater)
         buf.open(QIODevice.OpenModeFlag.WriteOnly)
-        buf.write(self.html)
+        buf.write(self.file)
         buf.seek(0)
         buf.close()
-        request.reply(b"text/html", buf)
+        request.reply(b"text/plain", buf)
         return
 
-    def set_html(self, html: str):
-        self.html = html.encode("utf-8")
+    def set_ldraw_file(self, file: str):
+        self.file = file.encode("utf-8")
 
 
-# scene_to_html function copied from viewer since importing viewser one crashes QFiledialog on execution
-def part_to_html(part: LdrawObject | Subpart):
-    """
-    Return HTML that will render the scene using
-    LDraw format that is url encoded loaded by three.js
-
-    Parameters
-    --------------
-    part : LdrawObject or Subpart
-      Source geometry
-
-    Returns
-    --------------
-    html : str
-      HTML containing embedded geometry
-    """
-    # Modified Viewer Template from Trimesh
-    with open(viewer_template_html, "r", encoding="utf-8") as file:
-        base = file.read()
-
-    # Todo: Correct Camera position
-    #_ = part.camera
-
+def get_ldraw_data(part: LdrawObject | Subpart):
     if isinstance(part, LdrawObject):
         data = part.convert_to_dat_file()
     else:
@@ -148,10 +129,20 @@ def part_to_html(part: LdrawObject | Subpart):
         for line in part.to_ldraw_lines(code):
             data.append(line)
         data = "".join(data)
+    return data
 
-    # url encoded string
-    encoded = urllib.parse.quote(data, safe="")
-    # replace keyword with part data
-    result = base.replace("$B64GLTF", encoded)
 
-    return result
+def register_scheme():
+    scheme = QWebEngineUrlScheme(b"ldraw")
+    scheme.setFlags(
+        QWebEngineUrlScheme.Flag.LocalScheme |
+        QWebEngineUrlScheme.Flag.SecureScheme |
+        QWebEngineUrlScheme.Flag.LocalAccessAllowed |
+        QWebEngineUrlScheme.Flag.ViewSourceAllowed |
+        QWebEngineUrlScheme.Flag.ContentSecurityPolicyIgnored |
+        QWebEngineUrlScheme.Flag.CorsEnabled |
+        QWebEngineUrlScheme.Flag.FetchApiAllowed
+    )
+    scheme.setSyntax(QWebEngineUrlScheme.Syntax.Path)
+    scheme.setDefaultPort(80)
+    QWebEngineUrlScheme.registerScheme(scheme)

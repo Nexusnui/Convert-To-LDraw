@@ -14,71 +14,105 @@
       }
     </style>
   </head>
-  <body>
-    <div id="container"></div>
-	<!--Todo: Turn into local resource or inline script code-->
-	<script type="importmap">
+<body>
+
+<div id="container"></div>
+
+<script>
+  searchListParameters = new URLSearchParams(window.location.search);
+  const bg_color=searchListParameters.get("color");
+  document.body.style.backgroundColor = bg_color;
+</script>
+
+<script type="importmap">
   {
     "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.174.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.174.0/examples/jsm/"
+      "three": "./js-libraries/three.module.js"
     }
   }
 </script>
-	<script type="module">
-	import * as THREE from 'three';
-	import { LDrawLoader } from 'three/addons/loaders/LDrawLoader.js';
-	import { LDrawConditionalLineMaterial } from 'three/addons/materials/LDrawConditionalLineMaterial.js';
-	import { TrackballControls } from 'three/addons/controls/TrackballControls.js';
+
+<script type="module">
+	import * as THREE from './js-libraries/three.module.js';
+	import { LDrawLoader } from './js-libraries/LDrawLoader.js';
+	import { LDrawConditionalLineMaterial } from './js-libraries/LDrawConditionalLineMaterial.js';
+	import { TrackballControls } from './js-libraries/TrackballControls.js';
 	var scene;
 	var tracklight;
 	var renderer;
 	var camera;
 	var controls;
 	var target;
+	const part_data = "ldraw://model.dat";
 
+	function centerControls(obj,camera,controls){
+		const boundingBox=new THREE.Box3().setFromObject(obj);
+		const boundingSphere=new THREE.Sphere();
+		boundingBox.getBoundingSphere((target=boundingSphere));
+		controls.update();
+		controls.target.set(boundingSphere.center.x,boundingSphere.center.y,boundingSphere.center.z);
+		//Setup Camera to look at object
+		let center = boundingBox.getCenter(new THREE.Vector3(0,0,0));
+		let size = boundingBox.getSize(new THREE.Vector3(0,0,0));
+		let distance = Math.max(size.x,size.y)*1.45;
+		camera.lookAt(center);
+		camera.position.set( center.x, center.y, center.z-distance);
+		camera.up.set(0, -1, 0);
+	}
 
-function centerControls(obj,camera,controls){
-const boundingBox=new THREE.Box3().setFromObject(obj);
-const boundingSphere=new THREE.Sphere();
-boundingBox.getBoundingSphere((target=boundingSphere));
-controls.update();
-controls.target.set(boundingSphere.center.x,boundingSphere.center.y,boundingSphere.center.z);
-//Setup Camera to look at object
-let center = boundingBox.getCenter(new THREE.Vector3(0,0,0));
-let size = boundingBox.getSize(new THREE.Vector3(0,0,0));
-let distance = Math.max(size.x,size.y)*1.45
-camera.lookAt(center);
-camera.position.set( center.x, center.y, center.z-distance);
-camera.up.set(0, -1, 0);
-}
+	function init(){
+		scene=new THREE.Scene();
+		scene.background=new THREE.Color(bg_color);
+		tracklight=new THREE.DirectionalLight(0xffffff,3.25);
+		scene.add(tracklight);
+		renderer=new THREE.WebGLRenderer({antialias:true});
+		renderer.setPixelRatio(window.devicePixelRatio);
+		renderer.setSize(window.innerWidth,window.innerHeight);
+		document.body.appendChild(renderer.domElement);
 
-function init(){
-scene=new THREE.Scene();
-scene.background=new THREE.Color($BGC);
-tracklight=new THREE.DirectionalLight(0xffffff,3.25);
-scene.add(tracklight);
-let part_data="$B64GLTF";
-renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize(window.innerWidth,window.innerHeight);
-document.body.appendChild(renderer.domElement);
+		camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
 
-camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
-
-let ld_loader=new LDrawLoader();
-ld_loader.setConditionalLineMaterial( LDrawConditionalLineMaterial );
-ld_loader.load("data:text/plain;,"+part_data,function(group){
-scene.add(group);
-controls=new TrackballControls(camera,renderer.domElement);controls.rotateSpeed=1.5;controls.zoomSpeed=1.2;controls.panSpeed=0.8;controls.noZoom=false;controls.noPan=false;controls.staticMoving=true;controls.dynamicDampingFactor=0.3;controls.keys=[65,83,68];controls.addEventListener("change",render);centerControls(scene,camera,controls);render();window.addEventListener("resize",onWindowResize,false);animate();onWindowResize();
-});
-}
-function onWindowResize(){camera.aspect=window.innerWidth/window.innerHeight;camera.updateProjectionMatrix();renderer.setSize(window.innerWidth,window.innerHeight);controls.handleResize();render();}
-function animate(){requestAnimationFrame(animate);controls.update();}
-function render(){
-tracklight.position.copy(camera.position);
-tracklight.target.position.copy(controls.target);
-tracklight.target.updateMatrixWorld();
-renderer.render(scene,camera);}
-init();</script></body>
+		let ld_loader=new LDrawLoader();
+		ld_loader.setConditionalLineMaterial( LDrawConditionalLineMaterial );
+		ld_loader.load(part_data,function(group){
+			scene.add(group);
+			controls=new TrackballControls(camera,renderer.domElement);
+			controls.rotateSpeed=1.5;
+			controls.zoomSpeed=1.2;
+			controls.panSpeed=0.8;
+			controls.noZoom=false;
+			controls.noPan=false;
+			controls.staticMoving=true;
+			controls.dynamicDampingFactor=0.3;
+			controls.keys=[65,83,68];
+			controls.addEventListener("change",render);
+			centerControls(scene,camera,controls);
+			render();
+			window.addEventListener("resize",onWindowResize,false);
+			animate();
+			onWindowResize();
+		});
+	}
+	
+	function onWindowResize(){
+		camera.aspect=window.innerWidth/window.innerHeight;
+		camera.updateProjectionMatrix();
+		renderer.setSize(window.innerWidth,window.innerHeight);
+		controls.handleResize();
+		render();
+	}
+	function animate(){
+		requestAnimationFrame(animate);
+		controls.update();
+	}
+	
+	function render(){
+		tracklight.position.copy(camera.position);
+		tracklight.target.position.copy(controls.target);
+		tracklight.target.updateMatrixWorld();
+		renderer.render(scene,camera);
+	}
+	init();
+</script>
+</body>
 </html>
