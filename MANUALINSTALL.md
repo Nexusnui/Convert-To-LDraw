@@ -37,11 +37,11 @@ Optional Steps:
 7. Change target to the location your projects are located for example "C:\Users\{YourUserName}\3D Objects"
 8. Optionally change the icon to the one in
 "C:\Users\{YourUserName}\pipx\venvs\converttoldraw\Lib\site-packages\ConvertToLDraw\icons\"
-or [downloadable here](ConvertToLDraw/icons/ConvertToLDraw_icon.ico).
+or [downloadable here](https://github.com/Nexusnui/Convert-To-LDraw/raw/master/ConvertToLDraw/icons/ConvertToLDraw_icon.ico).
 
 
 Use the .desktop file on Linux:  
-1. [Download ConvertToLDraw.desktop](build-stuff/ConvertToLDraw.desktop) and move it to "~/.local/share/applications"
+1. [Download ConvertToLDraw.desktop](https://github.com/Nexusnui/Convert-To-LDraw/raw/master/build-stuff/ConvertToLDraw.desktop) and move it to "~/.local/share/applications"
 or another appropriate location for .desktop files.
 2. Make sure the .desktop file has the appropriate permissions to be executable
 3. [Download the Icon](ConvertToLDraw/icons/ConvertToLDraw_icon_256x256.png)
