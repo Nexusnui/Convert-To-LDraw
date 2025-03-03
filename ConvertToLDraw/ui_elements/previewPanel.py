@@ -88,6 +88,8 @@ class PreviewPanel(QWidget):
         self.refresh_model()
 
     def reload_model(self):
+        if isinstance(self.current_model, Subpart):
+            self.status_label.setText(f"Showing Subpart: '{self.current_model.name}'")
         self.ldraw_handler.set_ldraw_file(get_ldraw_data(self.current_model))
         self.web_view.page().runJavaScript("reload_ldraw_model()")
 
