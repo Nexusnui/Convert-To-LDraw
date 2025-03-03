@@ -1,9 +1,9 @@
 # Manual Installation (Windows/Linux/Mac)
-This guide was tested on Windows(11,x86) and Linux(Mint),
+This guide was tested on Windows(11,x86) and Linux(Mint, Fedora KDE),
 the installation with pipx should also work on Mac(not fully functional see known issues).
 
 Prerequisites:
-- Python is installed (tested with 3.12.0 on Windows and 3.10.12 on Linux)
+- Python is installed (tested with 3.13.0[Fedora], 3.12.0[Windows] and 3.10.12[Mint])
 - pip is installed (on some Linux Distros it is not installed with Python)
 - pipx is installed (+ ensurepath activated)
 
@@ -41,13 +41,14 @@ or [downloadable here](https://github.com/Nexusnui/Convert-To-LDraw/raw/master/C
 
 
 Use the .desktop file on Linux:  
-1. [Download ConvertToLDraw.desktop](https://github.com/Nexusnui/Convert-To-LDraw/raw/master/build-stuff/ConvertToLDraw.desktop) and move it to "~/.local/share/applications"
-or another appropriate location for .desktop files.
-2. Make sure the .desktop file has the appropriate permissions to be executable
-3. [Download the Icon](https://github.com/Nexusnui/Convert-To-LDraw/raw/master/ConvertToLDraw/icons/ConvertToLDraw_icon_256x256.png)
+1. [Download the Icon](https://github.com/Nexusnui/Convert-To-LDraw/raw/master/ConvertToLDraw/icons/ConvertToLDraw_icon_256x256.png)
 and move it to "~/.local/share/icons" (you may need to create that one) or another appropriate location for icons.
+2. [Download ConvertToLDraw.desktop](https://github.com/Nexusnui/Convert-To-LDraw/raw/master/build-stuff/ConvertToLDraw.desktop) and move it to "~/.local/share/applications"
+or another appropriate location for .desktop files.
+3. Make sure the .desktop file has the appropriate permissions to be executable
+
 
 Alias on Mac:
 - pipx creates an alias in  "/Users/{YourUserName}/.local/bin/"
-- you can copy or create another alies to in your application folder
+- you can copy or create another alias to in your application folder
 - icons can be found [here](ConvertToLDraw/icons)
