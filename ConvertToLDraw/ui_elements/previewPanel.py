@@ -57,6 +57,7 @@ class PreviewPanel(QWidget):
             self.web_view.load(self.viewer_url)
 
         self.main_layout.addWidget(self.web_view)
+        self.main_layout.setStretchFactor(self.web_view, 1)
 
         self.setLayout(self.main_layout)
 
