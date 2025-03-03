@@ -67,6 +67,7 @@
 		controls.target.set(boundingSphere.center.x,boundingSphere.center.y,boundingSphere.center.z);
 		//Setup Camera to look at object
 		let center = boundingBox.getCenter(new THREE.Vector3(0,0,0));
+		tracklight.target.position.copy(center);
 		let size = boundingBox.getSize(new THREE.Vector3(0,0,0));
 		let distance = Math.max(size.x,size.y)*1.45;
 		camera.lookAt(center);
@@ -123,7 +124,6 @@
 	
 	function render(){
 		tracklight.position.copy(camera.position);
-		tracklight.target.position.copy(controls.target);
 		tracklight.target.updateMatrixWorld();
 		renderer.render(scene,camera);
 	}
