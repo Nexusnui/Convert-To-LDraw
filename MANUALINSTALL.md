@@ -44,7 +44,7 @@ Use the .desktop file on Linux:
 1. [Download ConvertToLDraw.desktop](https://github.com/Nexusnui/Convert-To-LDraw/raw/master/build-stuff/ConvertToLDraw.desktop) and move it to "~/.local/share/applications"
 or another appropriate location for .desktop files.
 2. Make sure the .desktop file has the appropriate permissions to be executable
-3. [Download the Icon](ConvertToLDraw/icons/ConvertToLDraw_icon_256x256.png)
+3. [Download the Icon](https://github.com/Nexusnui/Convert-To-LDraw/raw/master/ConvertToLDraw/icons/ConvertToLDraw_icon_256x256.png)
 and move it to "~/.local/share/icons" (you may need to create that one) or another appropriate location for icons.
 
 Alias on Mac:
