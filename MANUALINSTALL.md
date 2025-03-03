@@ -1,5 +1,5 @@
 # Manual Installation (Windows/Linux/Mac)
-This guide was tested on Windows(11) and Linux(Mint),
+This guide was tested on Windows(11,x86) and Linux(Mint),
 the installation with pipx should also work on Mac(not fully functional see known issues).
 
 Prerequisites:

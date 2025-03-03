@@ -28,10 +28,10 @@ If a model has multiple objects, they are saved in a "s" folder, if you only wan
 This version has no commandline interface, that was available in the previous versions.  
 
 Run/Install:  
-Currently there is only a installer for Windows Version and package installable through pipx/pip.  
+Currently there is only a installer for Windows Version(x86) and package installable through pipx/pip.  
 Under Releases you find an installer and portable version for Windows and the package for pipx/pip.
 If have an antivirus software installed it might warn you, when running the installer.  
-To avoid the problems with an antivirus or for installation on Linux and Mac follow the [manual installation guide](MANUALINSTALL.md),
+To avoid the problems with an antivirus or for installation on Linux, Mac and possibly Windows on Arm(untested) follow the [manual installation guide](MANUALINSTALL.md),
 which explains the installation with pipx.
 
 Known "Issues":  
