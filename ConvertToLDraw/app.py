@@ -47,7 +47,7 @@ class MainWindow(QMainWindow):
 
         self.ldraw_object = None
         self.file_loaded = False
-        self.refresh_preview = False
+        self.reload_preview = False
 
         self.setWindowTitle(f"Convert To LDraw {app_version}")
         self.main_layout = QVBoxLayout()
@@ -272,7 +272,7 @@ class MainWindow(QMainWindow):
                 else:
                     self.subpart_panel = ColourPanel(self.ldraw_object, self)
                 self.subpart_area_layout.addWidget(self.subpart_panel)
-                self.subpart_panel.model_updated.connect(self.enable_refresh)
+                self.subpart_panel.model_updated.connect(self.enable_reload)
 
                 x_length = mm_float_to_string(self.ldraw_object.size[0])
                 y_length = mm_float_to_string(self.ldraw_object.size[1])
@@ -307,7 +307,7 @@ class MainWindow(QMainWindow):
 
     def show_preview(self, subpart: Subpart):
         self.preview_panel.load_subpart(subpart)
-        self.refresh_preview = False
+        self.reload_preview = False
         self.settings_tabs.setCurrentIndex(2)
 
     def reset_part_settings(self):
@@ -343,13 +343,13 @@ class MainWindow(QMainWindow):
         self.scale_input.setDisabled(False)
         self.load_input_button.setDisabled(False)
 
-    def enable_refresh(self):
-        self.refresh_preview = True
+    def enable_reload(self):
+        self.reload_preview = True
 
     def tab_changed_actions(self, tab_index):
-        if tab_index == 2 and self.refresh_preview:
-            self.preview_panel.refresh_model()
-            self.refresh_preview = False
+        if tab_index == 2 and self.reload_preview:
+            self.preview_panel.reload_model()
+            self.reload_preview = False
 
     def convert_file(self):
         self.disable_settings(True)

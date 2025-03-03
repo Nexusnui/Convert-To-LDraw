@@ -22,6 +22,7 @@
   searchListParameters = new URLSearchParams(window.location.search);
   const bg_color=searchListParameters.get("color");
   document.body.style.backgroundColor = bg_color;
+  var reload_ldraw_model;
 </script>
 
 <script type="importmap">
@@ -43,7 +44,20 @@
 	var camera;
 	var controls;
 	var target;
+	var ldraw_model;
+	var ld_loader;
 	const part_data = "ldraw://model.dat";
+	
+	function reload_model(){
+		scene.remove(ldraw_model);
+		ld_loader.load(part_data,function(group){
+			ldraw_model = group;
+			scene.add(group);
+			render();
+		});
+	}
+	reload_ldraw_model = reload_model;
+	
 
 	function centerControls(obj,camera,controls){
 		const boundingBox=new THREE.Box3().setFromObject(obj);
@@ -72,9 +86,10 @@
 
 		camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
 
-		let ld_loader=new LDrawLoader();
+		ld_loader=new LDrawLoader();
 		ld_loader.setConditionalLineMaterial( LDrawConditionalLineMaterial );
 		ld_loader.load(part_data,function(group){
+			ldraw_model = group;
 			scene.add(group);
 			controls=new TrackballControls(camera,renderer.domElement);
 			controls.rotateSpeed=1.5;

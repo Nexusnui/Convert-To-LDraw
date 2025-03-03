@@ -49,8 +49,8 @@ class PreviewPanel(QWidget):
         self.web_view = QWebEngineView()
         self.web_view.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
         self.web_view.setStyleSheet(f"background-color: {background_color};")
-        self.html_handler = LDrawHandler()
-        self.web_view.page().profile().installUrlSchemeHandler(b"ldraw", self.html_handler)
+        self.ldraw_handler = LDrawHandler()
+        self.web_view.page().profile().installUrlSchemeHandler(b"ldraw", self.ldraw_handler)
         if self.main_model is not None:
             self.load_main_model()
         else:
@@ -77,8 +77,7 @@ class PreviewPanel(QWidget):
         if self.current_model is not None:
             if isinstance(self.current_model, Subpart):
                 self.status_label.setText(f"Showing Subpart: '{self.current_model.name}'")
-            ldraw_data = get_ldraw_data(self.current_model)
-            self.html_handler.set_ldraw_file(ldraw_data)
+            self.ldraw_handler.set_ldraw_file(get_ldraw_data(self.current_model))
             self.web_view.load(self.viewer_url)
 
     def load_main_model(self):
@@ -86,6 +85,10 @@ class PreviewPanel(QWidget):
         self.show_main_model_button.setDisabled(True)
         self.status_label.setText(f"Showing Main Part")
         self.refresh_model()
+
+    def reload_model(self):
+        self.ldraw_handler.set_ldraw_file(get_ldraw_data(self.current_model))
+        self.web_view.page().runJavaScript("reload_ldraw_model()")
 
 
 class LDrawHandler(QWebEngineUrlSchemeHandler):
