@@ -212,7 +212,8 @@ class LdrawObject:
                             f"\n{part.get_ldraw_header(subfilename, filename, self.author, license_line)}")
                         for line in part.to_ldraw_lines():
                             subparts_lines.append(line)
-                file.write_list(subparts_lines)
+                if one_file:
+                    file.write_list(subparts_lines)
             if filepath is None:
                 return file.get_result()
 
