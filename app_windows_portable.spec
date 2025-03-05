@@ -11,7 +11,7 @@ a = Analysis(
            ('ConvertToLDraw\\brick_data\\colour_definitions.csv','ConvertToLDraw\\brick_data'),
            ('LICENSE','.'),
            ('ConvertToLDraw\\ui_elements\\viewer_template.html','ConvertToLDraw\\ui_elements'),
-           ('ConvertToLDraw\\ui_elements\\js-libraries\\*.js','ConvertToLDraw\\ui_elements\\js-libraries')
+           ('ConvertToLDraw\\ui_elements\\js-libraries\\*','ConvertToLDraw\\ui_elements\\js-libraries')
            ],
     hiddenimports=[],
     hookspath=[],

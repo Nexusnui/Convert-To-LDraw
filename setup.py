@@ -19,7 +19,7 @@ setup(
         'ConvertToLDraw.brick_data': ['colour_definitions.csv'],
         'ConvertToLDraw.icons': ['ConvertToLDraw_icon.ico', 'ConvertToLDraw_icon*.png', 'reload-icon.svg'],
         'ConvertToLDraw.ui_elements': ['viewer_template.html'],
-        'ConvertToLDraw.ui_elements.js-libraries': ['*.js']
+        'ConvertToLDraw.ui_elements.js-libraries': ['*']
     },
     install_requires=["numpy==2.2.3",
                       "cascadio==0.0.16",
