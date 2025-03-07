@@ -5,7 +5,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QPushButton,
-    QLabel
+    QLabel,
+    QCheckBox
 )
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWebEngineWidgets import QWebEngineView
@@ -19,16 +20,17 @@ template_html_path = os.path.join(os.path.dirname(__file__), "viewer_template.ht
 
 class PreviewPanel(QWidget):
 
-    def __init__(self, main_name: str = None, main_model: LdrawObject = None, background_color: str = "ffffff"):
+    def __init__(self, main_model: LdrawObject = None, background_color: str = "ffffff", is_smooth: bool = False):
         super().__init__()
         self.main_model = main_model
         self.current_model = main_model
         self.background_color = background_color
-        viewer_url = QUrl.fromLocalFile(template_html_path)
-        viewer_url.setUrl(f"{viewer_url.url()}?color={urllib.parse.quote(background_color)}")
-        self.viewer_url = viewer_url
+        self.base_url = QUrl.fromLocalFile(template_html_path)
+        self.is_smooth = is_smooth
+        self.url_parameters = f"?color={urllib.parse.quote(background_color)}&smooth={int(is_smooth)}"
+        self.viewer_url = QUrl(f"{self.base_url.toString()}{self.url_parameters}")
 
-        self.main_name = main_name
+
         self.main_layout = QVBoxLayout()
 
         self.controls_layout = QHBoxLayout()
@@ -41,10 +43,18 @@ class PreviewPanel(QWidget):
         self.show_main_model_button.clicked.connect(self.load_main_model)
         self.show_main_model_button.setDisabled(True)
         self.controls_layout.addWidget(self.show_main_model_button)
-
-        self.status_label = QLabel("No Model Loaded")
-        self.main_layout.addWidget(self.status_label)
         self.main_layout.addLayout(self.controls_layout)
+
+        self.settings_layout = QHBoxLayout()
+        self.status_label = QLabel("No Model Loaded")
+        self.settings_layout.addWidget(self.status_label)
+        self.smoothness_check = QCheckBox("Smooth ℹ️")
+        self.smoothness_check.setToolTip("Smooth Edges (visually only)\n"
+                                         "May look more like Bricklink Studio if set")
+        self.smoothness_check.stateChanged.connect(self.toggle_smoothness)
+        self.settings_layout.addWidget(self.smoothness_check)
+
+        self.main_layout.addLayout(self.settings_layout)
 
         self.web_view = QWebEngineView()
         self.web_view.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
@@ -92,6 +102,14 @@ class PreviewPanel(QWidget):
             self.status_label.setText(f"Showing Subpart: '{self.current_model.name}'")
         self.ldraw_handler.set_ldraw_file(get_ldraw_data(self.current_model))
         self.web_view.page().runJavaScript("reload_ldraw_model()")
+
+    def toggle_smoothness(self):
+        self.is_smooth = not self.is_smooth
+        self.url_parameters = f"?color={urllib.parse.quote(self.background_color)}&smooth={int(self.is_smooth)}"
+        self.viewer_url = QUrl(f"{self.base_url.toString()}{self.url_parameters}")
+        self.web_view.page().runJavaScript(f"set_smoothness({int(self.is_smooth)})")
+        self.reload_model()
+
 
 
 class LDrawHandler(QWebEngineUrlSchemeHandler):
