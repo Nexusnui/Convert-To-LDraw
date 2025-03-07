@@ -1767,8 +1767,7 @@ class LDrawLoader extends Loader {
 		this.fileMap = {};
 
 		// If this flag is set to true the vertex normals will be smoothed.
-		//Turned off for ConvertToLDraw Preview by Nexusnui
-		this.smoothNormals = false;
+		this.smoothNormals = true;
 
 		// The path to load parts from the LDraw parts library from.
 		this.partsLibraryPath = '';

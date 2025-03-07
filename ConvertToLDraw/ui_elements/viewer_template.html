@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>ConverToLDraw: LDraw Viewer</title>
+    <title>ConvertToLDraw: LDraw Viewer</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, 
 		   user-scalable=no, 
@@ -89,6 +89,7 @@
 
 		ld_loader=new LDrawLoader();
 		ld_loader.setConditionalLineMaterial( LDrawConditionalLineMaterial );
+		ld_loader.smoothNormals = false;
 		ld_loader.load(part_data,function(group){
 			ldraw_model = group;
 			scene.add(group);
