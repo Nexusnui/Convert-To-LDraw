@@ -6,7 +6,7 @@ setup(
     description='This is a graphical Python program for converting various 3D file formats(stl,3mf,obj,stp, etc.) to the LDraw file format (.dat).',
     url='https://github.com/Nexusnui/Convert-To-LDraw',
     author='Nexusnui',
-    author_email='nocontact@notaprovider.de',
+    author_email='developer@nexusnui.de',
     license='GPL 3.0',
     packages=['ConvertToLDraw',
               'ConvertToLDraw.brick_data',
