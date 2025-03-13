@@ -41,5 +41,6 @@ Known "Issues":
 This was originally a fork of a [python script of Hazen Babcock](https://github.com/HazenBabcock/stl-to-dat).  
 The code that was used from that script was completely rewritten for the 1.0 release of this software.  
 This application was also renamed from "stlToDat" to "Convert To LDraw" to reflect the added capabilities of the new version.
+The repository was unlinked as a fork of "stlToDat" for the release of version 1.3.0, as it is a standalone project. 
 
 This uses a modified version of the [PyQt Color Picker](https://github.com/nlfmt/pyqt-colorpicker-widget) by nlfmt(Tom F).
