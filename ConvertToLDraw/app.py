@@ -22,13 +22,14 @@ from PyQt6.QtWidgets import (
     QTabWidget
 )
 
-from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, default_part_licenses
+from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart, default_part_licenses
 from ConvertToLDraw.brick_data.brick_categories import brick_categories
 from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel, ColourPanel
+from ConvertToLDraw.ui_elements.previewPanel import PreviewPanel, register_scheme
 
 basedir = os.path.dirname(__file__)
 
-app_version = "1.2.0"
+app_version = "1.3.0"
 
 if platform.system() == "Windows":
     try:
@@ -46,6 +47,7 @@ class MainWindow(QMainWindow):
 
         self.ldraw_object = None
         self.file_loaded = False
+        self.reload_preview = False
 
         self.setWindowTitle(f"Convert To LDraw {app_version}")
         self.main_layout = QVBoxLayout()
@@ -102,7 +104,7 @@ class MainWindow(QMainWindow):
 
         # Reload Button
         self.reload_button = QPushButton("Reload Model")
-        self.reload_button.setIcon(QIcon(os.path.join(basedir, "icons/reload-icon.svg")))
+        self.reload_button.setIcon(QIcon(os.path.join(basedir, "icons", "reload-icon.svg")))
         self.reload_button.clicked.connect(lambda a: self.load_file(True))
         file_select_inputs.addRow(self.reload_button)
 
@@ -180,21 +182,19 @@ class MainWindow(QMainWindow):
         self.convert_button = QPushButton("Convert File")
         self.convert_button.clicked.connect(self.convert_file)
 
-    # Preview Area
-        preview_area = QHBoxLayout()
-
-        self.preview_button = QPushButton("Show Preview")
-        self.preview_button.clicked.connect(self.show_preview)
-        self.preview_button.setDisabled(True)
-        preview_area.addWidget(self.preview_button)
+    # Loaded File Status Label
 
         self.loaded_file_status_label = QLabel("No file loaded")
-        preview_area.addWidget(self.loaded_file_status_label)
+        self.loaded_file_status_label.setAlignment(Qt.AlignmentFlag.AlignVCenter|Qt.AlignmentFlag.AlignRight)
 
-    # Subpart and Color Editor Area
+    # Subpart and Color Editor Panel
         subpart_area = QWidget()
         self.subpart_area_layout = QVBoxLayout()
         subpart_area.setLayout(self.subpart_area_layout)
+
+    # Preview Panel
+        hex_bg_color = self.palette().window().color().name()
+        self.preview_panel = PreviewPanel(background_color=hex_bg_color)
 
     # Add Elements to Main Layout
         top_layout.addWidget(part_settings_area)
@@ -207,8 +207,10 @@ class MainWindow(QMainWindow):
         file_select_inputs.addRow(self.convert_button)
 
         self.settings_tabs.addTab(subpart_area, "Subpart and Colour Settings")
+        self.settings_tabs.addTab(self.preview_panel, "Part Preview")
+        self.settings_tabs.currentChanged.connect(self.tab_changed_actions)
 
-        self.main_layout.addLayout(preview_area)
+        self.main_layout.addWidget(self.loaded_file_status_label)
         widget = QWidget()
         widget.setLayout(self.main_layout)
         self.disable_settings(True)
@@ -266,17 +268,20 @@ class MainWindow(QMainWindow):
                     self.subpart_panel.deleteLater()
                 if len(self.ldraw_object.subparts) > 1:
                     self.subpart_panel = SubpartPanel(self.ldraw_object, self)
+                    self.subpart_panel.show_preview.connect(self.show_preview)
                 else:
                     self.subpart_panel = ColourPanel(self.ldraw_object, self)
                 self.subpart_area_layout.addWidget(self.subpart_panel)
+                self.subpart_panel.model_updated.connect(self.enable_reload)
 
                 x_length = mm_float_to_string(self.ldraw_object.size[0])
                 y_length = mm_float_to_string(self.ldraw_object.size[1])
                 z_length = mm_float_to_string(self.ldraw_object.size[2])
-                self.loaded_file_status_label.setText(f"Current Model: {filename}\n({x_length}×{y_length}×{z_length})")
+                self.loaded_file_status_label.setText(f"Current Model: {filename} ({x_length}×{y_length}×{z_length})")
 
                 if not self.file_loaded:
                     self.file_loaded = True
+                self.preview_panel.set_main_model(self.ldraw_object, True)
                 self.disable_settings(False)
         # No file Selected
         else:
@@ -300,13 +305,10 @@ class MainWindow(QMainWindow):
         if filepath:
             self.output_file_line.setText(filepath)
 
-    def show_preview(self):
-        hex_bg_color = self.palette().window().color().name()
-        r = int(hex_bg_color[1:3], 16)
-        g = int(hex_bg_color[3:5], 16)
-        b = int(hex_bg_color[5:7], 16)
-        self.ldraw_object.scene.show(smooth=False, resolution=(900, 900),
-                                     caption="Part Preview", background=(r, g, b, 255))
+    def show_preview(self, subpart: Subpart):
+        self.preview_panel.load_subpart(subpart)
+        self.reload_preview = False
+        self.settings_tabs.setCurrentIndex(2)
 
     def reset_part_settings(self):
         self.partname_line.clear()
@@ -320,7 +322,6 @@ class MainWindow(QMainWindow):
         self.load_input_button.setDisabled(value)
         self.output_file_line.setReadOnly(value)
         self.select_output_button.setDisabled(value)
-        self.preview_button.setDisabled(value)
         self.convert_button.setDisabled(value)
         self.partname_line.setReadOnly(value)
         self.bl_number_line.setReadOnly(value)
@@ -341,6 +342,14 @@ class MainWindow(QMainWindow):
         self.multi_object_check.setDisabled(False)
         self.scale_input.setDisabled(False)
         self.load_input_button.setDisabled(False)
+
+    def enable_reload(self):
+        self.reload_preview = True
+
+    def tab_changed_actions(self, tab_index):
+        if tab_index == 2 and self.reload_preview:
+            self.preview_panel.reload_model()
+            self.reload_preview = False
 
     def convert_file(self):
         self.disable_settings(True)
@@ -420,14 +429,16 @@ def mm_float_to_string(number: float | int):
 
 
 def run():
-    app = QApplication([])
-    app.setWindowIcon(QIcon(os.path.join(basedir, "icons/ConvertToLDraw_icon.ico")))
+    register_scheme()
+    app = QApplication([0])
+    app.setWindowIcon(QIcon(os.path.join(basedir, "icons", "ConvertToLDraw_icon.ico")))
 
     window = MainWindow()
 
     window.show()
 
     app.exec()
+
 
 if __name__ == "__main__":
     run()

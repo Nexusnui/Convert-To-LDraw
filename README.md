@@ -28,14 +28,19 @@ If a model has multiple objects, they are saved in a "s" folder, if you only wan
 This version has no commandline interface, that was available in the previous versions.  
 
 Run/Install:  
-Currently there is only a installer for Windows Version and package installable through pipx/pip.  
+Currently there is only a installer for Windows Version(x86) and package installable through pipx/pip.  
 Under Releases you find an installer and portable version for Windows and the package for pipx/pip.
 If have an antivirus software installed it might warn you, when running the installer.  
-To avoid the problems with an antivirus or for installation on Linux and Mac follow the [manual installation guide](MANUALINSTALL.md),
+To avoid the problems with an antivirus or for installation on Linux, Mac and possibly Windows on Arm(untested) follow the [manual installation guide](MANUALINSTALL.md),
 which explains the installation with pipx.
+
+Known "Issues":  
+- The preview may not show objects properly if they are larger the 20 meters(for what could you need a piece that big anyway?).
+- On MacOS: Terminal window in the background, since pipx uses it to run a virtual environment
 
 This was originally a fork of a [python script of Hazen Babcock](https://github.com/HazenBabcock/stl-to-dat).  
 The code that was used from that script was completely rewritten for the 1.0 release of this software.  
 This application was also renamed from "stlToDat" to "Convert To LDraw" to reflect the added capabilities of the new version.
+The repository was unlinked as a fork of "stlToDat" for the release of version 1.3.0, as it is a standalone project. 
 
 This uses a modified version of the [PyQt Color Picker](https://github.com/nlfmt/pyqt-colorpicker-widget) by nlfmt(Tom F).

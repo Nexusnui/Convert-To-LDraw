@@ -1,9 +1,9 @@
 # Manual Installation (Windows/Linux/Mac)
-This guide was tested on Windows(11) and Linux(Mint),
+This guide was tested on Windows(11,x86) and Linux(Mint, Fedora KDE),
 the installation with pipx should also work on Mac(not fully functional see known issues).
 
 Prerequisites:
-- Python is installed (tested with 3.12.0 on Windows and 3.10.12 on Linux)
+- Python is installed (tested with 3.13.0[Fedora], 3.12.0[Windows] and 3.10.12[Mint])
 - pip is installed (on some Linux Distros it is not installed with Python)
 - pipx is installed (+ ensurepath activated)
 
@@ -25,12 +25,6 @@ If you are on an Ubuntu based Linux distro and see an error message like this:
 Install libxcb-cursor0 with:  
 `sudo apt install libxcb-cursor0`  
 
-Known issues with Mac OS:
-- Terminal window in the background, since pipx uses it to run a virtual environment
-- Closing the preview closes the window. 
-This is either a problem with the required version of pyglet or a conflict with pytq.
-At this point there is no solution. This may get fixed if a better preview method becomes available.
-
 Creating a Shortcut(Windows)
 1. Open the folder you want to create the shortcut in.
 2. Click on "new" and "shortcut"
@@ -43,17 +37,18 @@ Optional Steps:
 7. Change target to the location your projects are located for example "C:\Users\{YourUserName}\3D Objects"
 8. Optionally change the icon to the one in
 "C:\Users\{YourUserName}\pipx\venvs\converttoldraw\Lib\site-packages\ConvertToLDraw\icons\"
-or [downloadable here](ConvertToLDraw/icons/ConvertToLDraw_icon.ico).
+or [downloadable here](https://github.com/Nexusnui/Convert-To-LDraw/raw/master/ConvertToLDraw/icons/ConvertToLDraw_icon.ico).
 
 
 Use the .desktop file on Linux:  
-1. [Download ConvertToLDraw.desktop](build-stuff/ConvertToLDraw.desktop) and move it to "~/.local/share/applications"
-or another appropriate location for .desktop files.
-2. Make sure the .desktop file has the appropriate permissions to be executable
-3. [Download the Icon](ConvertToLDraw/icons/ConvertToLDraw_icon_256x256.png)
+1. [Download the Icon](https://github.com/Nexusnui/Convert-To-LDraw/raw/master/ConvertToLDraw/icons/ConvertToLDraw_icon_256x256.png)
 and move it to "~/.local/share/icons" (you may need to create that one) or another appropriate location for icons.
+2. [Download ConvertToLDraw.desktop](https://github.com/Nexusnui/Convert-To-LDraw/raw/master/build-stuff/ConvertToLDraw.desktop) and move it to "~/.local/share/applications"
+or another appropriate location for .desktop files.
+3. Make sure the .desktop file has the appropriate permissions to be executable
+
 
 Alias on Mac:
 - pipx creates an alias in  "/Users/{YourUserName}/.local/bin/"
-- you can copy or create another alies to in your application folder
+- you can copy or create another alias to in your application folder
 - icons can be found [here](ConvertToLDraw/icons)

@@ -1,5 +1,6 @@
 import os
 import numpy as np
+
 basedir = os.path.dirname(__file__)
 
 
@@ -125,7 +126,7 @@ class Brickcolour:
     def __repr__(self):
         return f"brickcolour({self.colour_code})"
 
-    def get_hex_rgba(self):
+    def get_hex_rgba(self) -> str:
         if not hasattr(self, "hex_rgba"):
             self.hex_rgba = self.rgb_values + hex(int(self.alpha)).lstrip("0x")
         return self.hex_rgba
@@ -140,6 +141,17 @@ class Brickcolour:
         g = int(self.rgb_values[3:5], 16)
         b = int(self.rgb_values[5:7], 16)
         return r, g, b, int(self.alpha)
+
+    def get_ldraw_line(self) -> str:
+        line = f"0 !COLOUR {self.ldrawname} CODE {self.colour_code} VALUE {self.rgb_values} EDGE {self.rgb_edge}"
+        if int(self.alpha) < 255:
+            line += f" ALPHA {self.alpha}"
+        if self.luminance != "" and self.luminance is not None:
+            line += f" LUMINANCE {self.luminance}"
+        if self.material != "" and self.material is not None:
+            line += f" {self.material}"
+        line += "\n"
+        return line
 
 
 def get_colour_info_by_colour_code(colour_code: str):
@@ -180,6 +192,7 @@ def search_brickcolour_by_rgb_colour(rgb_colour: str, colourlist: list):
     colourlist.sort(key=lambda c: get_hex_colour_weight(rgb_colour, c.rgb_values))
     return colourlist
 
+
 def search_by_color_name(name: str, colourlist: list):
     name = "".join(name.upper().split(" "))
 
@@ -188,6 +201,7 @@ def search_by_color_name(name: str, colourlist: list):
             return True
         else:
             return False
+
     search_results = [colour for colour in colourlist if matchname(colour)]
     return search_results
 
@@ -231,5 +245,4 @@ def _get_hex_colour_weight(r_1: int, g_1: int, b_1: int, colour_2: str) -> int:
     r_2 = int(colour_2[1:3], 16)
     g_2 = int(colour_2[3:5], 16)
     b_2 = int(colour_2[5:7], 16)
-    return (r_1-r_2)**2 + (g_1-g_2)**2 + (b_1-b_2)**2
-
+    return (r_1 - r_2) ** 2 + (g_1 - g_2) ** 2 + (b_1 - b_2) ** 2

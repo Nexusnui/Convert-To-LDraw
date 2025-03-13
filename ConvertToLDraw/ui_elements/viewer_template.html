@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>ConvertToLDraw: LDraw Viewer</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, 
+		   user-scalable=no, 
+		   minimum-scale=1.0, 
+		   maximum-scale=1.0">
+    <style>
+      body {
+      margin: 0px;
+      overflow: hidden;
+      }
+    </style>
+  </head>
+<body>
+
+<div id="container"></div>
+
+<script>
+  searchListParameters = new URLSearchParams(window.location.search);
+  const bg_color = searchListParameters.get("color");
+  document.body.style.backgroundColor = bg_color;
+  var is_smooth = Boolean(parseInt(searchListParameters.get("smooth")));
+  //Variables for function accessible in Python
+  var reload_ldraw_model;
+  var set_smoothness;
+</script>
+
+<script type="importmap">
+  {
+    "imports": {
+      "three": "./js-libraries/three.module.js"
+    }
+  }
+</script>
+
+<script type="module">
+	import * as THREE from './js-libraries/three.module.js';
+	import { LDrawLoader } from './js-libraries/LDrawLoader.js';
+	import { LDrawConditionalLineMaterial } from './js-libraries/LDrawConditionalLineMaterial.js';
+	import { TrackballControls } from './js-libraries/TrackballControls.js';
+	var scene;
+	var tracklight;
+	var renderer;
+	var camera;
+	var controls;
+	var target;
+	var ldraw_model;
+	var ld_loader;
+	const part_data = "ldraw://model.dat";
+	
+	reload_ldraw_model = function (){
+		scene.remove(ldraw_model);
+		ld_loader.load(part_data,function(group){
+			ldraw_model = group;
+			scene.add(group);
+			render();
+		});
+	}
+
+	set_smoothness = function (is_smooth){
+	  ld_loader.smoothNormals = Boolean(parseInt(is_smooth));
+	}
+
+	function centerControls(obj,camera,controls){
+		const boundingBox=new THREE.Box3().setFromObject(obj);
+		const boundingSphere=new THREE.Sphere();
+		boundingBox.getBoundingSphere((target=boundingSphere));
+		controls.update();
+		controls.target.set(boundingSphere.center.x,boundingSphere.center.y,boundingSphere.center.z);
+		//Setup Camera to look at object
+		let center = boundingBox.getCenter(new THREE.Vector3(0,0,0));
+		tracklight.target.position.copy(center);
+		let size = boundingBox.getSize(new THREE.Vector3(0,0,0));
+		let distance = Math.max(size.x,size.y)*1.45;
+		camera.lookAt(center);
+		camera.position.set( center.x, center.y, center.z-distance);
+		camera.up.set(0, -1, 0);
+	}
+
+	function init(){
+		scene=new THREE.Scene();
+		scene.background=new THREE.Color(bg_color);
+		tracklight=new THREE.DirectionalLight(0xffffff,3.25);
+		scene.add(tracklight);
+		renderer=new THREE.WebGLRenderer({antialias:true});
+		renderer.setPixelRatio(window.devicePixelRatio);
+		renderer.setSize(window.innerWidth,window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+
+		camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+
+		ld_loader=new LDrawLoader();
+		ld_loader.setConditionalLineMaterial( LDrawConditionalLineMaterial );
+		ld_loader.smoothNormals = is_smooth;
+		ld_loader.load(part_data,function(group){
+			ldraw_model = group;
+			scene.add(group);
+			controls=new TrackballControls(camera,renderer.domElement);
+			controls.rotateSpeed=1.5;
+			controls.zoomSpeed=1.2;
+			controls.panSpeed=0.8;
+			controls.noZoom=false;
+			controls.noPan=false;
+			controls.staticMoving=true;
+			controls.dynamicDampingFactor=0.3;
+			controls.keys=[65,83,68];
+			controls.addEventListener("change",render);
+			centerControls(scene,camera,controls);
+			render();
+			window.addEventListener("resize",onWindowResize,false);
+			animate();
+			onWindowResize();
+		});
+	}
+	
+	function onWindowResize(){
+		camera.aspect=window.innerWidth/window.innerHeight;
+		camera.updateProjectionMatrix();
+		renderer.setSize(window.innerWidth,window.innerHeight);
+		controls.handleResize();
+		render();
+	}
+	function animate(){
+		requestAnimationFrame(animate);
+		controls.update();
+	}
+	
+	function render(){
+		tracklight.position.copy(camera.position);
+		tracklight.target.updateMatrixWorld();
+		renderer.render(scene,camera);
+	}
+	init();
+</script>
+</body>
+</html>
