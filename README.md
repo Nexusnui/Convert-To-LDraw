@@ -25,19 +25,26 @@ Some notes about compatibility of multicolour/-part 3D file formats:
 
 If a model has multiple objects, they are saved in a "s" folder, if you only want one file uncheck "Multiple Objects".
 
-This version has no commandline interface, that was available in the previous versions.  
-
-Run/Install:  
+This version has no commandline interface, that was available in the previous versions.
+# Run/Install:  
 Currently there is only a installer for Windows Version(x86) and package installable through pipx/pip.  
 Under Releases you find an installer and portable version for Windows and the package for pipx/pip.
 If have an antivirus software installed it might warn you, when running the installer.  
 To avoid the problems with an antivirus or for installation on Linux, Mac and possibly Windows on Arm(untested) follow the [manual installation guide](MANUALINSTALL.md),
 which explains the installation with pipx.
+# Supported filetypes:
+- types that should work:
+  - *.stl  *.3mf *.obj *.off *.ply *.gltf *.glb *.xaml *.stp *.step *.dae
+- type that might work:
+  - *.brep *.igs *.iges *.bdf *.msh *.inp *.diff *.mesh
+- +more types if trimesh can load them  
 
-Known "Issues":  
+Filetypes that get tested are: *.stl, *.3mf, *.obj and *.ply  
+I cannot guaranty that all possible variations/features of these filetypes work.
+# Known "Issues":  
 - The preview may not show objects properly if they are larger the 20 meters(for what could you need a piece that big anyway?).
 - On MacOS: Terminal window in the background, since pipx uses it to run a virtual environment
-
+---
 This was originally a fork of a [python script of Hazen Babcock](https://github.com/HazenBabcock/stl-to-dat).  
 The code that was used from that script was completely rewritten for the 1.0 release of this software.  
 This application was also renamed from "stlToDat" to "Convert To LDraw" to reflect the added capabilities of the new version.
