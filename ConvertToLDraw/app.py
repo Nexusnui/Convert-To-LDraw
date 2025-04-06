@@ -102,6 +102,24 @@ class MainWindow(QMainWindow):
         scale_label.setToolTip("Factor used to scale the model")
         file_select_inputs.addRow(scale_label, self.scale_input)
 
+        # Enable LDraw Scale Check
+        self.ldraw_scale_check = QCheckBox()
+        ldraw_scale_label = QLabel("Use LDraw Scale ℹ️")
+        ldraw_scale_label.setToolTip("If deactivated LDraw Scale is not applied\n"
+                                     "This also disables automatic unit conversion prior to appliying LDraw Scale\n"
+                                     "You should only disable this if your model uses LDraw units")
+        file_select_inputs.addRow(ldraw_scale_label, self.ldraw_scale_check)
+        self.ldraw_scale_check.setChecked(True)
+
+        # Enable LDraw Rotation Check
+        self.ldraw_rotation_check = QCheckBox()
+        ldraw_rotation_label = QLabel("Use LDraw Axis ℹ️")
+        ldraw_rotation_label.setToolTip("If deactivated the model is not rotated\n"
+                                     "(In LDraws coordinate system -Y is up)\n"
+                                     "You should only disable this if your model uses LDraw axis")
+        file_select_inputs.addRow(ldraw_rotation_label, self.ldraw_rotation_check)
+        self.ldraw_rotation_check.setChecked(True)
+
         # Reload Button
         self.reload_button = QPushButton("Reload Model")
         self.reload_button.setIcon(QIcon(os.path.join(basedir, "icons", "reload-icon.svg")))
