@@ -264,8 +264,12 @@ class MainWindow(QMainWindow):
             scale = self.scale_input.value()
             multicolour = self.multicolour_check.checkState() == Qt.CheckState.Checked
             multi_object = self.multi_object_check.checkState() == Qt.CheckState.Checked
+            use_ldraw_scale = self.ldraw_scale_check.checkState() == Qt.CheckState.Checked
+            use_ldraw_rotation = self.ldraw_rotation_check.checkState() == Qt.CheckState.Checked
             try:
-                loaded_part = LdrawObject(filepath, scale=scale, multi_object=multi_object, multicolour=multicolour)
+                loaded_part = LdrawObject(filepath,
+                                          scale=scale, multi_object=multi_object, multicolour=multicolour,
+                                          use_ldraw_scale=use_ldraw_scale, use_ldraw_rotation=use_ldraw_rotation)
             except Exception:
                 QMessageBox.critical(self, "Failed to load file", "Not a 3D object or unsupported file format")
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
@@ -348,6 +352,8 @@ class MainWindow(QMainWindow):
         self.multicolour_check.setDisabled(value)
         self.multi_object_check.setDisabled(value)
         self.scale_input.setDisabled(value)
+        self.ldraw_rotation_check.setDisabled(value)
+        self.ldraw_scale_check.setDisabled(value)
         self.part_category_input.setDisabled(value)
         self.part_license_input.setDisabled(value)
         self.keywords_line.setReadOnly(value)
@@ -360,6 +366,8 @@ class MainWindow(QMainWindow):
         self.multi_object_check.setDisabled(False)
         self.scale_input.setDisabled(False)
         self.load_input_button.setDisabled(False)
+        self.ldraw_rotation_check.setDisabled(False)
+        self.ldraw_scale_check.setDisabled(False)
 
     def enable_reload(self):
         self.reload_preview = True
