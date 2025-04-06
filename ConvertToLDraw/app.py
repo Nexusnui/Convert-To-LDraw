@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
         # Enable Multicolour Check
         self.multicolour_check = QCheckBox()
         multicolour_label = QLabel("Multicolour ℹ️")
-        multicolour_label.setToolTip("If deactivated aLL objects are single color")
+        multicolour_label.setToolTip("If deactivated all objects are single colour")
         file_select_inputs.addRow(multicolour_label, self.multicolour_check)
         self.multicolour_check.setChecked(True)
 
@@ -87,8 +87,8 @@ class MainWindow(QMainWindow):
         self.multi_object_check = QCheckBox()
         multi_object_label = QLabel("Multiple Objects ℹ️")
         multi_object_label.setToolTip("If deactivated all submodels will be merged\n"
-                                      "With multicolor unique colors are applied before merging\n"
-                                      "(If the the file does not define colors)")
+                                      "With multicolour unique colours are applied before merging\n"
+                                      "(If the the file does not define colours)")
         file_select_inputs.addRow(multi_object_label, self.multi_object_check)
         self.multi_object_check.setChecked(True)
 
