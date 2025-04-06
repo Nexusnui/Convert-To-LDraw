@@ -82,7 +82,7 @@ class LdrawObject:
                 [0, 0, 0, 1]
             ])
 
-        if scene.units not in ["mm", "millimeter", None]:
+        if scene.units not in ["mm", "millimeter", None] and use_ldraw_scale:
             scene = scene.convert_units("millimeter")
 
         if scale != 1:
