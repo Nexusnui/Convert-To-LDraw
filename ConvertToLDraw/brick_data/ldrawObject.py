@@ -75,12 +75,16 @@ class LdrawObject:
         if use_ldraw_rotation:
             # LDraw co-ordinate system is right-handed where -Y is "up"
             # For this reason the entire scene is rotated by 90° around the X-axis
-            scene.apply_transform([
+            scene = scene.apply_transform([
                 [1, 0, 0, 0],
                 [0, 0, -1, 0],
                 [0, 1, 0, 0],
                 [0, 0, 0, 1]
             ])
+            if len(scene.geometry) == 1 and not use_ldraw_scale and scale == 1:
+                # "baking" rotation in case only one geometry exist
+                # not applied if any scaling is used as it also "bakes" the scene
+                scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
         if scene.units not in ["mm", "millimeter", None] and use_ldraw_scale:
             scene = scene.convert_units("millimeter")
