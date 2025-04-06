@@ -56,13 +56,17 @@ class MainWindow(QMainWindow):
         top_layout = QHBoxLayout()
 
     # File Selection Area:
-        file_select_area = QGroupBox("File Selection")
-        file_select_inputs = QFormLayout()
-        file_select_area.setLayout(file_select_inputs)
+        file_select_area = QVBoxLayout()
+        load_file_area = QGroupBox("Load File")
+        load_file_inputs = QFormLayout()
+        load_file_area.setLayout(load_file_inputs)
+        save_file_area = QGroupBox("Save File")
+        save_file_inputs = QFormLayout()
+        save_file_area.setLayout(save_file_inputs)
 
-        # Input File Selection
+    # Input File Selection
         input_label = QLabel("Input File")
-        file_select_inputs.addRow(input_label)
+        load_file_inputs.addRow(input_label)
         input_layout = QHBoxLayout()
 
         self.input_file_line = QLineEdit()
@@ -74,13 +78,13 @@ class MainWindow(QMainWindow):
         input_layout.addWidget(self.load_input_button)
         self.load_input_button.clicked.connect(self.load_file)
 
-        file_select_inputs.addRow(input_layout)
+        load_file_inputs.addRow(input_layout)
 
         # Enable Multicolour Check
         self.multicolour_check = QCheckBox()
         multicolour_label = QLabel("Multicolour ℹ️")
         multicolour_label.setToolTip("If deactivated all objects are single colour")
-        file_select_inputs.addRow(multicolour_label, self.multicolour_check)
+        load_file_inputs.addRow(multicolour_label, self.multicolour_check)
         self.multicolour_check.setChecked(True)
 
         # Enable Multi Objects Check
@@ -89,7 +93,7 @@ class MainWindow(QMainWindow):
         multi_object_label.setToolTip("If deactivated all submodels will be merged\n"
                                       "With multicolour unique colours are applied before merging\n"
                                       "(If the the file does not define colours)")
-        file_select_inputs.addRow(multi_object_label, self.multi_object_check)
+        load_file_inputs.addRow(multi_object_label, self.multi_object_check)
         self.multi_object_check.setChecked(True)
 
         # Set Scale
@@ -100,7 +104,7 @@ class MainWindow(QMainWindow):
         self.scale_input.setDecimals(3)
         scale_label = QLabel("Scale ℹ️")
         scale_label.setToolTip("Factor used to scale the model")
-        file_select_inputs.addRow(scale_label, self.scale_input)
+        load_file_inputs.addRow(scale_label, self.scale_input)
 
         # Enable LDraw Scale Check
         self.ldraw_scale_check = QCheckBox()
@@ -108,7 +112,7 @@ class MainWindow(QMainWindow):
         ldraw_scale_label.setToolTip("If deactivated LDraw Scale is not applied\n"
                                      "This also disables automatic unit conversion prior to appliying LDraw Scale\n"
                                      "You should only disable this if your model uses LDraw units")
-        file_select_inputs.addRow(ldraw_scale_label, self.ldraw_scale_check)
+        load_file_inputs.addRow(ldraw_scale_label, self.ldraw_scale_check)
         self.ldraw_scale_check.setChecked(True)
 
         # Enable LDraw Rotation Check
@@ -117,20 +121,20 @@ class MainWindow(QMainWindow):
         ldraw_rotation_label.setToolTip("If deactivated the model is not rotated\n"
                                      "(In LDraws coordinate system -Y is up)\n"
                                      "You should only disable this if your model uses LDraw axis")
-        file_select_inputs.addRow(ldraw_rotation_label, self.ldraw_rotation_check)
+        load_file_inputs.addRow(ldraw_rotation_label, self.ldraw_rotation_check)
         self.ldraw_rotation_check.setChecked(True)
 
         # Reload Button
         self.reload_button = QPushButton("Reload Model")
         self.reload_button.setIcon(QIcon(os.path.join(basedir, "icons", "reload-icon.svg")))
         self.reload_button.clicked.connect(lambda a: self.load_file(True))
-        file_select_inputs.addRow(self.reload_button)
+        load_file_inputs.addRow(self.reload_button)
 
-        # Output File Selection
+    # Output File Selection
         output_label = QLabel("Output File ℹ️")
         output_label.setToolTip("Place where the Main File is saved.\n"
                                 "Subparts are saved in 's' subdirectory located in the same directory")
-        file_select_inputs.addRow(output_label)
+        save_file_inputs.addRow(output_label)
         output_layout = QHBoxLayout()
 
         self.output_file_line = QLineEdit()
@@ -142,7 +146,7 @@ class MainWindow(QMainWindow):
         output_layout.addWidget(self.select_output_button)
         self.select_output_button.clicked.connect(self.select_output_file)
 
-        file_select_inputs.addRow(output_layout)
+        save_file_inputs.addRow(output_layout)
 
     # Part Settings Area:
         part_settings_area = QGroupBox("Parent Part Settings")
@@ -216,13 +220,15 @@ class MainWindow(QMainWindow):
 
     # Add Elements to Main Layout
         top_layout.addWidget(part_settings_area)
-        top_layout.addWidget(file_select_area)
+        file_select_area.addWidget(load_file_area)
+        file_select_area.addWidget(save_file_area)
+        top_layout.addLayout(file_select_area)
         main_settings_widget = QWidget()
         main_settings_widget.setLayout(top_layout)
         self.settings_tabs.addTab(main_settings_widget, "Main Part Settings")
 
         self.main_layout.addWidget(self.settings_tabs)
-        file_select_inputs.addRow(self.convert_button)
+        save_file_inputs.addRow(self.convert_button)
 
         self.settings_tabs.addTab(subpart_area, "Subpart and Colour Settings")
         self.settings_tabs.addTab(self.preview_panel, "Part Preview")
