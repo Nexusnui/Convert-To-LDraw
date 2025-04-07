@@ -21,7 +21,8 @@ template_html_path = os.path.join(os.path.dirname(__file__), "viewer_template.ht
 class PreviewPanel(QWidget):
 
     def __init__(self, main_model: LdrawObject = None,
-                 background_color: str = "ffffff", is_smooth: bool = False, axis_visible: bool = True):
+                 background_color: str = "ffffff", is_smooth: bool = False,
+                 axis_visible: bool = True, grid_visible: bool = True):
         super().__init__()
         self.main_model = main_model
         self.current_model = main_model
@@ -29,10 +30,8 @@ class PreviewPanel(QWidget):
         self.base_url = QUrl.fromLocalFile(template_html_path)
         self.is_smooth = is_smooth
         self.axis_visible = axis_visible
-        self.url_parameters = (f"?color={urllib.parse.quote(background_color)}"
-                               f"&smooth={int(is_smooth)}&axis={int(axis_visible)}")
-        self.viewer_url = QUrl(f"{self.base_url.toString()}{self.url_parameters}")
-
+        self.grid_visible = grid_visible
+        self.update_url()
 
         self.main_layout = QVBoxLayout()
 
@@ -64,6 +63,12 @@ class PreviewPanel(QWidget):
         self.axis_check.setChecked(True)
         self.axis_check.stateChanged.connect(self.toggle_axis)
         self.settings_layout.addWidget(self.axis_check)
+
+        self.grid_check = QCheckBox("Grid ℹ️")
+        self.grid_check.setToolTip("Show a grid where each cell is a stud")
+        self.grid_check.setChecked(True)
+        self.grid_check.stateChanged.connect(self.toggle_grid)
+        self.settings_layout.addWidget(self.grid_check)
 
         self.main_layout.addLayout(self.settings_layout)
 
@@ -116,19 +121,26 @@ class PreviewPanel(QWidget):
 
     def toggle_smoothness(self):
         self.is_smooth = not self.is_smooth
-        self.url_parameters = (f"?color={urllib.parse.quote(self.background_color)}"
-                               f"&smooth={int(self.is_smooth)}&axis={int(self.axis_visible)}")
-        self.viewer_url = QUrl(f"{self.base_url.toString()}{self.url_parameters}")
+        self.update_url()
         self.web_view.page().runJavaScript(f"set_smoothness({int(self.is_smooth)})")
         self.reload_model()
 
     def toggle_axis(self):
         self.axis_visible = not self.axis_visible
-        self.url_parameters = (f"?color={urllib.parse.quote(self.background_color)}"
-                               f"&smooth={int(self.is_smooth)}&axis={int(self.axis_visible)}")
-        self.viewer_url = QUrl(f"{self.base_url.toString()}{self.url_parameters}")
+        self.update_url()
         self.web_view.page().runJavaScript("toggle_axis_visibility()")
 
+    def toggle_grid(self):
+        self.grid_visible = not self.grid_visible
+        self.update_url()
+        self.web_view.page().runJavaScript("toggle_grid_visibility()")
+
+    def update_url(self):
+        self.url_parameters = (f"?color={urllib.parse.quote(self.background_color)}"
+                               f"&smooth={int(self.is_smooth)}"
+                               f"&axis={int(self.axis_visible)}"
+                               f"&grid={int(self.grid_visible)}")
+        self.viewer_url = QUrl(f"{self.base_url.toString()}{self.url_parameters}")
 
 
 
