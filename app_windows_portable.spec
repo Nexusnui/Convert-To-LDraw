@@ -10,6 +10,9 @@ datas=[('ConvertToLDraw\\icons\\ConvertToLDraw_icon.ico','icons'),
           ('ConvertToLDraw\\ui_elements\\js-libraries\\*','ConvertToLDraw\\ui_elements\\js-libraries')
 ]
 datas += collect_data_files('collada')
+datas += collect_data_files('trimesh')
+datas += collect_data_files('lxml')
+datas += collect_data_files('jsonschema_specifications')
 
 a = Analysis(
     ['ConvertToLDraw\\app.py'],
