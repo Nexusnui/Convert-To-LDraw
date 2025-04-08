@@ -13,6 +13,8 @@ from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob, QWebEngineUrlScheme
 from PyQt6.QtCore import QBuffer, QIODevice, QUrl, Qt
 from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart
+from ConvertToLDraw.brick_data.brickcolour import Brickcolour
+from ConvertToLDraw.ui_elements.brickcolourwidget import BrickcolourDialog
 
 basedir = os.path.dirname(__file__).strip("ui_elements")
 template_html_path = os.path.join(os.path.dirname(__file__), "viewer_template.html")
@@ -21,12 +23,12 @@ template_html_path = os.path.join(os.path.dirname(__file__), "viewer_template.ht
 class PreviewPanel(QWidget):
 
     def __init__(self, main_model: LdrawObject = None,
-                 background_color: str = "ffffff", is_smooth: bool = False,
+                 background_color: str = "#ffffff", is_smooth: bool = False,
                  axis_visible: bool = True, grid_visible: bool = True):
         super().__init__()
         self.main_model = main_model
         self.current_model = main_model
-        self.background_color = background_color
+        self.background_color = Brickcolour(background_color)
         self.base_url = QUrl.fromLocalFile(template_html_path)
         self.is_smooth = is_smooth
         self.axis_visible = axis_visible
@@ -50,6 +52,7 @@ class PreviewPanel(QWidget):
         self.settings_layout = QHBoxLayout()
         self.status_label = QLabel("No Model Loaded")
         self.settings_layout.addWidget(self.status_label)
+        self.settings_layout.addStretch()
 
         self.smoothness_check = QCheckBox("Smooth ℹ️")
         self.smoothness_check.setToolTip("Smooth Edges (visually only)\n"
@@ -69,6 +72,10 @@ class PreviewPanel(QWidget):
         self.grid_check.setChecked(True)
         self.grid_check.stateChanged.connect(self.toggle_grid)
         self.settings_layout.addWidget(self.grid_check)
+
+        self.bg_colour_button = QPushButton("BG-Colour")
+        self.bg_colour_button.clicked.connect(self.on_change_bg_colour)
+        self.settings_layout.addWidget(self.bg_colour_button)
 
         self.main_layout.addLayout(self.settings_layout)
 
@@ -135,8 +142,18 @@ class PreviewPanel(QWidget):
         self.update_url()
         self.web_view.page().runJavaScript("toggle_grid_visibility()")
 
+    def on_change_bg_colour(self):
+        color_picker = BrickcolourDialog(self.background_color, True)
+        color_picker.accepted.connect(lambda: self.change_bg_colour(color_picker.brickcolour))
+        color_picker.exec()
+
+    def change_bg_colour(self, new_colour: Brickcolour):
+        self.web_view.page().runJavaScript(f'change_bg_colour("{new_colour.rgb_values}")')
+        self.background_color = new_colour
+        self.update_url()
+
     def update_url(self):
-        self.url_parameters = (f"?color={urllib.parse.quote(self.background_color)}"
+        self.url_parameters = (f"?color={urllib.parse.quote(self.background_color.rgb_values)}"
                                f"&smooth={int(self.is_smooth)}"
                                f"&axis={int(self.axis_visible)}"
                                f"&grid={int(self.grid_visible)}")

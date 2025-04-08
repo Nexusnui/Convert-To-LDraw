@@ -20,16 +20,17 @@
 
 <script>
   searchListParameters = new URLSearchParams(window.location.search);
-  const bg_color = searchListParameters.get("color");
+  var bg_color = searchListParameters.get("color");
   document.body.style.backgroundColor = bg_color;
   var is_smooth = Boolean(parseInt(searchListParameters.get("smooth")));
   var axis_visible = Boolean(parseInt(searchListParameters.get("axis")));
   var grid_visible = Boolean(parseInt(searchListParameters.get("grid")));
-  //Variables for function accessible in Python
+  //Variables for functions accessible in Python
   var reload_ldraw_model;
   var set_smoothness;
   var toggle_axis_visibility;
   var toggle_grid_visibility;
+  var change_bg_colour;
 </script>
 
 <script type="importmap">
@@ -89,6 +90,12 @@
 			scene.add(grid_object);
 			grid_visible = true;
 		}
+		render();
+	}
+	
+	change_bg_colour = function (new_colour){
+		scene.background=new THREE.Color(new_colour);
+		bg_color=new_colour;
 		render();
 	}
 
