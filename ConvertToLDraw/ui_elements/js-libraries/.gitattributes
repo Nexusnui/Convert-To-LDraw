@@ -1,0 +1,2 @@
+#Exclude three.js library from language statistic
+*.js -linguist-detectable
