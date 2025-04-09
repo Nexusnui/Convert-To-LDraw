@@ -1,18 +1,24 @@
 # -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_data_files
 
+datas=[('ConvertToLDraw\\icons\\ConvertToLDraw_icon.ico','icons'),
+           ('ConvertToLDraw\\icons\\reload-icon.svg','icons'),
+           ('ConvertToLDraw\\icons\\reload-icon.svg','ConvertToLDraw\\icons'),
+           ('ConvertToLDraw\\brick_data\\colour_definitions.csv','ConvertToLDraw\\brick_data'),
+           ('LICENSE','.'),
+          ('ConvertToLDraw\\ui_elements\\viewer_template.html','ConvertToLDraw\\ui_elements'),
+          ('ConvertToLDraw\\ui_elements\\js-libraries\\*','ConvertToLDraw\\ui_elements\\js-libraries')
+]
+datas += collect_data_files('collada')
+datas += collect_data_files('trimesh')
+datas += collect_data_files('lxml')
+datas += collect_data_files('jsonschema_specifications')
 
 a = Analysis(
     ['ConvertToLDraw\\app.py'],
     pathex=[],
     binaries=[],
-    datas=[('ConvertToLDraw\\icons\\ConvertToLDraw_icon.ico','icons'),
-           ('ConvertToLDraw\\icons\\reload-icon.svg','icons'),
-           ('ConvertToLDraw\\icons\\reload-icon.svg','ConvertToLDraw\\icons'),
-           ('ConvertToLDraw\\brick_data\\colour_definitions.csv','ConvertToLDraw\\brick_data'),
-           ('LICENSE','.'),
-           ('ConvertToLDraw\\ui_elements\\viewer_template.html','ConvertToLDraw\\ui_elements'),
-           ('ConvertToLDraw\\ui_elements\\js-libraries\\*','ConvertToLDraw\\ui_elements\\js-libraries')
-           ],
+    datas=datas,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

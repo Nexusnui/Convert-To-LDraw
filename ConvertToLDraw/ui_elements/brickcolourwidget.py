@@ -106,7 +106,7 @@ class BrickcolourWidget(QWidget):
 
 class BrickcolourDialog(QDialog):
 
-    def __init__(self, initial_colour: Brickcolour = None):
+    def __init__(self, initial_colour: Brickcolour = None, start_in_direct_mode: bool = False):
         super().__init__()
         self.setWindowTitle("Select LDraw Colour")
         # Todo: Better Initial Size
@@ -168,6 +168,8 @@ class BrickcolourDialog(QDialog):
 
         tab_widget.addTab(self.direct_color_widget, "Direct Colour")
         main_layout.addWidget(tab_widget)
+        if start_in_direct_mode:
+            tab_widget.setCurrentIndex(1)
 
         bottom_layout = QHBoxLayout()
         buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
