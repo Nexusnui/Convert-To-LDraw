@@ -14,9 +14,10 @@ class LdrawObject:
     def __init__(self, filepath: str,
                  name="", bricklinknumber="", author="", category="", keywords=None,
                  part_license=None,
-                 scale=1, multi_object=True, multicolour=True):
+                 scale=1, multi_object=True, multicolour=True,
+                 use_ldraw_scale=True, use_ldraw_rotation=True):
         self.cached_colour_definitions = OrderedDict()
-        self.__load_scene(filepath, scale, multi_object, multicolour)
+        self.__load_scene(filepath, scale, multi_object, multicolour, use_ldraw_scale, use_ldraw_rotation)
 
         self.name = name
         self.bricklinknumber = bricklinknumber
@@ -25,7 +26,8 @@ class LdrawObject:
         self.keywords = keywords
         self.part_license = part_license
 
-    def __load_scene(self, filepath, scale=1, multi_object=True, multicolour=True):
+    def __load_scene(self, filepath, scale=1, multi_object=True, multicolour=True,
+                     use_ldraw_scale=True, use_ldraw_rotation=True):
         _, file_extension = os.path.splitext(filepath)
 
         scene = trimesh.load_scene(filepath)
@@ -70,24 +72,30 @@ class LdrawObject:
 
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
-        # LDraw co-ordinate system is right-handed where -Y is "up"
-        # For this reason the entire scene is rotated by 90° around the X-axis
-        scene.apply_transform([
-            [1, 0, 0, 0],
-            [0, 0, -1, 0],
-            [0, 1, 0, 0],
-            [0, 0, 0, 1]
-        ])
+        if use_ldraw_rotation:
+            # LDraw co-ordinate system is right-handed where -Y is "up"
+            # For this reason the entire scene is rotated by 90° around the X-axis
+            scene = scene.apply_transform([
+                [1, 0, 0, 0],
+                [0, 0, -1, 0],
+                [0, 1, 0, 0],
+                [0, 0, 0, 1]
+            ])
+            if len(scene.geometry) == 1 and not use_ldraw_scale and scale == 1:
+                # "baking" rotation in case only one geometry exist
+                # not applied if any scaling is used as it also "bakes" the scene
+                scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
-        if scene.units not in ["mm", "millimeter", None]:
+        if scene.units not in ["mm", "millimeter", None] and use_ldraw_scale:
             scene = scene.convert_units("millimeter")
 
         if scale != 1:
             scene = scene.scaled(scale)
         self.size = scene.extents
 
-        # Convert to LDraw Units
-        scene = scene.scaled(2.5)
+        if use_ldraw_scale:
+            # Convert to LDraw Units
+            scene = scene.scaled(2.5)
 
         self.subparts = OrderedDict()
 

@@ -20,12 +20,17 @@
 
 <script>
   searchListParameters = new URLSearchParams(window.location.search);
-  const bg_color = searchListParameters.get("color");
+  var bg_color = searchListParameters.get("color");
   document.body.style.backgroundColor = bg_color;
   var is_smooth = Boolean(parseInt(searchListParameters.get("smooth")));
-  //Variables for function accessible in Python
+  var axis_visible = Boolean(parseInt(searchListParameters.get("axis")));
+  var grid_visible = Boolean(parseInt(searchListParameters.get("grid")));
+  //Variables for functions accessible in Python
   var reload_ldraw_model;
   var set_smoothness;
+  var toggle_axis_visibility;
+  var toggle_grid_visibility;
+  var change_bg_colour;
 </script>
 
 <script type="importmap">
@@ -49,6 +54,8 @@
 	var target;
 	var ldraw_model;
 	var ld_loader;
+	var axis_object;
+	var grid_object;
 	const part_data = "ldraw://model.dat";
 	
 	reload_ldraw_model = function (){
@@ -62,6 +69,34 @@
 
 	set_smoothness = function (is_smooth){
 	  ld_loader.smoothNormals = Boolean(parseInt(is_smooth));
+	}
+	
+	toggle_axis_visibility = function (){
+		if(axis_visible){
+			scene.remove(axis_object);
+			axis_visible = false;
+		}else{
+			scene.add(axis_object);
+			axis_visible = true;
+		}
+		render();
+	}
+	
+	toggle_grid_visibility = function (){
+		if(grid_visible){
+			scene.remove(grid_object);
+			grid_visible = false;
+		}else{
+			scene.add(grid_object);
+			grid_visible = true;
+		}
+		render();
+	}
+	
+	change_bg_colour = function (new_colour){
+		scene.background=new THREE.Color(new_colour);
+		bg_color=new_colour;
+		render();
 	}
 
 	function centerControls(obj,camera,controls){
@@ -78,6 +113,29 @@
 		camera.lookAt(center);
 		camera.position.set( center.x, center.y, center.z-distance);
 		camera.up.set(0, -1, 0);
+		let boundary_max = boundingBox.max.clone();
+		let boundary_min = boundingBox.min.clone();
+		let axis_length = Math.max(Math.abs(boundary_max.x), Math.abs(boundary_min.y), Math.abs(boundary_max.z))+10;
+		if (axis_length <=0){
+			axis_length = 40;
+		}
+		axis_object = new THREE.AxesHelper(axis_length);
+		axis_object.rotation.x=Math.PI/2;
+		if (axis_visible){
+			scene.add(axis_object);
+		}
+		let grid_size = Math.ceil(Math.max(size.x,size.z)/20);
+		if (grid_size % 2 == 0){
+			grid_size += 2;
+		}else{
+			grid_size += 1;
+		}
+		grid_object = new THREE.GridHelper( grid_size*20, grid_size );
+		grid_object.translateX(Math.round(center.x/20)*20);
+		grid_object.translateZ(Math.round(center.z/20)*20);
+		if (grid_visible){
+			scene.add(grid_object);
+		}
 	}
 
 	function init(){
