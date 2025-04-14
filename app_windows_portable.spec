@@ -4,10 +4,11 @@ from PyInstaller.utils.hooks import collect_data_files
 datas=[('ConvertToLDraw\\icons\\ConvertToLDraw_icon.ico','icons'),
            ('ConvertToLDraw\\icons\\reload-icon.svg','icons'),
            ('ConvertToLDraw\\icons\\reload-icon.svg','ConvertToLDraw\\icons'),
+           ('ConvertToLDraw\\icons\\loading_animation.webm','icons'),
            ('ConvertToLDraw\\brick_data\\colour_definitions.csv','ConvertToLDraw\\brick_data'),
            ('LICENSE','.'),
-          ('ConvertToLDraw\\ui_elements\\viewer_template.html','ConvertToLDraw\\ui_elements'),
-          ('ConvertToLDraw\\ui_elements\\js-libraries\\*','ConvertToLDraw\\ui_elements\\js-libraries')
+           ('ConvertToLDraw\\ui_elements\\viewer_template.html','ConvertToLDraw\\ui_elements'),
+           ('ConvertToLDraw\\ui_elements\\js-libraries\\*','ConvertToLDraw\\ui_elements\\js-libraries')
 ]
 datas += collect_data_files('collada')
 datas += collect_data_files('trimesh')
