@@ -12,11 +12,20 @@
       margin: 0px;
       overflow: hidden;
       }
+	  video {
+	  position: absolute;
+	  top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+	  z-index: 10;
+	  }
     </style>
   </head>
 <body>
 
-<div id="container"></div>
+<video id="load_animation" width="300" height="300" autoplay loop muted>
+  <source src="../icons/loading_animation.webm" type="video/webm">
+</video>
 
 <script>
   searchListParameters = new URLSearchParams(window.location.search);
@@ -57,13 +66,16 @@
 	var axis_object;
 	var grid_object;
 	const part_data = "ldraw://model.dat";
+	const load_elem = document.getElementById("load_animation");
 	
 	reload_ldraw_model = function (){
+		show_load_animation();
 		scene.remove(ldraw_model);
 		ld_loader.load(part_data,function(group){
 			ldraw_model = group;
 			scene.add(group);
 			render();
+			hide_load_animation();
 		});
 	}
 
@@ -98,6 +110,16 @@
 		bg_color=new_colour;
 		render();
 	}
+	
+	function show_load_animation(){
+		load_elem.style.display = 'block';
+		load_elem.play();
+	}
+	
+	function hide_load_animation(){
+		load_elem.pause();
+		load_elem.style.display = 'none';
+	} 
 
 	function centerControls(obj,camera,controls){
 		const boundingBox=new THREE.Box3().setFromObject(obj);
@@ -139,6 +161,7 @@
 	}
 
 	function init(){
+		show_load_animation();
 		scene=new THREE.Scene();
 		scene.background=new THREE.Color(bg_color);
 		tracklight=new THREE.DirectionalLight(0xffffff,3.25);
@@ -171,6 +194,7 @@
 			window.addEventListener("resize",onWindowResize,false);
 			animate();
 			onWindowResize();
+			hide_load_animation();
 		});
 	}
 	
