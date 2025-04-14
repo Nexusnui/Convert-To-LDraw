@@ -30,11 +30,12 @@ class SubpartPanel(QTabWidget):
         self.main_window = main_window
         for sp in mainmodel.subparts.values():
             self.__add_tab(sp)
+        self.setMovable(True)
 
     def __add_tab(self, subpart: Subpart):
         tab = SubpartTab(subpart, main_window=self.main_window)
         index = self.addTab(tab, subpart.name)
-        tab.name_changed.connect(lambda name: self.subpart_name_changed(index, name))
+        tab.name_changed.connect(lambda name: self.subpart_name_changed(self.indexOf(tab), name))
         tab.colour_changed.connect(self.model_updated.emit)
         tab.show_preview.connect(self.relay_preview_data)
 
