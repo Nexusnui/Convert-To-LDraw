@@ -28,9 +28,10 @@ class SubpartPanel(QTabWidget):
         super().__init__()
 
         self.main_window = main_window
-        for sp in mainmodel.subparts.values():
+        for sp in mainmodel.subparts:
             self.__add_tab(sp)
         self.setMovable(True)
+        self.tabBar().tabMoved.connect(mainmodel.subpart_order_changed)
 
     def __add_tab(self, subpart: Subpart):
         tab = SubpartTab(subpart, main_window=self.main_window)
@@ -58,7 +59,7 @@ class ColourPanel(QWidget):
         super().__init__()
         mainlayout = QVBoxLayout()
         self.setLayout(mainlayout)
-        subpart = list(mainmodel.subparts.items())[0][1]
+        subpart = mainmodel.subparts[0]
         content = SubpartTab(subpart, single_part=True, main_window=main_window)
         content.colour_changed.connect(self.model_updated.emit)
         mainlayout.addWidget(content)
