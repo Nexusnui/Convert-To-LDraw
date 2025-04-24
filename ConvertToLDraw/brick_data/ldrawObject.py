@@ -245,6 +245,7 @@ class Subpart:
         self.name = name
         self.transformation_matrix = transformation_matrix
         self.cached_colour_definitions = cached_colour_definitions
+        self.outlines = []
         self.multicolour = False
         if not self.mesh.visual.defined:
             if main_colour is not None:
@@ -382,6 +383,9 @@ class Subpart:
                 coordinate_b = ' '.join(map(str, self.mesh.vertices[face[1]]))
                 coordinate_c = ' '.join(map(str, self.mesh.vertices[face[2]]))
                 yield f"3 {color_code} {coordinate_a} {coordinate_b} {coordinate_c}\n"
+        for outline in self.outlines:
+            yield (f"2 24 {outline[0][0]} {outline[0][1]} {outline[0][2]} "
+                   f"{outline[1][0]} {outline[1][1]} {outline[1][2]}")
 
 
 class ResultWriter:
