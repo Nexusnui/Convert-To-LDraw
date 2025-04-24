@@ -234,6 +234,10 @@ class LdrawObject:
         moved_part = self.subparts.pop(from_index)
         self.subparts.insert(to_index, moved_part)
 
+    def generate_outlines(self, angle_threshold=85, merge_vertices=False):
+        for subpart in self.subparts:
+            subpart.generate_outlines(angle_threshold, merge_vertices)
+
 
 class Subpart:
     def __init__(self, mesh: trimesh.base.Trimesh,
