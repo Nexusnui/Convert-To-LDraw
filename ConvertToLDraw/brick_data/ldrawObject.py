@@ -385,7 +385,7 @@ class Subpart:
                 yield f"3 {color_code} {coordinate_a} {coordinate_b} {coordinate_c}\n"
         for outline in self.outlines:
             yield (f"2 24 {outline[0][0]} {outline[0][1]} {outline[0][2]} "
-                   f"{outline[1][0]} {outline[1][1]} {outline[1][2]}")
+                   f"{outline[1][0]} {outline[1][1]} {outline[1][2]}\n")
 
 
 class ResultWriter:
