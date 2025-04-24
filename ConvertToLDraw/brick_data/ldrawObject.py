@@ -387,6 +387,14 @@ class Subpart:
             yield (f"2 24 {outline[0][0]} {outline[0][1]} {outline[0][2]} "
                    f"{outline[1][0]} {outline[1][1]} {outline[1][2]}\n")
 
+    def generate_outlines(self, angle_threshold=85, merge_vertices=False):
+        mesh = self.mesh
+        if merge_vertices:
+            mesh = self.mesh.copy()
+            mesh.merge_vertices()
+        edges = mesh.face_adjacency_angles >= np.radians(angle_threshold)
+        self.outlines = mesh.vertices[mesh.face_adjacency_edges[edges]]
+
 
 class ResultWriter:
     def __init__(self, filepath: str = None):
