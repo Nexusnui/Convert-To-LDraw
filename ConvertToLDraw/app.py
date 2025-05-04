@@ -30,7 +30,7 @@ from ConvertToLDraw.ui_elements.line_generation_dialog import LineGenerationDial
 
 basedir = os.path.dirname(__file__)
 
-app_version = "1.4.0"
+app_version = "1.5.0"
 
 if platform.system() == "Windows":
     try:
