@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
 from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart
 from ConvertToLDraw.brick_data.brickcolour import Brickcolour, is_brickcolour, get_contrast_colour
 from ConvertToLDraw.ui_elements.brickcolourwidget import BrickcolourWidget, BrickcolourDialog, ColourCategoriesDialog
+from ConvertToLDraw.ui_elements.line_generation_dialog import LineGenerationDialog, LinePreset
 
 
 class SubpartPanel(QTabWidget):
@@ -78,6 +79,10 @@ class SubpartTab(QWidget):
         self.mainlayout = QVBoxLayout()
         self.setLayout(self.mainlayout)
 
+        self.line_preset = LinePreset.Low
+        self.line_angle = LinePreset.Low.value
+        self.merge_vertices = False
+
     # Main Settings Area
         self.main_settings = QFormLayout()
 
@@ -90,21 +95,25 @@ class SubpartTab(QWidget):
             self.preview_button = QPushButton("Open Subpart in Preview")
             self.preview_button.clicked.connect(self.send_preview_data)
 
-        # Override / Set Colour
+        # Generate Outlines, Override / Set Colour
+        self.colour_inputs = QWidget()
+        self.colour_inputs_layout = QHBoxLayout()
+        self.main_settings.addRow(self.colour_inputs)
+        self.colour_inputs.setLayout(self.colour_inputs_layout)
+
+        generate_outlines_button = QPushButton("Generate Outlines")
+        generate_outlines_button.clicked.connect(self.generate_outlines)
+        self.colour_inputs_layout.addWidget(generate_outlines_button)
 
         if self.subpart.multicolour:
-            self.colour_inputs = QWidget()
-            colour_inputs_layout = QHBoxLayout()
-            merge_colours_button = QPushButton("Merge Duplicate Colours")
-            merge_colours_button.clicked.connect(self.merge_duplicate_colours)
-            colour_inputs_layout.addWidget(merge_colours_button)
 
-            map_colours_button = QPushButton("Convert to Ldraw Colours")
-            map_colours_button.clicked.connect(self.map_colours_to_LDraw)
-            colour_inputs_layout.addWidget(map_colours_button)
+            self.merge_colours_button = QPushButton("Merge Duplicate Colours")
+            self.merge_colours_button.clicked.connect(self.merge_duplicate_colours)
+            self.colour_inputs_layout.addWidget(self.merge_colours_button)
 
-            self.colour_inputs.setLayout(colour_inputs_layout)
-            self.main_settings.addRow(self.colour_inputs)
+            self.map_colours_button = QPushButton("Convert to Ldraw Colours")
+            self.map_colours_button.clicked.connect(self.map_colours_to_LDraw)
+            self.colour_inputs_layout.addWidget(self.map_colours_button)
 
             main_colour_text = "Override Colour"
             brick_colour = Brickcolour("16")
@@ -230,12 +239,23 @@ class SubpartTab(QWidget):
                 return
             self.main_window.disable_settings(True)
             self.subpart.map_to_ldraw_colours(colour_categories)
-            self.subpartcolourlist.refresh_data()
+            if not self.subpart.multicolour:
+                self._change_to_single_colour_view()
+            else:
+                self.subpartcolourlist.refresh_data()
             self.info_label.setText(f"{len(self.subpart.colours)} Different Colours")
             self.main_window.loaded_file_status_label.setText(previous_text)
             self.main_window.disable_settings(False)
             self.colour_changed.emit()
 
+    def generate_outlines(self):
+        outline_dialog = LineGenerationDialog(self, self.line_preset, self.line_angle, self.merge_vertices)
+        if outline_dialog.exec():
+            self.line_preset = outline_dialog.preset
+            self.line_angle = outline_dialog.angle
+            self.merge_vertices = outline_dialog.merge_vertices
+            self.subpart.generate_outlines(self.line_angle, self.merge_vertices)
+            self.colour_changed.emit()
 
     def _on_select_brickcolour(self, index):
         if index.column() in [0, 2]:
@@ -254,8 +274,10 @@ class SubpartTab(QWidget):
         self.main_colour_input.colour_changed.connect(self.apply_main_colour)
         self.main_settings.removeWidget(self.apply_colour_button)
         self.apply_colour_button.deleteLater()
-        self.main_settings.removeWidget(self.colour_inputs)
-        self.colour_inputs.deleteLater()
+        self.colour_inputs_layout.removeWidget(self.map_colours_button)
+        self.colour_inputs_layout.removeWidget(self.merge_colours_button)
+        self.map_colours_button.deleteLater()
+        self.merge_colours_button.deleteLater()
         self.mainlayout.removeWidget(self.info_label)
         self.info_label.deleteLater()
         self.main_colour_input.label.setText("Subpart Colour")
