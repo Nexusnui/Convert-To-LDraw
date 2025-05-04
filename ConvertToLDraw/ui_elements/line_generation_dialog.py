@@ -45,8 +45,6 @@ class LineGenerationDialog(QDialog):
 
         main_inputs = QFormLayout()
 
-        # Todo: Tooltips Labels
-
         self.preset_selection = QComboBox()
         self.preset_selection.addItems(preset_names)
         self.preset_selection.setCurrentIndex(preset_names.index(self.preset.name))
