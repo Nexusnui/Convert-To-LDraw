@@ -26,10 +26,11 @@ from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart, default_
 from ConvertToLDraw.brick_data.brick_categories import brick_categories
 from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel, ColourPanel
 from ConvertToLDraw.ui_elements.previewPanel import PreviewPanel, register_scheme
+from ConvertToLDraw.ui_elements.line_generation_dialog import LineGenerationDialog, LinePreset
 
 basedir = os.path.dirname(__file__)
 
-app_version = "1.4.0"
+app_version = "1.5.0"
 
 if platform.system() == "Windows":
     try:
@@ -48,6 +49,9 @@ class MainWindow(QMainWindow):
         self.ldraw_object = None
         self.file_loaded = False
         self.reload_preview = False
+        self.line_preset = LinePreset.Low
+        self.line_angle = LinePreset.Low.value
+        self.merge_vertices = False
 
         self.setWindowTitle(f"Convert To LDraw {app_version}")
         self.main_layout = QVBoxLayout()
@@ -148,10 +152,19 @@ class MainWindow(QMainWindow):
 
         save_file_inputs.addRow(output_layout)
 
-    # Part Settings Area:
-        part_settings_area = QGroupBox("Parent Part Settings")
+    # Part  Area:
+        part_area = QVBoxLayout()
+        part_settings_area = QGroupBox("Part Metadata")
         part_settings_inputs = QFormLayout()
         part_settings_area.setLayout(part_settings_inputs)
+        part_area.addWidget(part_settings_area)
+
+        part_edit_area = QGroupBox("Edit Part")
+        part_edit_inputs = QFormLayout()
+        part_edit_area.setLayout(part_edit_inputs)
+        part_area.addWidget(part_edit_area)
+
+    # Part Settings Area:
 
         # Partname Input
         self.partname_line = QLineEdit()
@@ -204,6 +217,12 @@ class MainWindow(QMainWindow):
         self.convert_button = QPushButton("Convert File")
         self.convert_button.clicked.connect(self.convert_file)
 
+    # Part Edit Area
+
+        self.generate_outlines_button = QPushButton("Generate All Subpart Outlines")
+        self.generate_outlines_button.clicked.connect(self.generate_outlines)
+        part_edit_inputs.addRow(self.generate_outlines_button)
+
     # Loaded File Status Label
 
         self.loaded_file_status_label = QLabel("No file loaded")
@@ -219,7 +238,7 @@ class MainWindow(QMainWindow):
         self.preview_panel = PreviewPanel(background_color=hex_bg_color)
 
     # Add Elements to Main Layout
-        top_layout.addWidget(part_settings_area)
+        top_layout.addLayout(part_area)
         file_select_area.addWidget(load_file_area)
         file_select_area.addWidget(save_file_area)
         top_layout.addLayout(file_select_area)
@@ -363,6 +382,7 @@ class MainWindow(QMainWindow):
         self.part_category_input.setDisabled(value)
         self.part_license_input.setDisabled(value)
         self.keywords_line.setReadOnly(value)
+        self.generate_outlines_button.setDisabled(value)
         self.settings_tabs.tabBar().setDisabled(value)
         if self.file_loaded:
             self.subpart_panel.setDisabled(value)
@@ -450,6 +470,15 @@ class MainWindow(QMainWindow):
         else:
             QMessageBox.information(self, "Conversion Successfull", f"Model was saved to {filepath}")
         self.disable_settings(False)
+
+    def generate_outlines(self):
+        outline_dialog = LineGenerationDialog(self, self.line_preset, self.line_angle, self.merge_vertices)
+        if outline_dialog.exec():
+            self.line_preset = outline_dialog.preset
+            self.line_angle = outline_dialog.angle
+            self.merge_vertices = outline_dialog.merge_vertices
+            self.ldraw_object.generate_outlines(self.line_angle, self.merge_vertices)
+            self.enable_reload()
 
 
 def mm_float_to_string(number: float | int):

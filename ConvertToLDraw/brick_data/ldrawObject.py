@@ -97,7 +97,7 @@ class LdrawObject:
             # Convert to LDraw Units
             scene = scene.scaled(2.5)
 
-        self.subparts = OrderedDict()
+        self.subparts = []
 
         scene_graph = scene.graph.transforms
         for node in scene_graph.nodes:
@@ -123,7 +123,7 @@ class LdrawObject:
                     geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * 255
                     main_colour = Brickcolour("16")
                 transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
-                self.subparts[key] = Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions)
+                self.subparts.append(Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions))
         self.scene = scene
 
     def convert_to_dat_file(self, filepath=None, one_file=False):
@@ -174,7 +174,7 @@ class LdrawObject:
         with ResultWriter(filepath) as file:
             file.write(header)
             if len(self.subparts) == 1:
-                subpart = list(self.subparts.values())[0]
+                subpart = self.subparts[0]
                 color_code = "16"
                 if not subpart.multicolour:
                     color_code = subpart.main_colour.colour_code
@@ -187,7 +187,7 @@ class LdrawObject:
                     sub_dir = f"{os.path.dirname(filepath)}/s/"
                     os.makedirs(sub_dir, exist_ok=True)
                 basename = filename.split(".dat")[0]
-                for count, part in enumerate(self.subparts.values()):
+                for count, part in enumerate(self.subparts):
                     subfilename = f"{basename}s{count:03d}.dat"
                     if not one_file:
                         # Todo: Case filepath = None
@@ -227,8 +227,16 @@ class LdrawObject:
 
     def set_main_colour(self, colour: Brickcolour):
         self.main_colour = colour
-        for part in self.subparts.values():
+        for part in self.subparts:
             part.apply_color(colour, None)
+
+    def subpart_order_changed(self, from_index: int, to_index: int):
+        moved_part = self.subparts.pop(from_index)
+        self.subparts.insert(to_index, moved_part)
+
+    def generate_outlines(self, angle_threshold=85, merge_vertices=False):
+        for subpart in self.subparts:
+            subpart.generate_outlines(angle_threshold, merge_vertices)
 
 
 class Subpart:
@@ -241,6 +249,7 @@ class Subpart:
         self.name = name
         self.transformation_matrix = transformation_matrix
         self.cached_colour_definitions = cached_colour_definitions
+        self.outlines = []
         self.multicolour = False
         if not self.mesh.visual.defined:
             if main_colour is not None:
@@ -378,6 +387,17 @@ class Subpart:
                 coordinate_b = ' '.join(map(str, self.mesh.vertices[face[1]]))
                 coordinate_c = ' '.join(map(str, self.mesh.vertices[face[2]]))
                 yield f"3 {color_code} {coordinate_a} {coordinate_b} {coordinate_c}\n"
+        for outline in self.outlines:
+            yield (f"2 24 {outline[0][0]} {outline[0][1]} {outline[0][2]} "
+                   f"{outline[1][0]} {outline[1][1]} {outline[1][2]}\n")
+
+    def generate_outlines(self, angle_threshold=85, merge_vertices=False):
+        mesh = self.mesh
+        if merge_vertices:
+            mesh = self.mesh.copy()
+            mesh.merge_vertices()
+        edges = mesh.face_adjacency_angles >= np.radians(angle_threshold)
+        self.outlines = mesh.vertices[mesh.face_adjacency_edges[edges]]
 
 
 class ResultWriter:
