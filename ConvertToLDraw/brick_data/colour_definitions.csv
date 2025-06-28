@@ -14,7 +14,7 @@ Light_Turquoise;11;#00AAA4;#333333;255;;;116;Medium Bluish Green;LDraw:LDraw Sol
 Salmon;12;#F06D61;#333333;255;;;101;Medium Red;LDraw:LDraw Solid Colours
 Pink;13;#F6A9BB;#333333;255;;;9;Light Reddish Violet;LDraw:LDraw Solid Colours
 Yellow;14;#FAC80A;#333333;255;;;24;Bright Yellow;LDraw:LDraw Solid Colours
-White;15;#F4F4F4;#333333;255;;;1;White;LDraw:LDraw Solid Colours
+White;15;#F4F4F4;#333333;255;;;1/426;White;LDraw:LDraw Solid Colours
 Light_Green;17;#ADD9A8;#333333;255;;;6;Light Green;LDraw:LDraw Solid Colours
 Light_Yellow;18;#FFD67F;#333333;255;;;3;Light Yellow;LDraw:LDraw Solid Colours
 Tan;19;#D7BA8C;#333333;255;;;5;Brick Yellow;LDraw:LDraw Solid Colours
@@ -56,7 +56,7 @@ Bright_Light_Blue;212;#9DC3F7;#333333;255;;;212;Light Royal Blue;LDraw:LDraw Sol
 Rust;216;#872B17;#333333;255;;;216;Rust;LDraw:LDraw Solid Colours
 Reddish_Lilac;218;#8E5597;#333333;255;;;218;Reddish Lilac;LDraw:LDraw Solid Colours
 Lilac;219;#564E9D;#333333;255;;;219;Lilac;LDraw:LDraw Solid Colours
-Bright_Light_Yellow;226;#FFEC6C;#333333;255;;;226;Cool Yellow;LDraw:LDraw Solid Colours
+Bright_Light_Yellow;226;#FFEC6C;#333333;255;;;226/427;Cool Yellow;LDraw:LDraw Solid Colours
 Sky_Blue;232;#77C9D8;#333333;255;;;232;Dove Blue;LDraw:LDraw Solid Colours
 Dark_Blue;272;#19325A;#333333;255;;;140;Earth Blue;LDraw:LDraw Solid Colours
 Dark_Green;288;#00451A;#808080;255;;;141;Earth Green;LDraw:LDraw Solid Colours
@@ -209,13 +209,23 @@ Rubber_Trans_Clear;67;#FCFCFC;#C9C9C9;128;;RUBBER;;;LDraw:LDraw Transparent Rubb
 Rubber_Trans_Bright_Green;10035;#56E646;#27AF18;128;;RUBBER;;;LDraw:LDraw Transparent Rubber Colours
 Rubber_Trans_Red;10036;#C91A09;#660D05;128;;RUBBER;;;LDraw:LDraw Transparent Rubber Colours
 Rubber_Trans_Light_Blue;10043;#AEE9EF;#59D1DE;128;;RUBBER;;;LDraw:LDraw Transparent Rubber Colours
+Canvas_Black;20000;#1B2A34;#808080;255;;MATERIAL FABRIC CANVAS;;;LDraw:LDraw Fabric Colours
+Canvas_Blue;20001;#1E5AA8;#333333;255;;MATERIAL FABRIC CANVAS;;;LDraw:LDraw Fabric Colours
+Canvas_Green;20002;#00852B;#333333;255;;MATERIAL FABRIC CANVAS;;;LDraw:LDraw Fabric Colours
+Canvas_Red;20004;#B40000;#333333;255;;MATERIAL FABRIC CANVAS;;;LDraw:LDraw Fabric Colours
+Canvas_Bright_Green;20010;#58AB41;#333333;255;;MATERIAL FABRIC CANVAS;;;LDraw:LDraw Fabric Colours
+Canvas_Yellow;20014;#FAC80A;#333333;255;;MATERIAL FABRIC CANVAS;;;LDraw:LDraw Fabric Colours
+Canvas_White;20015;#F4F4F4;#333333;255;;MATERIAL FABRIC CANVAS;;;LDraw:LDraw Fabric Colours
+Canvas_Reddish_Brown;20070;#5F3109;#808080;255;;MATERIAL FABRIC CANVAS;;;LDraw:LDraw Fabric Colours
+Canvas_Light_Brown;20086;#7B5D41;#333333;255;;MATERIAL FABRIC CANVAS;;;LDraw:LDraw Fabric Colours
+Canvas_Dark_Green;20288;#00451A;#808080;255;;MATERIAL FABRIC CANVAS;;;LDraw:LDraw Fabric Colours
+Canvas_Cream;20500;#F8F3E4;#333333;255;;MATERIAL FABRIC CANVAS;;;LDraw:LDraw Fabric Colours
 Main_Colour;16;#FFFF80;#333333;255;;;;;LDraw:LDraw Internal Common Material Colours
 Edge_Colour;24;#7F7F7F;#333333;255;;;;;LDraw:LDraw Internal Common Material Colours
 Magnet;493;#656761;#333333;255;;METAL;;;LDraw:LDraw Internal Common Material Colours
 Electric_Contact_Alloy;494;#D0D0D0;#333333;255;;METAL;;;LDraw:LDraw Internal Common Material Colours
 Electric_Contact_Copper;495;#AE7A59;#333333;255;;METAL;;;LDraw:LDraw Internal Common Material Colours
 Trans_Sticker;10047;#FFFFFF;#FFFFFF;16;;;;;LDraw:LDraw Internal Common Material Colours
-Fabric_Cream;10000;#F8F3E4;#333333;255;;;;;LDraw:LDraw Internal Common Material Colours
 Glow_in_Dark_Red;1009008;#E0685C;#1B2A34;250;;;;;Bricklink:Glow in Dark(Render Only)
 Glow_in_Dark_Orange;1009009;#F0AB59;#1B2A34;250;;;;;Bricklink:Glow in Dark(Render Only)
 Glow_in_Dark_Green;1009010;#77BF90;#1B2A34;250;;;;;Bricklink:Glow in Dark(Render Only)
