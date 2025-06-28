@@ -9,6 +9,7 @@ colour_categories = [
     "LDraw:LDraw Speckle Colours",
     "LDraw:LDraw Rubber Colours",
     "LDraw:LDraw Transparent Rubber Colours",
+    "LDraw:LDraw Fabric Colours",
     "LDraw:LDraw Internal Common Material Colours",
     "Bricklink:Glow in Dark(Render Only)",
     "Bricklink:Glowing Neon(Render Only)",
