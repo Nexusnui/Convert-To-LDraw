@@ -482,8 +482,8 @@ class MainWindow(QMainWindow):
 
 
 def mm_float_to_string(number: float | int):
-    if number >= 100:
-        return f"{(number / 100):.2f}m"
+    if number >= 1000:
+        return f"{(number / 1000):.2f}m"
     elif number >= 10:
         return f"{(number / 10):.2f}cm"
     return f"{number:.2f}mm"
