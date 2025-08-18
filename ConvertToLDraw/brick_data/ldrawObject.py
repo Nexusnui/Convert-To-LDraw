@@ -208,7 +208,7 @@ class LdrawObject:
                     # Todo: Improve precision of floats to string conversion (np.float64(1))
                     code = part.main_colour.colour_code
                     if not one_file:
-                        subfilename = f"s/{subfilename}"
+                        subfilename = fr"s\{subfilename}"
                     file.write(f"0 //~{part.name}\n"
                                f"1 {code} {tm_x} {tm_y} {tm_z}"
                                f" {tm_a} {tm_b} {tm_c}"
@@ -347,7 +347,7 @@ class Subpart:
         self.merge_duplicate_colours(True)
 
     def convert_to_dat_file(self, filepath, main_file_name, author, license_line):
-        filename = f"s/{os.path.basename(filepath)}"
+        filename = fr"s\{os.path.basename(filepath)}"
         header = self.get_ldraw_header(filename, main_file_name, author, license_line)
         with open(filepath, "w", encoding="utf-8") as file:
             file.write(header)
