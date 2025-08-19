@@ -194,10 +194,11 @@ def search_brickcolour_by_rgb_colour(rgb_colour: str, colourlist: list):
 
 
 def search_by_color_name(name: str, colourlist: list):
-    name = "".join(name.upper().split(" "))
+    name = name.upper().replace(" ", "").replace("_", "")
 
     def matchname(colour: Brickcolour):
-        if name in "".join(colour.ldrawname.upper().split(" ")) or name in "".join(colour.legoname.upper().split(" ")):
+        if (name in colour.ldrawname.upper().replace(" ", "").replace("_", "") or
+                name in colour.legoname.upper().replace(" ", "").replace("_", "")):
             return True
         else:
             return False
