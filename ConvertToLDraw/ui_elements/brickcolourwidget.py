@@ -223,13 +223,14 @@ class BrickcolourDialog(QDialog):
                 self.colourslistmodel.updateData()
 
     def update_search_bar(self, value):
-        self.search_bar.clear()
-        self.all_colours = get_all_brickcolours()
-        self.colourslistmodel.updateData(self.all_colours)
+        self.reset_colours()
         if value == 0:
             self.search_bar.setPlaceholderText("LDraw or Lego Name")
         else:
             self.search_bar.setPlaceholderText("Enter HTML Colour like:#D67923")
+        if len(self.search_bar.text()) > 0:
+            print(self.search_bar.text())
+            self.search(self.search_bar.text())
 
     def reset_colours(self):
         self.all_colours = get_all_brickcolours()
