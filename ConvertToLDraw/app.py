@@ -178,7 +178,7 @@ class MainWindow(QMainWindow):
         self.bl_number_line.setPlaceholderText("Bricklinknumber")
         bl_number_label = QLabel("BL Number(Optional) ℹ️")
         bl_number_label.setToolTip("Bricklink Studio uses this to identify a piece\n"
-                                   "Leave this empty is there is no Bricklink listing")
+                                   "Leave this empty if there is no Bricklink listing")
         part_settings_inputs.addRow(bl_number_label, self.bl_number_line)
 
         # Author Input
