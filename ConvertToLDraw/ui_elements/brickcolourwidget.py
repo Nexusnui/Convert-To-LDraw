@@ -112,7 +112,7 @@ class BrickcolourDialog(QDialog):
         # Todo: Better Initial Size
 
         main_layout = QVBoxLayout()
-        tab_widget = QTabWidget()
+        self.tab_widget = QTabWidget()
 
         # Widget for picking direct colours
         self.direct_color_widget = ColorPicker()
@@ -164,12 +164,12 @@ class BrickcolourDialog(QDialog):
         new_height = row_height*6
         self.ldraw_colour_table.setMinimumSize(new_width, new_height)
 
-        tab_widget.addTab(ldraw_wigdet, "LDraw Color")
+        self.tab_widget.addTab(ldraw_wigdet, "LDraw Color")
 
-        tab_widget.addTab(self.direct_color_widget, "Direct Colour")
-        main_layout.addWidget(tab_widget)
+        self.tab_widget.addTab(self.direct_color_widget, "Direct Colour")
+        main_layout.addWidget(self.tab_widget)
         if start_in_direct_mode:
-            tab_widget.setCurrentIndex(1)
+            self.tab_widget.setCurrentIndex(1)
 
         bottom_layout = QHBoxLayout()
         buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -180,6 +180,9 @@ class BrickcolourDialog(QDialog):
         self.preview = QLineEdit()
         self.preview.setReadOnly(True)
         bottom_layout.addWidget(self.preview)
+        simular_colour_button = QPushButton("Show Simular Colours")
+        simular_colour_button.clicked.connect(self.show_simular_colours)
+        bottom_layout.addWidget(simular_colour_button)
 
         main_layout.addLayout(bottom_layout)
 
@@ -223,17 +226,25 @@ class BrickcolourDialog(QDialog):
                 self.colourslistmodel.updateData()
 
     def update_search_bar(self, value):
-        self.search_bar.clear()
-        self.all_colours = get_all_brickcolours()
-        self.colourslistmodel.updateData(self.all_colours)
+        self.reset_colours()
         if value == 0:
             self.search_bar.setPlaceholderText("LDraw or Lego Name")
         else:
             self.search_bar.setPlaceholderText("Enter HTML Colour like:#D67923")
+        if len(self.search_bar.text()) > 0:
+            print(self.search_bar.text())
+            self.search(self.search_bar.text())
 
     def reset_colours(self):
         self.all_colours = get_all_brickcolours()
         self.colourslistmodel.updateData(self.all_colours)
+
+    def show_simular_colours(self):
+        self.search_bar.setText(self.brickcolour.rgb_values)
+        self.search_category_input.setCurrentIndex(1)
+        self.update_search_bar(1)
+        self.tab_widget.setCurrentIndex(0)
+
 
 class Brickcolourlistmodel(QAbstractTableModel):
     def __init__(self, colorlist):
