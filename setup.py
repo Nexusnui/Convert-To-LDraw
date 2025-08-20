@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='ConvertToLDraw',
-    version='1.5.1',
+    version='1.5.2',
     description='This is a graphical Python program for converting various 3D file formats(stl,3mf,obj,stp, etc.) to the LDraw file format (.dat).',
     url='https://github.com/Nexusnui/Convert-To-LDraw',
     author='Nexusnui',
@@ -22,19 +22,19 @@ setup(
         'ConvertToLDraw.ui_elements': ['viewer_template.html'],
         'ConvertToLDraw.ui_elements.js-libraries': ['*']
     },
-    install_requires=["numpy==2.3.1",
+    install_requires=["numpy==2.3.2",
                       "cascadio==0.0.16",
-                      "charset-normalizer==3.4.2",
+                      "charset-normalizer==3.4.3",
                       "lxml==6.0.0",
-                      "manifold3d==3.1.1",
+                      "manifold3d==3.2.1",
                       "meshio==5.3.5",
                       "networkx==3.5",
-                      "pillow==11.2.1",
-                      "pycollada==0.9",
+                      "pillow==11.3.0",
+                      "pycollada==0.9.2",
                       "PyQt6==6.9.1",
                       "PyQt6-WebEngine==6.9.0",
-                      "scipy==1.16.0",
-                      "trimesh==4.6.13",
+                      "scipy==1.16.1",
+                      "trimesh==4.7.4",
                       ],
     entry_points={
         'gui_scripts': [

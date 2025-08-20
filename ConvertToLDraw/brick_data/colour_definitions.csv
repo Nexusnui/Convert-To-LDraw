@@ -48,14 +48,20 @@ Medium_Violet;112;#4861AC;#333333;255;;;112;Medium Bluish Violet;LDraw:LDraw Sol
 Medium_Lime;115;#B7D425;#333333;255;;;115;Medium Yellowish Green;LDraw:LDraw Solid Colours
 Aqua;118;#9CD6CC;#333333;255;;;118;Light Bluish Green;LDraw:LDraw Solid Colours
 Light_Lime;120;#DEEA92;#333333;255;;;120;Light Yellowish Green;LDraw:LDraw Solid Colours
-Light_Orange;125;#F9A777;#333333;255;;;125;Light Orange;LDraw:LDraw Solid Colours
+Light_Orange;121;#F89A39;#333333;255;;;121;Medium Yellowish Orange;LDraw:LDraw Solid Colours
+Dark_Salmon;123;#EE5434;#333333;255;;;123;Bright Reddish Orange;LDraw:LDraw Solid Colours
+Spud_Orange;125;#F9A777;#333333;255;;;125;Light Orange;LDraw:LDraw Solid Colours
 Dark_Nougat;128;#AD6140;#333333;255;;;128;Dark Nougat;LDraw:LDraw Solid Colours
 Very_Light_Bluish_Grey;151;#C8C8C8;#333333;255;;;208;Light Stone Grey;LDraw:LDraw Solid Colours
+Dark_Yellow;180;#DD982E;#333333;255;;;180;Curry;LDraw:LDraw Solid Colours
 Bright_Light_Orange;191;#FCAC00;#333333;255;;;191;Flame Yellowish Orange;LDraw:LDraw Solid Colours
 Bright_Light_Blue;212;#9DC3F7;#333333;255;;;212;Light Royal Blue;LDraw:LDraw Solid Colours
+Medium_Blue_Violet;213;#476FB6;#333333;255;;;213;Medium Royal Blue;LDraw:LDraw Solid Colours
 Rust;216;#872B17;#333333;255;;;216;Rust;LDraw:LDraw Solid Colours
 Reddish_Lilac;218;#8E5597;#333333;255;;;218;Reddish Lilac;LDraw:LDraw Solid Colours
 Lilac;219;#564E9D;#333333;255;;;219;Lilac;LDraw:LDraw Solid Colours
+Light_Lilac;220;#9195CA;#333333;255;;;220;Light Lilac;LDraw:LDraw Solid Colours
+Warm_Yellowish_Orange;225;#FAA964;#333333;255;;;225;Warm Yellowish Orange;LDraw:LDraw Solid Colours
 Bright_Light_Yellow;226;#FFEC6C;#333333;255;;;226/427;Cool Yellow;LDraw:LDraw Solid Colours
 Sky_Blue;232;#77C9D8;#333333;255;;;232;Dove Blue;LDraw:LDraw Solid Colours
 Dark_Blue;272;#19325A;#333333;255;;;140;Earth Blue;LDraw:LDraw Solid Colours
@@ -81,6 +87,7 @@ Sand_Green;378;#708E7C;#333333;255;;;151;Sand Green;LDraw:LDraw Solid Colours
 Sand_Blue;379;#70819A;#333333;255;;;135;Sand Blue;LDraw:LDraw Solid Colours
 Reddish_Orange;402;#CA4C0B;#333333;255;;;402;Reddish Orange;LDraw:LDraw Solid Colours
 Sienna_Brown;422;#915C3C;#333333;255;;;422;Sienna Brown;LDraw:LDraw Solid Colours
+Ochre_Yellow;424;#DD9E47;#333333;255;;;424;Ochre Yellow ;LDraw:LDraw Solid Colours
 Umber_Brown;423;#543F33;#333333;255;;;432;Umber Brown ;LDraw:LDraw Solid Colours
 Fabuland_Brown;450;#D27744;#333333;255;;;4;Brick Red;LDraw:LDraw Solid Colours
 Medium_Orange;462;#F58624;#333333;255;;;105;Bright Yellowish Orange;LDraw:LDraw Solid Colours
@@ -90,6 +97,8 @@ Light_Orange_Brown;507;#FA9C1C;#333333;255;;;12;Light Orange Brown;LDraw:LDraw S
 Fabuland_Red;508;#C65127;#333333;255;;;13;Red Orange;LDraw:LDraw Solid Colours
 Fabuland_Orange;509;#CF8A47;#333333;255;;;19;Light Brown;LDraw:LDraw Solid Colours
 Fabuland_Lime;510;#78FC78;#333333;255;;;14;Pastel Green;LDraw:LDraw Solid Colours
+Lemon;10015;#FFF230;#333333;255;;;15;Lemon;LDraw:LDraw Solid Colours
+Rose_Pink;10017;#FF9494;#333333;255;;;17;Rose;LDraw:LDraw Solid Colours
 Trans_Dark_Blue;33;#0020A0;#000B38;128;;;43;Transparent Blue;LDraw:LDraw Transparent Colours
 Trans_Green;34;#237841;#174F2B;128;;;48;Transparent Green;LDraw:LDraw Transparent Colours
 Trans_Bright_Green;35;#56E646;#27AF18;128;;;311;Transparent Bright Green ;LDraw:LDraw Transparent Colours
@@ -143,14 +152,16 @@ Pearl_Brown;187;#57392C;#333333;255;;PEARLESCENT;187;Metallic Earth Orange ;LDra
 Reddish_Gold;189;#AC8247;#333333;255;;PEARLESCENT;189;Reddish Gold;LDraw:LDraw Pearlescent Plastic Colours
 Lemon_Metallic;200;#708224;#333333;255;;PEARLESCENT;200;Lemon Metallic;LDraw:LDraw Pearlescent Plastic Colours
 Pearl_Gold;297;#AA7F2E;#333333;255;;PEARLESCENT;297;Warm Gold;LDraw:LDraw Pearlescent Plastic Colours
+Conductive_Black;342;#3E3C39;#333333;255;;PEARLESCENT;342;Conductive Black;LDraw:LDraw Pearlescent Plastic Colours
+Reddish_Copper;346;#803D07;#333333;255;;PEARLESCENT;346;Copper Metallic;LDraw:LDraw Pearlescent Plastic Colours
 Metallic_Silver;80;#767676;#333333;255;;METAL;298/336;Cool Silver Drum Lacq/Silver Ink;LDraw:LDraw Metallic Paint Colours
 Metallic_Green;81;#C2C06F;#333333;255;;METAL;910;Metallic Green;LDraw:LDraw Metallic Paint Colours
 Metallic_Gold;82;#DBAC34;#333333;255;;METAL;299/335;Warm Gold Drum Lacq/Gold Ink;LDraw:LDraw Metallic Paint Colours
 Metallic_Dark_Grey;87;#3E3C39;#333333;255;;METAL;337;Titanium;LDraw:LDraw Metallic Paint Colours
 Metallic_Copper;300;#C27F53;#333333;255;;METAL;300/334;Copper Drum Lacq/Copper Ink;LDraw:LDraw Metallic Paint Colours
-Metallic_Light_Blue;10045;#97CBD9;#333333;255;;METAL;;;LDraw:LDraw Metallic Paint Colours
+Metallic_Light_Blue;10045;#97CBD9;#333333;255;;METAL;344;Cyan Metallic Ink;LDraw:LDraw Metallic Paint Colours
 Metallic_Pink;10046;#AD659A;#333333;255;;METAL;911;Metallic Pink;LDraw:LDraw Metallic Paint Colours
-Metallic_Light_Pink;10049;#FECCCF;#333333;255;;METAL;;;LDraw:LDraw Metallic Paint Colours
+Metallic_Light_Pink;10049;#FECCCF;#333333;255;;METAL;345;Magenta Metallic Ink;LDraw:LDraw Metallic Paint Colours
 Milky_White;79;#EEEEEE;#BABABA;240;;;20;Nature;LDraw:LDraw Milky Colours
 Glow_In_Dark_Opaque;21;#E0FFB0;#B8FF4D;240;15;;294;Phosphorescent Green;LDraw:LDraw Milky Colours
 Glow_In_Dark_Trans;294;#BDC6AD;#8D9D72;240;15;;50;Phosphorescent White;LDraw:LDraw Milky Colours

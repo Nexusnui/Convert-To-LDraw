@@ -30,7 +30,7 @@ from ConvertToLDraw.ui_elements.line_generation_dialog import LineGenerationDial
 
 basedir = os.path.dirname(__file__)
 
-app_version = "1.5.1"
+app_version = "1.5.2"
 
 if platform.system() == "Windows":
     try:
@@ -178,7 +178,7 @@ class MainWindow(QMainWindow):
         self.bl_number_line.setPlaceholderText("Bricklinknumber")
         bl_number_label = QLabel("BL Number(Optional) ℹ️")
         bl_number_label.setToolTip("Bricklink Studio uses this to identify a piece\n"
-                                   "Leave this empty is there is no Bricklink listing")
+                                   "Leave this empty if there is no Bricklink listing")
         part_settings_inputs.addRow(bl_number_label, self.bl_number_line)
 
         # Author Input
