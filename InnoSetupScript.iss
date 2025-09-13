@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Convert To LDraw"
-#define MyAppVersion "1.5.2"
+#define MyAppVersion "1.6.0"
 #define MyAppPublisher "Nexusnui"
 #define MyAppURL "https://github.com/Nexusnui/Convert-To-LDraw"
 #define MyAppExeName "Convert to LDraw.exe"
