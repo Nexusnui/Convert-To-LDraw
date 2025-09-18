@@ -1,3 +1,4 @@
+#Todo: Import Modules instead of complete trimesh
 import trimesh
 import trimesh.visual.material
 import os
@@ -5,7 +6,8 @@ from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_closest_brick
     get_all_brickcolours
 import numpy as np
 from collections import OrderedDict
-from ConvertToLDraw.model_loaders import trimesh_loader
+from ConvertToLDraw.model_loaders.trimeshloader import Trimeshloader
+from ConvertToLDraw.model_loaders.assimploader import Assimploader
 
 
 # Todo: Change np print settings?
@@ -34,9 +36,9 @@ class LdrawObject:
 
         #Todo: Load file with different loader depending on filetype or setting
         if file_extension == "3mf":
-            pass
+            scene = Assimploader.load_model(filepath)
         else:
-            scene = trimesh_loader.load_scene(filepath)
+            scene = Trimeshloader.load_model(filepath)
 
         if len(scene.geometry) == 1 or not multi_object:
             if len(scene.geometry) > 1 and multicolour:
