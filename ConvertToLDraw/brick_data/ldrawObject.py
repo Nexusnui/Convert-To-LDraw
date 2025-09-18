@@ -5,6 +5,7 @@ from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_closest_brick
     get_all_brickcolours
 import numpy as np
 from collections import OrderedDict
+from ConvertToLDraw.model_loaders import trimesh_loader
 
 
 # Todo: Change np print settings?
@@ -28,9 +29,14 @@ class LdrawObject:
 
     def __load_scene(self, filepath, scale=1, multi_object=True, multicolour=True,
                      use_ldraw_scale=True, use_ldraw_rotation=True):
+
         _, file_extension = os.path.splitext(filepath)
 
-        scene = trimesh.load_scene(filepath)
+        #Todo: Load file with different loader depending on filetype or setting
+        if file_extension == "3mf":
+            pass
+        else:
+            scene = trimesh_loader.load_scene(filepath)
 
         if len(scene.geometry) == 1 or not multi_object:
             if len(scene.geometry) > 1 and multicolour:
