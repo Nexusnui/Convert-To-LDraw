@@ -34,11 +34,11 @@ class LdrawObject:
 
         _, file_extension = os.path.splitext(filepath)
 
-        #Todo: Load file with different loader depending on filetype or setting
-        if file_extension == "3mf":
-            scene = Assimploader.load_model(filepath)
+        if file_extension == ".3mf":
+            scene, metadata = Assimploader.load_model(filepath)
         else:
-            scene = Trimeshloader.load_model(filepath)
+            scene, metadata = Trimeshloader.load_model(filepath)
+        #Todo: Use Metadata for Name and Author
 
         if len(scene.geometry) == 1 or not multi_object:
             if len(scene.geometry) > 1 and multicolour:
