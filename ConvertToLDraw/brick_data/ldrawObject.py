@@ -9,7 +9,6 @@ from collections import OrderedDict
 from ConvertToLDraw.model_loaders.trimeshloader import Trimeshloader
 from ConvertToLDraw.model_loaders.assimploader import Assimploader
 
-
 # Todo: Change np print settings?
 
 
@@ -35,9 +34,10 @@ class LdrawObject:
         _, file_extension = os.path.splitext(filepath)
 
         if file_extension == ".3mf":
-            scene, metadata = Assimploader.load_model(filepath)
+            loader = Assimploader()
         else:
-            scene, metadata = Trimeshloader.load_model(filepath)
+            loader = Trimeshloader()
+        scene, metadata = loader.load_model(filepath)
         #Todo: Use Metadata for Name and Author
 
         if len(scene.geometry) == 1 or not multi_object:

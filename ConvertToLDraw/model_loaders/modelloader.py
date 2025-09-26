@@ -3,9 +3,12 @@ from abc import ABC, abstractmethod
 
 
 class Modelloader(ABC):
-    @staticmethod
+
+    def __init__(self):
+        pass
+
     @abstractmethod
-    def load_model(file) -> tuple[Scene, dict]:
+    def load_model(self, file) -> tuple[Scene, dict]:
         """
         Loader used to load a 3D model from file
         :param file:

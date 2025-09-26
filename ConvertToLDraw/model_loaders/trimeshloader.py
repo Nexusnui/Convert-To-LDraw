@@ -4,6 +4,6 @@ from ConvertToLDraw.model_loaders.modelloader import Modelloader
 
 
 class Trimeshloader(Modelloader):
-    @staticmethod
-    def load_model(filepath) -> tuple[Scene, dict]:
-        return load_scene(filepath), {}
+
+    def load_model(self, file) -> tuple[Scene, dict]:
+        return load_scene(file), {}

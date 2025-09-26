@@ -5,10 +5,10 @@ from pyassimp import load
 
 
 class Assimploader(Modelloader):
-    @staticmethod
-    def load_model(filepath) -> tuple[Scene, dict]:
+
+    def load_model(self, file) -> tuple[Scene, dict]:
         model = Scene()
-        with load(filepath) as loadedmodel:
+        with load(file) as loadedmodel:
             #Todo: Update this when multimaterial objects can be processed
             #Todo: Traverse through nodes alternativly?
             #Todo: Get Object Name and Transformation matrix
@@ -23,5 +23,4 @@ class Assimploader(Modelloader):
                     pass  # Todo: Color from Material
                 model.add_geometry(geometry)
 
-            geometry.apply_transform()
         return model, {}
