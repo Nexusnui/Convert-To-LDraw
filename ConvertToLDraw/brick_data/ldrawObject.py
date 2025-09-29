@@ -7,7 +7,7 @@ from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_closest_brick
 import numpy as np
 from collections import OrderedDict
 from ConvertToLDraw.model_loaders.trimeshloader import Trimeshloader
-from ConvertToLDraw.model_loaders.assimploader import Assimploader
+from ConvertToLDraw.model_loaders.the3mfloader import The3mfloader
 
 # Todo: Change np print settings?
 
@@ -34,7 +34,7 @@ class LdrawObject:
         _, file_extension = os.path.splitext(filepath)
 
         if file_extension == ".3mf":
-            loader = Assimploader()
+            loader = The3mfloader()
         else:
             loader = Trimeshloader()
         scene, metadata = loader.load_model(filepath)
@@ -131,6 +131,7 @@ class LdrawObject:
                     geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * 255
                     main_colour = Brickcolour("16")
                 transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
+                # Todo: Check geometry metadata for name
                 self.subparts.append(Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions))
         self.scene = scene
 
