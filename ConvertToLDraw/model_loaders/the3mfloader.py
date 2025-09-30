@@ -1,7 +1,10 @@
 from trimesh.scene.scene import Scene
 from trimesh.base import Trimesh
+from trimesh.transformations import is_same_transform
+from trimesh.transformations import identity_matrix
 from zipfile import ZipFile
 from lxml import etree
+import numpy as np
 from ConvertToLDraw.model_loaders.modelloader import Modelloader
 
 
@@ -9,37 +12,53 @@ def _get_tag_type(element) -> str:
     return element.tag.split("}")[-1]
 
 
-def _is_identity_matrix(transform: str):
+def _transform_to_matrix(transform: str | list) -> list:
+    if not isinstance(transform, str):
+        return transform
+    values = transform.split(" ")
+    # This is how the 3mf spec describes the matrix
+    """matrix = [[float(values[0]), float(values[1]), float(values[2]), 0.0],
+              [float(values[3]), float(values[4]), float(values[5]), 0.0],
+              [float(values[6]), float(values[7]), float(values[8]), 0.0],
+              [float(values[9]), float(values[10]), float(values[11]), 1.0]]"""
+    # This is how trimesh requires it (could be a bug I will create an issue upstream)
+    matrix = [[float(values[0]), float(values[3]), float(values[6]), float(values[9])],
+              [float(values[1]), float(values[4]), float(values[7]), float(values[10])],
+              [float(values[2]), float(values[5]), float(values[8]), float(values[11])],
+              [0.0, 0.0, 0.0, 1.0]]
+    return matrix
+
+
+def _is_identity_matrix(transform: str | list) -> bool:
     if transform is None:
         return True
-    # Todo: Actually check if transform is just the identity_matrix
-    return True
+    matrix = _transform_to_matrix(transform)
+    result = is_same_transform(identity_matrix(), matrix)
+    return result
 
 
-def _combine_transforms(transform_a: str, transform_b: str):
-    # Todo: Actually combine Transforms
-    return "1 0 0 0 1 0 0 0 1 0 0 0"
+def _combine_transforms(transform_a: str | list, transform_b: str | list) -> str | list:
+    if _is_identity_matrix(transform_a):
+        return transform_b
+    elif _is_identity_matrix(transform_b):
+        return transform_a
+    matrix_a = _transform_to_matrix(transform_a)
+    matrix_b = _transform_to_matrix(transform_b)
+    result = np.matmul(matrix_a, matrix_b)
+    return result
 
 
 def _hex_to_rgba_colour(hexcolour: str):
     hexcolour = hexcolour.strip("#")
+    # Todo: Remove all invalid characters
     r = int(hexcolour[0:2], 16)
     g = int(hexcolour[2:4], 16)
     b = int(hexcolour[4:6], 16)
-    if len(hexcolour) > 6:
+    if len(hexcolour) >= 8:
         a = int(hexcolour[6:8], 16)
     else:
         a = 255
     return r, g, b, a
-
-
-def _transform_to_matrix(transform: str):
-    values = transform.split(" ")
-    matrix = [[float(values[0]), float(values[1]), float(values[2]), 0.0],
-              [float(values[3]), float(values[4]), float(values[5]), 0.0],
-              [float(values[6]), float(values[7]), float(values[8]), 0.0],
-              [float(values[9]), float(values[10]), float(values[11]), 1.0]]
-    return matrix
 
 
 class The3mfloader(Modelloader):
@@ -48,7 +67,7 @@ class The3mfloader(Modelloader):
         self.was_reset = True
         self.model: Scene = Scene()
         self.metadata: dict = {}
-        self.vendor: str = None
+        self.vendor: str = ""
         self.app_version: str = None
         self.resources = None
         self.build = None
@@ -129,7 +148,7 @@ class The3mfloader(Modelloader):
                 with file_3mf.open(f"3D/{self.model_config_name}") as model_config_file:
                     self.model_config = etree.parse(model_config_file).getroot()
         if self.resources is None or self.build is None:
-            # Todo: Raise correct exception (also check if build can be empty)
+            # Todo: Raise correct exception
             raise Exception("No build or resources in 3mf file")
 
         for resource in self.resources.getchildren():
@@ -201,8 +220,11 @@ class The3mfloader(Modelloader):
                                 mesh_colours.append(mesh_base_colour)
             # Todo: Get Name and pass it to geometry
             geometry = Trimesh(vertices=mesh_vertices, faces=mesh_triangles, face_colors=mesh_colours)
-            # Todo: Apply transform if not identity matrix
-            self.model.add_geometry(geometry)
+            transform = _transform_to_matrix(mesh_data[1])
+            if _is_identity_matrix(transform):
+                self.model.add_geometry(geometry)
+            else:
+                self.model.add_geometry(geometry, transform=transform)
         # Todo: Add unit to scene
         return self.model, self.metadata
 
@@ -219,14 +241,12 @@ class The3mfloader(Modelloader):
 
             if content_tag == "components":
                 for component in content.getchildren():
+                    component_transform = transform
                     if component.attrib.has_key("transform"):
                         component_transform = component.attrib["transform"]
                         if not _is_identity_matrix(transform) and not _is_identity_matrix(component_transform):
                             component_transform = _combine_transforms(transform, component_transform)
-                        else:
-                            component_transform = transform
-                        component_id = component.attrib["objectid"]
-                        self.collect_object_meshes(component_id, component_transform)
+                    component_id = component.attrib["objectid"]
+                    self.collect_object_meshes(component_id, component_transform)
             elif content_tag == "mesh":
                 self.meshes.append((build_object, transform, index))
-
