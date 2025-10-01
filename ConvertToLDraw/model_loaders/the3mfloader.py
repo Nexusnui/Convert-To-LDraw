@@ -188,7 +188,12 @@ class The3mfloader(Modelloader):
             mesh_triangles = []
             mesh_colours = []
             parent_object = mesh_data[0]
+            mesh_id = parent_object.attrib["id"]
             mesh = parent_object.getchildren()[mesh_data[2]]
+            mesh_name = f"object_{mesh_id}"
+
+            if parent_object.attrib.has_key("name"):
+                mesh_name = parent_object.attrib["name"]
 
             if parent_object.attrib.has_key("pid"):
                 mesh_base_colour = self.colour_groups[parent_object.attrib["pid"]][int(parent_object.attrib["pindex"])]
@@ -218,13 +223,12 @@ class The3mfloader(Modelloader):
                                                     )
                             else:
                                 mesh_colours.append(mesh_base_colour)
-            # Todo: Get Name and pass it to geometry
             geometry = Trimesh(vertices=mesh_vertices, faces=mesh_triangles, face_colors=mesh_colours)
             transform = _transform_to_matrix(mesh_data[1])
             if _is_identity_matrix(transform):
-                self.model.add_geometry(geometry)
+                self.model.add_geometry(geometry, geom_name=mesh_name)
             else:
-                self.model.add_geometry(geometry, transform=transform)
+                self.model.add_geometry(geometry, transform=transform, geom_name=mesh_name)
         # Todo: Add unit to scene
         return self.model, self.metadata
 
