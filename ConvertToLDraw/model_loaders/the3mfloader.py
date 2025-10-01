@@ -85,6 +85,7 @@ class The3mfloader(Modelloader):
             self.__init__()
         self.was_reset = False
 
+        # Collect Data from 3mf file
         with ZipFile(filepath) as file_3mf:
             with file_3mf.open("3D/3dmodel.model", "r") as model_file:
                 model_3mf = etree.parse(model_file).getroot()
@@ -94,13 +95,17 @@ class The3mfloader(Modelloader):
                 element_tag = _get_tag_type(element)
                 if element_tag == "metadata":
                     if element.attrib["name"] == "Title":
-                        self.metadata["name"] = element.text
+                        if element.text is not None:
+                            self.metadata["name"] = element.text
                     elif element.attrib["name"] == "Designer":
-                        self.metadata["author"] = element.text
+                        if element.text is not None:
+                            self.metadata["author"] = element.text
                     elif element.attrib["name"] == "LicenseTerms":
-                        self.metadata["license"] = element.text
+                        if element.text is not None:
+                            self.metadata["license"] = element.text
                     elif element.attrib["name"] == "Application":
-                        self.vendor: str = element.text
+                        if element.text is not None:
+                            self.vendor: str = element.text
                     elif element.attrib["name"].startswith("slic3rpe"):
                         self.is_slic3r_derivat = True
                         self.model_config_name = "Metadata/Slic3r_PE_model.config"
@@ -145,12 +150,13 @@ class The3mfloader(Modelloader):
                                         self.colour_groups["sc"].append(_hex_to_rgba_colour(colour))
                                     break
             if self.model_config_name is not None:
-                with file_3mf.open(f"3D/{self.model_config_name}") as model_config_file:
+                with file_3mf.open(self.model_config_name) as model_config_file:
                     self.model_config = etree.parse(model_config_file).getroot()
         if self.resources is None or self.build is None:
             # Todo: Raise correct exception
             raise Exception("No build or resources in 3mf file")
 
+        # Collect colour definitions from color and material groups
         for resource in self.resources.getchildren():
             resource_tag = _get_tag_type(resource)
             resource_id = resource.attrib["id"]
@@ -167,7 +173,7 @@ class The3mfloader(Modelloader):
                 self.sub_models[resource_id] = resource
         
 
-        #Collect meshes and their combined transformation matrices
+        #Collect mesh data with combined transformation matrices
         for item in self.build:
             if _get_tag_type(item) == "item":
                 transform = None
@@ -181,6 +187,7 @@ class The3mfloader(Modelloader):
             # Edit Mesh to use colorgroup
             pass
 
+        # Create Trimesh geometries from mesh data
         for mesh_data in self.meshes:
             # Default trimesh colour
             mesh_base_colour = (102, 102, 102, 255)
@@ -229,6 +236,7 @@ class The3mfloader(Modelloader):
                 self.model.add_geometry(geometry, geom_name=mesh_name)
             else:
                 self.model.add_geometry(geometry, transform=transform, geom_name=mesh_name)
+
         self.model.units = self.unit
         return self.model, self.metadata
 
@@ -247,9 +255,7 @@ class The3mfloader(Modelloader):
                 for component in content.getchildren():
                     component_transform = transform
                     if component.attrib.has_key("transform"):
-                        component_transform = component.attrib["transform"]
-                        if not _is_identity_matrix(transform) and not _is_identity_matrix(component_transform):
-                            component_transform = _combine_transforms(transform, component_transform)
+                        component_transform = _combine_transforms(transform, component.attrib["transform"])
                     component_id = component.attrib["objectid"]
                     self.collect_object_meshes(component_id, component_transform)
             elif content_tag == "mesh":
