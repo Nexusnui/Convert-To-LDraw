@@ -5,6 +5,7 @@ from trimesh.transformations import identity_matrix
 from zipfile import ZipFile
 from lxml import etree
 import numpy as np
+import re
 from ConvertToLDraw.model_loaders.modelloader import Modelloader
 
 
@@ -49,8 +50,7 @@ def _combine_transforms(transform_a: str | list, transform_b: str | list) -> str
 
 
 def _hex_to_rgba_colour(hexcolour: str):
-    hexcolour = hexcolour.strip("#")
-    # Todo: Remove all invalid characters
+    hexcolour = "".join(re.findall("[a-f,A-F,0-9]", hexcolour))
     r = int(hexcolour[0:2], 16)
     g = int(hexcolour[2:4], 16)
     b = int(hexcolour[4:6], 16)
