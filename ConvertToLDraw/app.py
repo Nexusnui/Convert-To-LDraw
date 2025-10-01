@@ -291,6 +291,8 @@ class MainWindow(QMainWindow):
             multi_object = self.multi_object_check.checkState() == Qt.CheckState.Checked
             use_ldraw_scale = self.ldraw_scale_check.checkState() == Qt.CheckState.Checked
             use_ldraw_rotation = self.ldraw_rotation_check.checkState() == Qt.CheckState.Checked
+            override_metadata = True
+            # Todo: Option to choose Trimesh for 3mf files
             try:
                 loaded_part = LdrawObject(filepath,
                                           scale=scale, multi_object=multi_object, multicolour=multicolour,
@@ -300,15 +302,28 @@ class MainWindow(QMainWindow):
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
                 self.enable_load_settings()
             else:
+                self.ldraw_object = loaded_part
+
+                filename = ".".join(filename.split(".")[:-1])
+                name = filename
+
                 if not reload:
                     self.reset_part_settings()
+                    if len(self.ldraw_object.name) > 0:
+                        name = self.ldraw_object.name
 
-                self.ldraw_object = loaded_part
                 self.input_file_line.setText(filepath)
-                name = ".".join(filename.split(".")[:-1])
+
+                if override_metadata and not reload:
+                    if len(self.ldraw_object.author) > 0:
+                        self.author_line.setText(self.ldraw_object.author)
+                    if self.ldraw_object.part_license is not None and len(self.ldraw_object.part_license) > 0:
+                        self.part_license_input.setCurrentText(self.ldraw_object.part_license)
+
                 filedir = os.path.dirname(filepath)
-                self.partname_line.setText(name)
-                self.output_file_line.setText(f"{filedir}/{name}.dat")
+                if not reload:
+                    self.partname_line.setText(name)
+                self.output_file_line.setText(f"{filedir}/{filename}.dat")
 
                 if self.file_loaded:
                     self.subpart_area_layout.removeWidget(self.subpart_panel)

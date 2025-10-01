@@ -17,19 +17,20 @@ class LdrawObject:
                  name="", bricklinknumber="", author="", category="", keywords=None,
                  part_license=None,
                  scale=1, multi_object=True, multicolour=True,
-                 use_ldraw_scale=True, use_ldraw_rotation=True):
+                 use_ldraw_scale=True, use_ldraw_rotation=True,
+                 override_metadata=True):
         self.cached_colour_definitions = OrderedDict()
-        self.__load_scene(filepath, scale, multi_object, multicolour, use_ldraw_scale, use_ldraw_rotation)
-
         self.name = name
-        self.bricklinknumber = bricklinknumber
         self.author = author
+        self.part_license = part_license
+        self.bricklinknumber = bricklinknumber
         self.category = category
         self.keywords = keywords
-        self.part_license = part_license
+
+        self.__load_scene(filepath, scale, multi_object, multicolour, use_ldraw_scale, use_ldraw_rotation, override_metadata)
 
     def __load_scene(self, filepath, scale=1, multi_object=True, multicolour=True,
-                     use_ldraw_scale=True, use_ldraw_rotation=True):
+                     use_ldraw_scale=True, use_ldraw_rotation=True, override_metadata=True):
 
         _, file_extension = os.path.splitext(filepath)
 
@@ -37,8 +38,16 @@ class LdrawObject:
             loader = The3mfloader()
         else:
             loader = Trimeshloader()
+
         scene, metadata = loader.load_model(filepath)
-        #Todo: Use Metadata for Name and Author
+
+        if override_metadata:
+            if "name" in metadata:
+                self.name = metadata["name"]
+            if "author" in metadata:
+                self.author = metadata["author"]
+            if "license" in metadata:
+                self.part_license = metadata["license"]
 
         if len(scene.geometry) == 1 or not multi_object:
             if len(scene.geometry) > 1 and multicolour:
