@@ -61,7 +61,7 @@ def _hex_to_rgba_colour(hexcolour: str):
     return r, g, b, a
 
 
-class The3mfloader(Modelloader):
+class Threemfloader(Modelloader):
 
     def __init__(self):
         self.was_reset = True

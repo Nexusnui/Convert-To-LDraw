@@ -7,7 +7,7 @@ from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_closest_brick
 import numpy as np
 from collections import OrderedDict
 from ConvertToLDraw.model_loaders.trimeshloader import Trimeshloader
-from ConvertToLDraw.model_loaders.the3mfloader import The3mfloader
+from ConvertToLDraw.model_loaders.threemfloader import Threemfloader
 
 # Todo: Change np print settings?
 
@@ -35,7 +35,7 @@ class LdrawObject:
         _, file_extension = os.path.splitext(filepath)
 
         if file_extension == ".3mf":
-            loader = The3mfloader()
+            loader = Threemfloader()
         else:
             loader = Trimeshloader()
 
