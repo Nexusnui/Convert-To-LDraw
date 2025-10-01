@@ -229,7 +229,7 @@ class The3mfloader(Modelloader):
                 self.model.add_geometry(geometry, geom_name=mesh_name)
             else:
                 self.model.add_geometry(geometry, transform=transform, geom_name=mesh_name)
-        # Todo: Add unit to scene
+        self.model.units = self.unit
         return self.model, self.metadata
 
     def collect_object_meshes(self, object_id: str, transform: str):
