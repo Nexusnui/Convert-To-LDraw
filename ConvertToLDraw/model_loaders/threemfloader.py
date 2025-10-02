@@ -180,7 +180,7 @@ class Threemfloader(Modelloader):
                 if item.attrib.has_key("transform"):
                     transform = item.attrib["transform"]
                 object_id = item.attrib["objectid"]
-                self.collect_object_meshes(object_id, transform)
+                self.collect_object_meshes(object_id, transform, 0)
 
         if self.is_slic3r_derivat:
             # Todo: Split and Color Meshes according to slicer data and model_config
@@ -240,7 +240,7 @@ class Threemfloader(Modelloader):
         self.model.units = self.unit
         return self.model, self.metadata
 
-    def collect_object_meshes(self, object_id: str, transform: str):
+    def collect_object_meshes(self, object_id: str, transform: str, depth: int):
         if object_id not in self.sub_models:
             # Not a model
             return
@@ -249,14 +249,15 @@ class Threemfloader(Modelloader):
             return
         for index, content in enumerate(build_object.getchildren()):
             content_tag = _get_tag_type(content)
-            # Todo: Limit component depth to avoid cycles
-
             if content_tag == "components":
+                if depth >= 32:
+                    # Todo: Raise correct exception
+                    raise Exception("3mf component depth exceeds 32.")
                 for component in content.getchildren():
                     component_transform = transform
                     if component.attrib.has_key("transform"):
                         component_transform = _combine_transforms(transform, component.attrib["transform"])
                     component_id = component.attrib["objectid"]
-                    self.collect_object_meshes(component_id, component_transform)
+                    self.collect_object_meshes(component_id, component_transform, depth+1)
             elif content_tag == "mesh":
                 self.meshes.append((build_object, transform, index))
