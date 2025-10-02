@@ -18,7 +18,7 @@ class LdrawObject:
                  part_license=None,
                  scale=1, multi_object=True, multicolour=True,
                  use_ldraw_scale=True, use_ldraw_rotation=True,
-                 override_metadata=True):
+                 override_metadata=True, use_threemfloader=True):
         self.cached_colour_definitions = OrderedDict()
         self.name = name
         self.author = author
@@ -27,14 +27,16 @@ class LdrawObject:
         self.category = category
         self.keywords = keywords
 
-        self.__load_scene(filepath, scale, multi_object, multicolour, use_ldraw_scale, use_ldraw_rotation, override_metadata)
+        self.__load_scene(filepath, scale, multi_object, multicolour, use_ldraw_scale, use_ldraw_rotation,
+                          override_metadata, use_threemfloader)
 
     def __load_scene(self, filepath, scale=1, multi_object=True, multicolour=True,
-                     use_ldraw_scale=True, use_ldraw_rotation=True, override_metadata=True):
+                     use_ldraw_scale=True, use_ldraw_rotation=True,
+                     override_metadata=True, use_threemfloader=True):
 
         _, file_extension = os.path.splitext(filepath)
 
-        if file_extension == ".3mf":
+        if use_threemfloader and file_extension == ".3mf":
             loader = Threemfloader()
         else:
             loader = Trimeshloader()

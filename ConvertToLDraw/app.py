@@ -100,6 +100,15 @@ class MainWindow(QMainWindow):
         load_file_inputs.addRow(multi_object_label, self.multi_object_check)
         self.multi_object_check.setChecked(True)
 
+        # Loader Settings
+        self.threemfloader_check = QCheckBox()
+        threemfloader_label = QLabel("Custom 3mf Loader ℹ️")
+        threemfloader_label.setToolTip("Enables color support for 3mf files.\n"
+                                       "Also supports mmu painting (Slic3r/Prusa/Bambu)\n"
+                                       "Trimesh is used to load 3mf files when unchecked.")
+        load_file_inputs.addRow(threemfloader_label, self.threemfloader_check)
+        self.threemfloader_check.setChecked(True)
+
         # Set Scale
         self.scale_input = QDoubleSpinBox()
         self.scale_input.setValue(1.0)
@@ -289,14 +298,15 @@ class MainWindow(QMainWindow):
             scale = self.scale_input.value()
             multicolour = self.multicolour_check.checkState() == Qt.CheckState.Checked
             multi_object = self.multi_object_check.checkState() == Qt.CheckState.Checked
+            use_threemfloader = self.threemfloader_check.checkState() == Qt.CheckState.Checked
             use_ldraw_scale = self.ldraw_scale_check.checkState() == Qt.CheckState.Checked
             use_ldraw_rotation = self.ldraw_rotation_check.checkState() == Qt.CheckState.Checked
             override_metadata = True
-            # Todo: Option to choose Trimesh for 3mf files
             try:
                 loaded_part = LdrawObject(filepath,
                                           scale=scale, multi_object=multi_object, multicolour=multicolour,
-                                          use_ldraw_scale=use_ldraw_scale, use_ldraw_rotation=use_ldraw_rotation)
+                                          use_ldraw_scale=use_ldraw_scale, use_ldraw_rotation=use_ldraw_rotation,
+                                          use_threemfloader=use_threemfloader)
             except Exception:
                 QMessageBox.critical(self, "Failed to load file", "Not a 3D object or unsupported file format")
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
@@ -391,6 +401,7 @@ class MainWindow(QMainWindow):
         self.reload_button.setDisabled(value)
         self.multicolour_check.setDisabled(value)
         self.multi_object_check.setDisabled(value)
+        self.threemfloader_check.setDisabled(value)
         self.scale_input.setDisabled(value)
         self.ldraw_rotation_check.setDisabled(value)
         self.ldraw_scale_check.setDisabled(value)
@@ -405,6 +416,7 @@ class MainWindow(QMainWindow):
     def enable_load_settings(self):
         self.multicolour_check.setDisabled(False)
         self.multi_object_check.setDisabled(False)
+        self.threemfloader_check.setDisabled(False)
         self.scale_input.setDisabled(False)
         self.load_input_button.setDisabled(False)
         self.ldraw_rotation_check.setDisabled(False)
