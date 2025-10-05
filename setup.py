@@ -25,7 +25,7 @@ setup(
     install_requires=["numpy==2.3.2",
                       "cascadio==0.0.16",
                       "charset-normalizer==3.4.3",
-                      "lxml==6.0.0",
+                      "lxml==6.0.2",
                       "manifold3d==3.2.1",
                       "meshio==5.3.5",
                       "networkx==3.5",

@@ -100,6 +100,15 @@ class MainWindow(QMainWindow):
         load_file_inputs.addRow(multi_object_label, self.multi_object_check)
         self.multi_object_check.setChecked(True)
 
+        # Loader Settings
+        self.threemfloader_check = QCheckBox()
+        threemfloader_label = QLabel("Custom 3mf Loader ℹ️")
+        threemfloader_label.setToolTip("Enables color support for 3mf files.\n"
+                                       "MMU painting (Slic3r/Prusa/Bambu) not supported.\n"
+                                       "Trimesh is used to load 3mf files when unchecked.")
+        load_file_inputs.addRow(threemfloader_label, self.threemfloader_check)
+        self.threemfloader_check.setChecked(True)
+
         # Set Scale
         self.scale_input = QDoubleSpinBox()
         self.scale_input.setValue(1.0)
@@ -289,26 +298,42 @@ class MainWindow(QMainWindow):
             scale = self.scale_input.value()
             multicolour = self.multicolour_check.checkState() == Qt.CheckState.Checked
             multi_object = self.multi_object_check.checkState() == Qt.CheckState.Checked
+            use_threemfloader = self.threemfloader_check.checkState() == Qt.CheckState.Checked
             use_ldraw_scale = self.ldraw_scale_check.checkState() == Qt.CheckState.Checked
             use_ldraw_rotation = self.ldraw_rotation_check.checkState() == Qt.CheckState.Checked
+            override_metadata = True
             try:
                 loaded_part = LdrawObject(filepath,
                                           scale=scale, multi_object=multi_object, multicolour=multicolour,
-                                          use_ldraw_scale=use_ldraw_scale, use_ldraw_rotation=use_ldraw_rotation)
+                                          use_ldraw_scale=use_ldraw_scale, use_ldraw_rotation=use_ldraw_rotation,
+                                          use_threemfloader=use_threemfloader)
             except Exception:
                 QMessageBox.critical(self, "Failed to load file", "Not a 3D object or unsupported file format")
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
                 self.enable_load_settings()
             else:
+                self.ldraw_object = loaded_part
+
+                filename = ".".join(filename.split(".")[:-1])
+                name = filename
+
                 if not reload:
                     self.reset_part_settings()
+                    if len(self.ldraw_object.name) > 0:
+                        name = self.ldraw_object.name
 
-                self.ldraw_object = loaded_part
                 self.input_file_line.setText(filepath)
-                name = ".".join(filename.split(".")[:-1])
+
+                if override_metadata and not reload:
+                    if len(self.ldraw_object.author) > 0:
+                        self.author_line.setText(self.ldraw_object.author)
+                    if self.ldraw_object.part_license is not None and len(self.ldraw_object.part_license) > 0:
+                        self.part_license_input.setCurrentText(self.ldraw_object.part_license)
+
                 filedir = os.path.dirname(filepath)
-                self.partname_line.setText(name)
-                self.output_file_line.setText(f"{filedir}/{name}.dat")
+                if not reload:
+                    self.partname_line.setText(name)
+                self.output_file_line.setText(f"{filedir}/{filename}.dat")
 
                 if self.file_loaded:
                     self.subpart_area_layout.removeWidget(self.subpart_panel)
@@ -376,6 +401,7 @@ class MainWindow(QMainWindow):
         self.reload_button.setDisabled(value)
         self.multicolour_check.setDisabled(value)
         self.multi_object_check.setDisabled(value)
+        self.threemfloader_check.setDisabled(value)
         self.scale_input.setDisabled(value)
         self.ldraw_rotation_check.setDisabled(value)
         self.ldraw_scale_check.setDisabled(value)
@@ -390,6 +416,7 @@ class MainWindow(QMainWindow):
     def enable_load_settings(self):
         self.multicolour_check.setDisabled(False)
         self.multi_object_check.setDisabled(False)
+        self.threemfloader_check.setDisabled(False)
         self.scale_input.setDisabled(False)
         self.load_input_button.setDisabled(False)
         self.ldraw_rotation_check.setDisabled(False)

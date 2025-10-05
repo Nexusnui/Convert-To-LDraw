@@ -1,3 +1,4 @@
+#Todo: Import Modules instead of complete trimesh
 import trimesh
 import trimesh.visual.material
 import os
@@ -5,7 +6,8 @@ from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_closest_brick
     get_all_brickcolours
 import numpy as np
 from collections import OrderedDict
-
+from ConvertToLDraw.model_loaders.trimeshloader import Trimeshloader
+from ConvertToLDraw.model_loaders.threemfloader import Threemfloader
 
 # Todo: Change np print settings?
 
@@ -15,22 +17,39 @@ class LdrawObject:
                  name="", bricklinknumber="", author="", category="", keywords=None,
                  part_license=None,
                  scale=1, multi_object=True, multicolour=True,
-                 use_ldraw_scale=True, use_ldraw_rotation=True):
+                 use_ldraw_scale=True, use_ldraw_rotation=True,
+                 override_metadata=True, use_threemfloader=True):
         self.cached_colour_definitions = OrderedDict()
-        self.__load_scene(filepath, scale, multi_object, multicolour, use_ldraw_scale, use_ldraw_rotation)
-
         self.name = name
-        self.bricklinknumber = bricklinknumber
         self.author = author
+        self.part_license = part_license
+        self.bricklinknumber = bricklinknumber
         self.category = category
         self.keywords = keywords
-        self.part_license = part_license
+
+        self.__load_scene(filepath, scale, multi_object, multicolour, use_ldraw_scale, use_ldraw_rotation,
+                          override_metadata, use_threemfloader)
 
     def __load_scene(self, filepath, scale=1, multi_object=True, multicolour=True,
-                     use_ldraw_scale=True, use_ldraw_rotation=True):
+                     use_ldraw_scale=True, use_ldraw_rotation=True,
+                     override_metadata=True, use_threemfloader=True):
+
         _, file_extension = os.path.splitext(filepath)
 
-        scene = trimesh.load_scene(filepath)
+        if use_threemfloader and file_extension == ".3mf":
+            loader = Threemfloader()
+        else:
+            loader = Trimeshloader()
+
+        scene, metadata = loader.load_model(filepath)
+
+        if override_metadata:
+            if "name" in metadata:
+                self.name = metadata["name"]
+            if "author" in metadata:
+                self.author = metadata["author"]
+            if "license" in metadata:
+                self.part_license = metadata["license"]
 
         if len(scene.geometry) == 1 or not multi_object:
             if len(scene.geometry) > 1 and multicolour:
@@ -123,6 +142,7 @@ class LdrawObject:
                     geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * 255
                     main_colour = Brickcolour("16")
                 transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
+                # Todo: Check geometry metadata for name
                 self.subparts.append(Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions))
         self.scene = scene
 
