@@ -27,6 +27,7 @@ from ConvertToLDraw.brick_data.brick_categories import brick_categories
 from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel, ColourPanel
 from ConvertToLDraw.ui_elements.previewPanel import PreviewPanel, register_scheme
 from ConvertToLDraw.ui_elements.line_generation_dialog import LineGenerationDialog, LinePreset
+from ConvertToLDraw.ui_elements.brickcolourwidget import ColourCategoriesDialog
 
 basedir = os.path.dirname(__file__)
 
@@ -232,6 +233,10 @@ class MainWindow(QMainWindow):
         self.generate_outlines_button.clicked.connect(self.generate_outlines)
         part_edit_inputs.addRow(self.generate_outlines_button)
 
+        self.map_colours_button = QPushButton("Convert direct/html colours to LDraw colours")
+        self.map_colours_button.clicked.connect(self.map_to_ldraw_colours)
+        part_edit_inputs.addRow(self.map_colours_button)
+
     # Loaded File Status Label
 
         self.loaded_file_status_label = QLabel("No file loaded")
@@ -409,6 +414,7 @@ class MainWindow(QMainWindow):
         self.part_license_input.setDisabled(value)
         self.keywords_line.setReadOnly(value)
         self.generate_outlines_button.setDisabled(value)
+        self.map_colours_button.setDisabled(value)
         self.settings_tabs.tabBar().setDisabled(value)
         if self.file_loaded:
             self.subpart_panel.setDisabled(value)
@@ -505,6 +511,28 @@ class MainWindow(QMainWindow):
             self.line_angle = outline_dialog.angle
             self.merge_vertices = outline_dialog.merge_vertices
             self.ldraw_object.generate_outlines(self.line_angle, self.merge_vertices)
+            self.enable_reload()
+
+    def map_to_ldraw_colours(self):
+        categories_dialog = ColourCategoriesDialog(
+            message="Select Colour Categories Direct/HTML will be matched with.\n"
+                    "(Only Reversible by reloading and may take a while)"
+        )
+
+        previous_text = self.loaded_file_status_label.text()
+        self.loaded_file_status_label.setText("Mapping Colours\nCould take a bit of time")
+
+        if categories_dialog.exec():
+            colour_categories = categories_dialog.get_selected_items()
+            if len(colour_categories) == 0:
+                QMessageBox.warning(self, "Nothing Selected", "No Categories selected\nMapping Aborted")
+                self.loaded_file_status_label.setText(previous_text)
+                return
+            self.disable_settings(True)
+            self.ldraw_object.map_to_ldraw_colours(colour_categories)
+            self.subpart_panel.update_children()
+            self.loaded_file_status_label.setText(previous_text)
+            self.disable_settings(False)
             self.enable_reload()
 
 
