@@ -258,6 +258,10 @@ class LdrawObject:
         for subpart in self.subparts:
             subpart.generate_outlines(angle_threshold, merge_vertices)
 
+    def map_to_ldraw_colour(self, included_colour_categories):
+        for subpart in self.subparts:
+            subpart.map_to_ldraw_colours(included_colour_categories)
+
 
 class Subpart:
     def __init__(self, mesh: trimesh.base.Trimesh,
@@ -359,12 +363,17 @@ class Subpart:
 
     def map_to_ldraw_colours(self, included_colour_categories):
         colourlist = get_all_brickcolours(included_colour_categories)
-        for key in self.colours:
-            if self.colours[key][0].colour_type == "Direct":
-                rgb_values = self.colours[key][0].rgb_values
-                mappedcolor = get_closest_brickcolour_by_rgb_colour(rgb_values, colourlist)
-                self.colours[key][0] = mappedcolor
-        self.merge_duplicate_colours(True)
+        if self.multicolour:
+            for key in self.colours:
+                if self.colours[key][0].colour_type == "Direct":
+                    rgb_values = self.colours[key][0].rgb_values
+                    mappedcolor = get_closest_brickcolour_by_rgb_colour(rgb_values, colourlist)
+                    self.colours[key][0] = mappedcolor
+            self.merge_duplicate_colours(True)
+        elif self.main_colour.colour_type != "LDraw":
+            rgb_values = self.main_colour.rgb_values
+            mappedcolor = get_closest_brickcolour_by_rgb_colour(rgb_values, colourlist)
+            self.apply_color(mappedcolor)
 
     def convert_to_dat_file(self, filepath, main_file_name, author, license_line):
         filename = fr"s\{os.path.basename(filepath)}"
