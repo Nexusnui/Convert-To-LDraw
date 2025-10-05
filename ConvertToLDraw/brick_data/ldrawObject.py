@@ -258,7 +258,7 @@ class LdrawObject:
         for subpart in self.subparts:
             subpart.generate_outlines(angle_threshold, merge_vertices)
 
-    def map_to_ldraw_colour(self, included_colour_categories):
+    def map_to_ldraw_colours(self, included_colour_categories):
         for subpart in self.subparts:
             subpart.map_to_ldraw_colours(included_colour_categories)
 
