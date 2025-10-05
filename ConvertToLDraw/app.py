@@ -104,7 +104,7 @@ class MainWindow(QMainWindow):
         self.threemfloader_check = QCheckBox()
         threemfloader_label = QLabel("Custom 3mf Loader ℹ️")
         threemfloader_label.setToolTip("Enables color support for 3mf files.\n"
-                                       "Also supports mmu painting (Slic3r/Prusa/Bambu)\n"
+                                       "MMU painting (Slic3r/Prusa/Bambu) not supported.\n"
                                        "Trimesh is used to load 3mf files when unchecked.")
         load_file_inputs.addRow(threemfloader_label, self.threemfloader_check)
         self.threemfloader_check.setChecked(True)
