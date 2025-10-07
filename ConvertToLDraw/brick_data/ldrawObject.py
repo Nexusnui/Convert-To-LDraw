@@ -13,12 +13,9 @@ from ConvertToLDraw.model_loaders.threemfloader import Threemfloader
 
 
 class LdrawObject:
-    def __init__(self, filepath: str,
+    def __init__(self, filepath: str = None,
                  name="", bricklinknumber="", author="", category="", keywords=None,
-                 part_license=None,
-                 scale=1, multi_object=True, multicolour=True,
-                 use_ldraw_scale=True, use_ldraw_rotation=True,
-                 override_metadata=True, use_threemfloader=True):
+                 part_license=None, autoload=True):
         self.cached_colour_definitions = OrderedDict()
         self.name = name
         self.author = author
@@ -26,14 +23,18 @@ class LdrawObject:
         self.bricklinknumber = bricklinknumber
         self.category = category
         self.keywords = keywords
+        self.model_loaded = False
 
-        self.__load_scene(filepath, scale, multi_object, multicolour, use_ldraw_scale, use_ldraw_rotation,
-                          override_metadata, use_threemfloader)
+        if autoload:
+            if filepath is None:
+                raise ValueError("No Filepath given with autoload activated")
+            self.load_scene(filepath)
 
-    def __load_scene(self, filepath, scale=1, multi_object=True, multicolour=True,
+    def load_scene(self, filepath: str, scale=1, multi_object=True, multicolour=True,
                      use_ldraw_scale=True, use_ldraw_rotation=True,
                      override_metadata=True, use_threemfloader=True):
 
+        # Todo: Pass unit conversion option as a parameter
         _, file_extension = os.path.splitext(filepath)
 
         if use_threemfloader and file_extension == ".3mf":
@@ -105,6 +106,7 @@ class LdrawObject:
                 # not applied if any scaling is used as it also "bakes" the scene
                 scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
+        # Todo: Applying selected unit conversion here
         if scene.units not in ["mm", "millimeter", None] and use_ldraw_scale:
             scene = scene.convert_units("millimeter")
 
@@ -142,11 +144,13 @@ class LdrawObject:
                     geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * 255
                     main_colour = Brickcolour("16")
                 transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
-                # Todo: Check geometry metadata for name
                 self.subparts.append(Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions))
         self.scene = scene
+        self.model_loaded = True
 
     def convert_to_dat_file(self, filepath=None, one_file=False):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
         if filepath is None:
             one_file = True
             filename = self.name.replace(" ", "_")
@@ -246,19 +250,27 @@ class LdrawObject:
                 return file.get_result()
 
     def set_main_colour(self, colour: Brickcolour):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
         self.main_colour = colour
         for part in self.subparts:
             part.apply_color(colour, None)
 
     def subpart_order_changed(self, from_index: int, to_index: int):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
         moved_part = self.subparts.pop(from_index)
         self.subparts.insert(to_index, moved_part)
 
     def generate_outlines(self, angle_threshold=85, merge_vertices=False):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
         for subpart in self.subparts:
             subpart.generate_outlines(angle_threshold, merge_vertices)
 
     def map_to_ldraw_colours(self, included_colour_categories):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
         for subpart in self.subparts:
             subpart.map_to_ldraw_colours(included_colour_categories)
 

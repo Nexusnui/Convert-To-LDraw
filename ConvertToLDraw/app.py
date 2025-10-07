@@ -133,8 +133,8 @@ class MainWindow(QMainWindow):
         self.ldraw_rotation_check = QCheckBox()
         ldraw_rotation_label = QLabel("Use LDraw Axis ℹ️")
         ldraw_rotation_label.setToolTip("If deactivated the model is not rotated\n"
-                                     "(In LDraws coordinate system -Y is up)\n"
-                                     "You should only disable this if your model uses LDraw axis")
+                                        "(In LDraws coordinate system -Y is up)\n"
+                                        "You should only disable this if your model uses LDraw axis")
         load_file_inputs.addRow(ldraw_rotation_label, self.ldraw_rotation_check)
         self.ldraw_rotation_check.setChecked(True)
 
@@ -240,7 +240,7 @@ class MainWindow(QMainWindow):
     # Loaded File Status Label
 
         self.loaded_file_status_label = QLabel("No file loaded")
-        self.loaded_file_status_label.setAlignment(Qt.AlignmentFlag.AlignVCenter|Qt.AlignmentFlag.AlignRight)
+        self.loaded_file_status_label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
 
     # Subpart and Color Editor Panel
         subpart_area = QWidget()
@@ -308,10 +308,10 @@ class MainWindow(QMainWindow):
             use_ldraw_rotation = self.ldraw_rotation_check.checkState() == Qt.CheckState.Checked
             override_metadata = True
             try:
-                loaded_part = LdrawObject(filepath,
-                                          scale=scale, multi_object=multi_object, multicolour=multicolour,
-                                          use_ldraw_scale=use_ldraw_scale, use_ldraw_rotation=use_ldraw_rotation,
-                                          use_threemfloader=use_threemfloader)
+                loaded_part = LdrawObject(autoload=False)
+                loaded_part.load_scene(filepath, scale=scale, multi_object=multi_object, multicolour=multicolour,
+                                       use_ldraw_scale=use_ldraw_scale, use_ldraw_rotation=use_ldraw_rotation,
+                                       use_threemfloader=use_threemfloader)
             except Exception:
                 QMessageBox.critical(self, "Failed to load file", "Not a 3D object or unsupported file format")
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
