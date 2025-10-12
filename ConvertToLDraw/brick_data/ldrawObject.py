@@ -154,11 +154,16 @@ class LdrawObject:
                 # not applied if any scaling/unit conversion is used as it also "bakes" the scene
                 scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
-        if unit_conversion == LDrawConversionFactor.Auto:
+        if unit_conversion == LDrawConversionFactor.Auto and scene.units is not None:
             if scale == 1:
                 scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value)
             else:
                 scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value * scale)
+        elif unit_conversion == LDrawConversionFactor.Auto:
+            if scale == 1:
+                scene = scene.scaled(LDrawConversionFactor.Millimeter.value)
+            else:
+                scene = scene.scaled(LDrawConversionFactor.Millimeter.value * scale)
         elif unit_conversion != LDrawConversionFactor.LDraw:
             if scale == 1:
                 scene = scene.scaled(unit_conversion.value)
