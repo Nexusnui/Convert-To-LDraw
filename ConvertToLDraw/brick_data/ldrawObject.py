@@ -27,8 +27,9 @@ class LDrawConversionFactor(Enum):
 
     @staticmethod
     def from_string(unitname: str):
-        if unitname is None:
-            return LDrawConversionFactor.Auto
+        if unitname is None or len(unitname) == 0:
+            # If no Unit is given use Millimeter as default
+            return LDrawConversionFactor.Millimeter
 
         unitname = unitname.lower()
 
@@ -157,16 +158,11 @@ class LdrawObject:
                 # not applied if any scaling/unit conversion is used as it also "bakes" the scene
                 scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
-        if unit_conversion == LDrawConversionFactor.Auto and scene.units is not None:
+        if unit_conversion == LDrawConversionFactor.Auto:
             if scale == 1:
                 scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value)
             else:
                 scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value * scale)
-        elif unit_conversion == LDrawConversionFactor.Auto:
-            if scale == 1:
-                scene = scene.scaled(LDrawConversionFactor.Millimeter.value)
-            else:
-                scene = scene.scaled(LDrawConversionFactor.Millimeter.value * scale)
         elif unit_conversion != LDrawConversionFactor.LDraw:
             if scale == 1:
                 scene = scene.scaled(unit_conversion.value)
