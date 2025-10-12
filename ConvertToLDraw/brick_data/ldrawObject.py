@@ -13,6 +13,54 @@ from enum import Enum
 # Todo: Change np print settings?
 
 
+class LDrawConversionFactor(Enum):
+    Auto = None
+    LDraw = 1
+    Micrometer = 0.0025
+    Millimeter = 2.5
+    Centimeter = 25
+    Decimeter = 250
+    Meter = 2500
+    Inch = 63.5
+    Foot = 762
+
+    @staticmethod
+    def from_string(unitname: str):
+        if unitname is None or len(unitname) == 0:
+            """
+                Default to Millimeter if no unit is given.
+                This is done as some filetypes like stl files include no unit,
+                but are most commonly in Millimeters
+            """
+            return LDrawConversionFactor.Millimeter
+
+        unitname = unitname.lower()
+
+        if unitname in ["micrometer", "micrometers", "micrometre", "micrometres", "micron", "μm"]:
+            return LDrawConversionFactor.Micrometer
+        elif unitname in ["millimeter", "millimeters", "millimetre", "millimetres", "mm", None]:
+            return LDrawConversionFactor.Millimeter
+        elif unitname in ["centimeter", "centimeters", "centimetre", "centimetres", "cm"]:
+            return LDrawConversionFactor.Centimeter
+        elif unitname in ["decimeter", "decimeters", "decimetre", "decimetres", "dm"]:
+            return LDrawConversionFactor.Decimeter
+        elif unitname in ["meter", "meters", "metre", "metres", "m"]:
+            return LDrawConversionFactor.Meter
+        elif unitname in ["inch", "inches", "in", "″"]:
+            return LDrawConversionFactor.Inch
+        elif unitname in ["foot", "feet", "ft", "′"]:
+            return LDrawConversionFactor.Foot
+        elif unitname in ["ldraw", "ldraw_unit", "ldraw unit", "ldraw_units", "ldraw units" "ld", "ldu"]:
+            return LDrawConversionFactor.LDraw
+        else:
+            # Unknown/Uncommon Unit or set to Auto
+            return LDrawConversionFactor.Auto
+
+    @staticmethod
+    def get_membernames_as_string() -> list[str]:
+        return [member.name for member in list(LDrawConversionFactor)]
+
+
 class LdrawObject:
     def __init__(self, filepath: str = None,
                  name="", bricklinknumber="", author="", category="", keywords=None,
@@ -32,8 +80,9 @@ class LdrawObject:
             self.load_scene(filepath)
 
     def load_scene(self, filepath: str, scale=1, multi_object=True, multicolour=True,
-                     use_ldraw_scale=True, use_ldraw_rotation=True,
-                     override_metadata=True, use_threemfloader=True):
+                    use_ldraw_rotation=True, override_metadata=True,
+                    use_threemfloader=True, unit_conversion=LDrawConversionFactor.Auto
+                   ):
 
         # Todo: Pass unit conversion option as a parameter
         _, file_extension = os.path.splitext(filepath)
@@ -93,6 +142,9 @@ class LdrawObject:
 
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
+        if unit_conversion == LDrawConversionFactor.Auto:
+            unit_conversion = LDrawConversionFactor.from_string(scene.units)
+
         if use_ldraw_rotation:
             # LDraw co-ordinate system is right-handed where -Y is "up"
             # For this reason the entire scene is rotated by 90° around the X-axis
@@ -102,22 +154,26 @@ class LdrawObject:
                 [0, 1, 0, 0],
                 [0, 0, 0, 1]
             ])
-            if len(scene.geometry) == 1 and not use_ldraw_scale and scale == 1:
+            if len(scene.geometry) == 1 and (unit_conversion == LDrawConversionFactor.Auto or unit_conversion == LDrawConversionFactor.LDraw) and scale == 1:
                 # "baking" rotation in case only one geometry exist
-                # not applied if any scaling is used as it also "bakes" the scene
+                # not applied if any scaling/unit conversion is used as it also "bakes" the scene
                 scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
-        # Todo: Applying selected unit conversion here
-        if scene.units not in ["mm", "millimeter", None] and use_ldraw_scale:
-            scene = scene.convert_units("millimeter")
-
-        if scale != 1:
+        if unit_conversion == LDrawConversionFactor.Auto:
+            if scale == 1:
+                scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value)
+            else:
+                scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value * scale)
+        elif unit_conversion != LDrawConversionFactor.LDraw:
+            if scale == 1:
+                scene = scene.scaled(unit_conversion.value)
+            else:
+                scene = scene.scaled(unit_conversion.value * scale)
+        elif scale != 1:
+            # Case unit set to LDraw and scaling is not 1
             scene = scene.scaled(scale)
-        self.size = scene.extents
 
-        if use_ldraw_scale:
-            # Convert to LDraw Units
-            scene = scene.scaled(2.5)
+        self.size = scene.extents
 
         self.subparts = []
 
@@ -500,51 +556,3 @@ default_part_licenses = [
     "Redistributable under CCAL version 2.0 : see CAreadme.txt",
     "Not redistributable : see NonCAreadme.txt"
 ]
-
-
-class LDrawConversionFactor(Enum):
-    Auto = None
-    LDraw = 1
-    Micrometer = 0.0025
-    Millimeter = 2.5
-    Centimeter = 25
-    Decimeter = 250
-    Meter = 2500
-    Inch = 63.5
-    Foot = 762
-
-    def fromString(self, unitname: str):
-        unitname = unitname.lower()
-
-        if unitname in ["micrometer", "micrometers", "micrometre", "micrometres", "micron", "μm"]:
-            return LDrawConversionFactor.Micrometer
-        elif unitname in ["millimeter", "millimeters", "millimetre", "millimetres", "mm", None]:
-            return LDrawConversionFactor.Millimeter
-        elif unitname in ["centimeter", "centimeters", "centimetre", "centimetres", "cm"]:
-            return LDrawConversionFactor.Centimeter
-        elif unitname in ["decimeter", "decimeters", "decimetre", "decimetres", "dm"]:
-            return LDrawConversionFactor.Decimeter
-        elif unitname in ["meter", "meters", "metre", "metres", "m"]:
-            return LDrawConversionFactor.Meter
-        elif unitname in ["inch", "inches", "in", "″"]:
-            return LDrawConversionFactor.Inch
-        elif unitname in ["foot", "feet", "ft", "′"]:
-            return LDrawConversionFactor.Foot
-        elif unitname in ["ldraw", "ldraw_unit", "ldraw unit", "ldraw_units", "ldraw units" "ld", "ldu"]:
-            return LDrawConversionFactor.LDraw
-        elif unitname is None or len(unitname) == 0:
-            """
-                Default to Millimeter if no unit is given.
-                This is done as some, because stl files include no unit,
-                but are most commonly in Millimeters
-            """
-            return LDrawConversionFactor.Millimeter
-        else:
-            # Unknown/Uncommon Unit
-            return LDrawConversionFactor.Auto
-
-    @staticmethod
-    def get_membernames_as_string() -> list[str]:
-        return [member.name for member in list(LDrawConversionFactor)]
-
-
