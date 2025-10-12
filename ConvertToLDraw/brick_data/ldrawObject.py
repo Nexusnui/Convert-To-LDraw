@@ -26,13 +26,8 @@ class LDrawConversionFactor(Enum):
 
     @staticmethod
     def from_string(unitname: str):
-        if unitname is None or len(unitname) == 0:
-            """
-                Default to Millimeter if no unit is given.
-                This is done as some filetypes like stl files include no unit,
-                but are most commonly in Millimeters
-            """
-            return LDrawConversionFactor.Millimeter
+        if unitname is None:
+            return LDrawConversionFactor.Auto
 
         unitname = unitname.lower()
 
