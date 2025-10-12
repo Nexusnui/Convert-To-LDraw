@@ -8,6 +8,7 @@ import numpy as np
 from collections import OrderedDict
 from ConvertToLDraw.model_loaders.trimeshloader import Trimeshloader
 from ConvertToLDraw.model_loaders.threemfloader import Threemfloader
+from enum import Enum
 
 # Todo: Change np print settings?
 
@@ -499,3 +500,51 @@ default_part_licenses = [
     "Redistributable under CCAL version 2.0 : see CAreadme.txt",
     "Not redistributable : see NonCAreadme.txt"
 ]
+
+
+class LDrawConversionFactor(Enum):
+    Auto = None
+    LDraw = 1
+    Micrometer = 0.0025
+    Millimeter = 2.5
+    Centimeter = 25
+    Decimeter = 250
+    Meter = 2500
+    Inch = 63.5
+    Foot = 762
+
+    def fromString(self, unitname: str):
+        unitname = unitname.lower()
+
+        if unitname in ["micrometer", "micrometers", "micrometre", "micrometres", "micron", "μm"]:
+            return LDrawConversionFactor.Micrometer
+        elif unitname in ["millimeter", "millimeters", "millimetre", "millimetres", "mm", None]:
+            return LDrawConversionFactor.Millimeter
+        elif unitname in ["centimeter", "centimeters", "centimetre", "centimetres", "cm"]:
+            return LDrawConversionFactor.Centimeter
+        elif unitname in ["decimeter", "decimeters", "decimetre", "decimetres", "dm"]:
+            return LDrawConversionFactor.Decimeter
+        elif unitname in ["meter", "meters", "metre", "metres", "m"]:
+            return LDrawConversionFactor.Meter
+        elif unitname in ["inch", "inches", "in", "″"]:
+            return LDrawConversionFactor.Inch
+        elif unitname in ["foot", "feet", "ft", "′"]:
+            return LDrawConversionFactor.Foot
+        elif unitname in ["ldraw", "ldraw_unit", "ldraw unit", "ldraw_units", "ldraw units" "ld", "ldu"]:
+            return LDrawConversionFactor.LDraw
+        elif unitname is None or len(unitname) == 0:
+            """
+                Default to Millimeter if no unit is given.
+                This is done as some, because stl files include no unit,
+                but are most commonly in Millimeters
+            """
+            return LDrawConversionFactor.Millimeter
+        else:
+            # Unknown/Uncommon Unit
+            return LDrawConversionFactor.Auto
+
+    @staticmethod
+    def get_membernames_as_string() -> list[str]:
+        return [member.name for member in list(LDrawConversionFactor)]
+
+
