@@ -1,4 +1,4 @@
-#Todo: Import Modules instead of complete trimesh
+# Todo: Import Modules instead of complete trimesh
 import trimesh
 import trimesh.visual.material
 import os
@@ -9,6 +9,7 @@ from collections import OrderedDict
 from ConvertToLDraw.model_loaders.trimeshloader import Trimeshloader
 from ConvertToLDraw.model_loaders.threemfloader import Threemfloader
 from enum import Enum
+
 
 # Todo: Change np print settings?
 
@@ -75,8 +76,8 @@ class LdrawObject:
             self.load_scene(filepath)
 
     def load_scene(self, filepath: str, scale=1, multi_object=True, multicolour=True,
-                    use_ldraw_rotation=True, override_metadata=True,
-                    use_threemfloader=True, unit_conversion=LDrawConversionFactor.Auto
+                   use_ldraw_rotation=True, override_metadata=True,
+                   use_threemfloader=True, unit_conversion=LDrawConversionFactor.Auto
                    ):
 
         # Todo: Pass unit conversion option as a parameter
@@ -149,7 +150,9 @@ class LdrawObject:
                 [0, 1, 0, 0],
                 [0, 0, 0, 1]
             ])
-            if len(scene.geometry) == 1 and (unit_conversion == LDrawConversionFactor.Auto or unit_conversion == LDrawConversionFactor.LDraw) and scale == 1:
+            if len(scene.geometry) == 1 and (
+                    unit_conversion == LDrawConversionFactor.Auto or unit_conversion == LDrawConversionFactor.LDraw
+            ) and scale == 1:
                 # "baking" rotation in case only one geometry exist
                 # not applied if any scaling/unit conversion is used as it also "bakes" the scene
                 scene = trimesh.scene.scene.Scene(scene.to_mesh())
@@ -201,7 +204,9 @@ class LdrawObject:
                     geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * 255
                     main_colour = Brickcolour("16")
                 transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
-                self.subparts.append(Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions))
+                self.subparts.append(
+                    Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions)
+                )
         self.scene = scene
         self.model_loaded = True
 
