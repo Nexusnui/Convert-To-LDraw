@@ -22,7 +22,7 @@ from PyQt6.QtWidgets import (
     QTabWidget
 )
 
-from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart, default_part_licenses
+from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart, default_part_licenses, LDrawConversionFactor
 from ConvertToLDraw.brick_data.brick_categories import brick_categories
 from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel, ColourPanel
 from ConvertToLDraw.ui_elements.previewPanel import PreviewPanel, register_scheme
@@ -110,6 +110,16 @@ class MainWindow(QMainWindow):
         load_file_inputs.addRow(threemfloader_label, self.threemfloader_check)
         self.threemfloader_check.setChecked(True)
 
+        # Unit Selection
+        self.unit_input = QComboBox()
+        self.unit_input.addItems(LDrawConversionFactor.get_membernames_as_string())
+        self.unit_input.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        category_label = QLabel("Unit ℹ️")
+        category_label.setToolTip("Unit conversion used to convert to LDraw Units.\n"
+                                  "If LDraw is selected no conversion is applied.\n"
+                                  "If no Unit is found Millimeter is used by default.")
+        load_file_inputs.addRow(category_label, self.unit_input)
+
         # Set Scale
         self.scale_input = QDoubleSpinBox()
         self.scale_input.setValue(1.0)
@@ -119,15 +129,6 @@ class MainWindow(QMainWindow):
         scale_label = QLabel("Scale ℹ️")
         scale_label.setToolTip("Factor used to scale the model")
         load_file_inputs.addRow(scale_label, self.scale_input)
-
-        # Enable LDraw Scale Check
-        self.ldraw_scale_check = QCheckBox()
-        ldraw_scale_label = QLabel("Use LDraw Scale ℹ️")
-        ldraw_scale_label.setToolTip("If deactivated LDraw Scale is not applied\n"
-                                     "This also disables automatic unit conversion prior to appliying LDraw Scale\n"
-                                     "You should only disable this if your model uses LDraw units")
-        load_file_inputs.addRow(ldraw_scale_label, self.ldraw_scale_check)
-        self.ldraw_scale_check.setChecked(True)
 
         # Enable LDraw Rotation Check
         self.ldraw_rotation_check = QCheckBox()
@@ -304,14 +305,19 @@ class MainWindow(QMainWindow):
             multicolour = self.multicolour_check.checkState() == Qt.CheckState.Checked
             multi_object = self.multi_object_check.checkState() == Qt.CheckState.Checked
             use_threemfloader = self.threemfloader_check.checkState() == Qt.CheckState.Checked
-            use_ldraw_scale = self.ldraw_scale_check.checkState() == Qt.CheckState.Checked
             use_ldraw_rotation = self.ldraw_rotation_check.checkState() == Qt.CheckState.Checked
             override_metadata = True
+            unit_conversion = LDrawConversionFactor.from_string(self.unit_input.currentText())
             try:
                 loaded_part = LdrawObject(autoload=False)
-                loaded_part.load_scene(filepath, scale=scale, multi_object=multi_object, multicolour=multicolour,
-                                       use_ldraw_scale=use_ldraw_scale, use_ldraw_rotation=use_ldraw_rotation,
-                                       use_threemfloader=use_threemfloader)
+                loaded_part.load_scene(filepath,
+                                       scale=scale,
+                                       multi_object=multi_object,
+                                       multicolour=multicolour,
+                                       use_ldraw_rotation=use_ldraw_rotation,
+                                       use_threemfloader=use_threemfloader,
+                                       unit_conversion=unit_conversion
+                                       )
             except Exception:
                 QMessageBox.critical(self, "Failed to load file", "Not a 3D object or unsupported file format")
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
@@ -351,9 +357,9 @@ class MainWindow(QMainWindow):
                 self.subpart_area_layout.addWidget(self.subpart_panel)
                 self.subpart_panel.model_updated.connect(self.enable_reload)
 
-                x_length = mm_float_to_string(self.ldraw_object.size[0])
-                y_length = mm_float_to_string(self.ldraw_object.size[1])
-                z_length = mm_float_to_string(self.ldraw_object.size[2])
+                x_length = ldu_float_to_string(self.ldraw_object.size[0])
+                y_length = ldu_float_to_string(self.ldraw_object.size[1])
+                z_length = ldu_float_to_string(self.ldraw_object.size[2])
                 self.loaded_file_status_label.setText(f"Current Model: {filename} ({x_length}×{y_length}×{z_length})")
 
                 if not self.file_loaded:
@@ -409,7 +415,7 @@ class MainWindow(QMainWindow):
         self.threemfloader_check.setDisabled(value)
         self.scale_input.setDisabled(value)
         self.ldraw_rotation_check.setDisabled(value)
-        self.ldraw_scale_check.setDisabled(value)
+        self.unit_input.setDisabled(value)
         self.part_category_input.setDisabled(value)
         self.part_license_input.setDisabled(value)
         self.keywords_line.setReadOnly(value)
@@ -426,7 +432,7 @@ class MainWindow(QMainWindow):
         self.scale_input.setDisabled(False)
         self.load_input_button.setDisabled(False)
         self.ldraw_rotation_check.setDisabled(False)
-        self.ldraw_scale_check.setDisabled(False)
+        self.unit_input.setDisabled(False)
 
     def enable_reload(self):
         self.reload_preview = True
@@ -536,7 +542,8 @@ class MainWindow(QMainWindow):
             self.enable_reload()
 
 
-def mm_float_to_string(number: float | int):
+def ldu_float_to_string(number: float | int):
+    number *= 0.4
     if number >= 1000:
         return f"{(number / 1000):.2f}m"
     elif number >= 10:
