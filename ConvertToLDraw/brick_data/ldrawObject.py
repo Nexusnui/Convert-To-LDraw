@@ -1,4 +1,4 @@
-#Todo: Import Modules instead of complete trimesh
+# Todo: Import Modules instead of complete trimesh
 import trimesh
 import trimesh.visual.material
 import os
@@ -8,17 +8,60 @@ import numpy as np
 from collections import OrderedDict
 from ConvertToLDraw.model_loaders.trimeshloader import Trimeshloader
 from ConvertToLDraw.model_loaders.threemfloader import Threemfloader
+from enum import Enum
+
 
 # Todo: Change np print settings?
 
 
+class LDrawConversionFactor(Enum):
+    Auto = None
+    LDraw = 1
+    Micrometer = 0.0025
+    Millimeter = 2.5
+    Centimeter = 25
+    Decimeter = 250
+    Meter = 2500
+    Inch = 63.5
+    Foot = 762
+
+    @staticmethod
+    def from_string(unitname: str):
+        if unitname is None or len(unitname) == 0:
+            # If no Unit is given use Millimeter as default
+            return LDrawConversionFactor.Millimeter
+
+        unitname = unitname.lower()
+
+        if unitname in ["micrometer", "micrometers", "micrometre", "micrometres", "micron", "μm"]:
+            return LDrawConversionFactor.Micrometer
+        elif unitname in ["millimeter", "millimeters", "millimetre", "millimetres", "mm", None]:
+            return LDrawConversionFactor.Millimeter
+        elif unitname in ["centimeter", "centimeters", "centimetre", "centimetres", "cm"]:
+            return LDrawConversionFactor.Centimeter
+        elif unitname in ["decimeter", "decimeters", "decimetre", "decimetres", "dm"]:
+            return LDrawConversionFactor.Decimeter
+        elif unitname in ["meter", "meters", "metre", "metres", "m"]:
+            return LDrawConversionFactor.Meter
+        elif unitname in ["inch", "inches", "in", "″"]:
+            return LDrawConversionFactor.Inch
+        elif unitname in ["foot", "feet", "ft", "′"]:
+            return LDrawConversionFactor.Foot
+        elif unitname in ["ldraw", "ldraw_unit", "ldraw unit", "ldraw_units", "ldraw units" "ld", "ldu"]:
+            return LDrawConversionFactor.LDraw
+        else:
+            # Unknown/Uncommon Unit or set to Auto
+            return LDrawConversionFactor.Auto
+
+    @staticmethod
+    def get_membernames_as_string() -> list[str]:
+        return [member.name for member in list(LDrawConversionFactor)]
+
+
 class LdrawObject:
-    def __init__(self, filepath: str,
+    def __init__(self, filepath: str = None,
                  name="", bricklinknumber="", author="", category="", keywords=None,
-                 part_license=None,
-                 scale=1, multi_object=True, multicolour=True,
-                 use_ldraw_scale=True, use_ldraw_rotation=True,
-                 override_metadata=True, use_threemfloader=True):
+                 part_license=None, autoload=True):
         self.cached_colour_definitions = OrderedDict()
         self.name = name
         self.author = author
@@ -26,14 +69,19 @@ class LdrawObject:
         self.bricklinknumber = bricklinknumber
         self.category = category
         self.keywords = keywords
+        self.model_loaded = False
 
-        self.__load_scene(filepath, scale, multi_object, multicolour, use_ldraw_scale, use_ldraw_rotation,
-                          override_metadata, use_threemfloader)
+        if autoload:
+            if filepath is None:
+                raise ValueError("No Filepath given with autoload activated")
+            self.load_scene(filepath)
 
-    def __load_scene(self, filepath, scale=1, multi_object=True, multicolour=True,
-                     use_ldraw_scale=True, use_ldraw_rotation=True,
-                     override_metadata=True, use_threemfloader=True):
+    def load_scene(self, filepath: str, scale=1, multi_object=True, multicolour=True,
+                   use_ldraw_rotation=True, override_metadata=True,
+                   use_threemfloader=True, unit_conversion=LDrawConversionFactor.Auto
+                   ):
 
+        # Todo: Pass unit conversion option as a parameter
         _, file_extension = os.path.splitext(filepath)
 
         if use_threemfloader and file_extension == ".3mf":
@@ -91,6 +139,9 @@ class LdrawObject:
 
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
+        if unit_conversion == LDrawConversionFactor.Auto:
+            unit_conversion = LDrawConversionFactor.from_string(scene.units)
+
         if use_ldraw_rotation:
             # LDraw co-ordinate system is right-handed where -Y is "up"
             # For this reason the entire scene is rotated by 90° around the X-axis
@@ -100,21 +151,28 @@ class LdrawObject:
                 [0, 1, 0, 0],
                 [0, 0, 0, 1]
             ])
-            if len(scene.geometry) == 1 and not use_ldraw_scale and scale == 1:
+            if len(scene.geometry) == 1 and (
+                    unit_conversion == LDrawConversionFactor.Auto or unit_conversion == LDrawConversionFactor.LDraw
+            ) and scale == 1:
                 # "baking" rotation in case only one geometry exist
-                # not applied if any scaling is used as it also "bakes" the scene
+                # not applied if any scaling/unit conversion is used as it also "bakes" the scene
                 scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
-        if scene.units not in ["mm", "millimeter", None] and use_ldraw_scale:
-            scene = scene.convert_units("millimeter")
-
-        if scale != 1:
+        if unit_conversion == LDrawConversionFactor.Auto:
+            if scale == 1:
+                scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value)
+            else:
+                scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value * scale)
+        elif unit_conversion != LDrawConversionFactor.LDraw:
+            if scale == 1:
+                scene = scene.scaled(unit_conversion.value)
+            else:
+                scene = scene.scaled(unit_conversion.value * scale)
+        elif scale != 1:
+            # Case unit set to LDraw and scaling is not 1
             scene = scene.scaled(scale)
-        self.size = scene.extents
 
-        if use_ldraw_scale:
-            # Convert to LDraw Units
-            scene = scene.scaled(2.5)
+        self.size = scene.extents
 
         self.subparts = []
 
@@ -142,11 +200,15 @@ class LdrawObject:
                     geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * 255
                     main_colour = Brickcolour("16")
                 transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
-                # Todo: Check geometry metadata for name
-                self.subparts.append(Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions))
+                self.subparts.append(
+                    Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions)
+                )
         self.scene = scene
+        self.model_loaded = True
 
     def convert_to_dat_file(self, filepath=None, one_file=False):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
         if filepath is None:
             one_file = True
             filename = self.name.replace(" ", "_")
@@ -246,19 +308,27 @@ class LdrawObject:
                 return file.get_result()
 
     def set_main_colour(self, colour: Brickcolour):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
         self.main_colour = colour
         for part in self.subparts:
             part.apply_color(colour, None)
 
     def subpart_order_changed(self, from_index: int, to_index: int):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
         moved_part = self.subparts.pop(from_index)
         self.subparts.insert(to_index, moved_part)
 
     def generate_outlines(self, angle_threshold=85, merge_vertices=False):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
         for subpart in self.subparts:
             subpart.generate_outlines(angle_threshold, merge_vertices)
 
     def map_to_ldraw_colours(self, included_colour_categories):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
         for subpart in self.subparts:
             subpart.map_to_ldraw_colours(included_colour_categories)
 
