@@ -34,7 +34,7 @@ setup(
                       "PyQt6==6.9.1",
                       "PyQt6-WebEngine==6.9.0",
                       "scipy==1.16.1",
-                      "trimesh==4.7.4",
+                      "trimesh==4.8.3",
                       ],
     entry_points={
         'gui_scripts': [
