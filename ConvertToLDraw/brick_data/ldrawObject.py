@@ -186,9 +186,18 @@ class LdrawObject:
                 geometry = scene.geometry[key]
                 main_colour = None
                 if isinstance(geometry.visual, trimesh.visual.texture.TextureVisuals):
-                    hexcolour = rgba_to_hex(geometry.visual.material.main_color)[:7]
-                    main_colour = Brickcolour(hexcolour)
-                    geometry.visual = geometry.visual.to_color()
+                    if isinstance(geometry.visual.material, trimesh.visual.material.MultiMaterial):
+                        material_colours = []
+                        for material in geometry.visual.material.materials:
+                            material_colours.append(material.main_color)
+                        face_colours = []
+                        for material_idx in geometry.visual.face_materials:
+                            face_colours.append(material_colours[material_idx])
+                        geometry.visual = trimesh.visual.color.ColorVisuals(geometry, face_colors=face_colours)
+                    else:
+                        hexcolour = rgba_to_hex(geometry.visual.material.main_color)[:7]
+                        main_colour = Brickcolour(hexcolour)
+                        geometry.visual = geometry.visual.to_color()
                 if multicolour:
                     try:
                         geometry.visual.face_colors
@@ -199,7 +208,10 @@ class LdrawObject:
                 else:
                     geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * 255
                     main_colour = Brickcolour("16")
-                transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
+                if "matrix" in scene_graph.edge_data[("world", node)]:
+                    transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
+                else:
+                    transformation_matrix = trimesh.transformations.identity_matrix()
                 self.subparts.append(
                     Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions)
                 )
