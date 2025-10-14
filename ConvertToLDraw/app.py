@@ -294,8 +294,10 @@ class MainWindow(QMainWindow):
             dialog = QFileDialog(self)
             dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
             dialog.setNameFilter("3D File (*.stl  *.3mf *.obj *.off *.ply *.gltf *.glb *.xaml *.stp *.step *.dae);;"
-                                 "Unknown Compatibility (*.brep *.igs *.iges *.bdf *.msh *.inp *.diff *.mesh);;"
                                  "Any File (*.*)")
+            # Support for gmsh was removed in trimesh 4.7.0.
+            # This means the formats with Unknown Compatibility do not work.
+            # "Unknown Compatibility (*.brep *.igs *.iges *.bdf *.msh *.inp *.diff *.mesh);;"
             dialog.setViewMode(QFileDialog.ViewMode.Detail)
             if dialog.exec():
                 filepath = dialog.selectedFiles()[0]

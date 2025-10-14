@@ -35,7 +35,7 @@ which explains the installation with pipx.
 # Supported filetypes:
 - types that should work:
   - *.stl  *.3mf *.obj *.off *.ply *.gltf *.glb *.xaml *.stp *.step *.dae
-- type that might work:
+- type that might work (they do not since the update to trimesh >4.7.0):
   - *.brep *.igs *.iges *.bdf *.msh *.inp *.diff *.mesh
 - +more types if trimesh can load them  
 
