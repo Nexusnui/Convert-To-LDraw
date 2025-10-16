@@ -99,6 +99,38 @@ class LdrawObject:
             if "license" in metadata:
                 self.part_license = metadata["license"]
 
+        # Convert TextureVisuals to ColorVisuals before further processing
+        for geometry in scene.geometry.values():
+            if hasattr(geometry, "visual") and isinstance(geometry.visual, trimesh.visual.texture.TextureVisuals):
+                if isinstance(geometry.visual.material, trimesh.visual.material.MultiMaterial):
+                    material_colours = []
+                    for material in geometry.visual.material.materials:
+                        material_colours.append(material.main_color)
+                    face_colours = []
+                    for material_idx in geometry.visual.face_materials:
+                        face_colours.append(material_colours[material_idx])
+                    geometry.visual = trimesh.visual.color.ColorVisuals(geometry, face_colors=face_colours)
+                else:
+                    material_colour = geometry.visual.material.main_color
+                    geometry.visual = geometry.visual.to_color()
+                    try:
+                        geometry.visual.face_colors
+                    except IndexError:
+                        # Invalid Color Data -> can occur when loading some step files
+                        geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
+                    for colour in geometry.visual.face_colors:
+                        c_check = [102, 102, 102, 255] == colour
+                        if not (c_check[0] and c_check[1] and c_check[2] and c_check[3]):
+                            break
+                    else:
+                        # Face Colors only include the Default colour
+                        geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * material_colour
+            try:
+                geometry.visual.face_colors
+            except IndexError:
+                # Invalid Color Data -> can occur when loading some step files
+                geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
+
         if len(scene.geometry) == 1 or not multi_object:
             if len(scene.geometry) > 1 and multicolour:
                 recolour = True
@@ -107,27 +139,24 @@ class LdrawObject:
                 for geometry in scene.geometry.values():
                     if not recolour:
                         break
-                    if isinstance(geometry.visual, trimesh.visual.texture.TextureVisuals):
+
+                    c_check = geometry.visual.main_color == [102, 102, 102, 255]
+                    default_colour = c_check[0] and c_check[1] and c_check[2] and c_check[3]
+                    if not default_colour:
                         recolour = False
                         break
-                    try:
-                        geometry.visual.face_colors
-                        has_multiple_colours = False
-                        first_colour = geometry.visual.face_colors[0]
-                        for colour in geometry.visual.face_colors:
-                            c_check = first_colour == colour
-                            if not (c_check[0] and c_check[1] and c_check[2] and c_check[3]):
-                                has_multiple_colours = True
-                                break
 
-                        c_check = geometry.visual.main_color == [102, 102, 102, 255]
-                        default_colour = c_check[0] and c_check[1] and c_check[2] and c_check[3]
-                        if has_multiple_colours and not default_colour:
-                            recolour = False
+                    has_multiple_colours = False
+                    first_colour = geometry.visual.face_colors[0]
+                    for colour in geometry.visual.face_colors:
+                        c_check = first_colour == colour
+                        if not (c_check[0] and c_check[1] and c_check[2] and c_check[3]):
+                            has_multiple_colours = True
                             break
-                    except Exception:
-                        # Invalid or no color data (is fixed at a later point)
-                        pass
+
+                    if has_multiple_colours:
+                        recolour = False
+                        break
                 if recolour:
                     colorrange = [0, 63, 127, 191, 255]
                     for index, geometry in enumerate(scene.geometry.values()):
@@ -136,7 +165,16 @@ class LdrawObject:
                         r = colorrange[int(index / 5 % 5)]
                         b = colorrange[int(index / 25 % 5)]
                         geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [r, g, b, 255]
-
+            if len(scene.geometry) == 1:
+                geometry = list(scene.geometry.values())[0]
+                first_colour = geometry.visual.face_colors[0]
+                for colour in geometry.visual.face_colors:
+                    c_check = first_colour == colour
+                    if not (c_check[0] and c_check[1] and c_check[2] and c_check[3]):
+                        break
+                else:
+                    # Only One Object with one colour
+                    geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
         if unit_conversion == LDrawConversionFactor.Auto:
@@ -184,30 +222,17 @@ class LdrawObject:
                     key = scene_graph.node_data[node]["geometry"]
             if key is not None:
                 geometry = scene.geometry[key]
-                main_colour = None
-                if isinstance(geometry.visual, trimesh.visual.texture.TextureVisuals):
-                    if isinstance(geometry.visual.material, trimesh.visual.material.MultiMaterial):
-                        material_colours = []
-                        for material in geometry.visual.material.materials:
-                            material_colours.append(material.main_color)
-                        face_colours = []
-                        for material_idx in geometry.visual.face_materials:
-                            face_colours.append(material_colours[material_idx])
-                        geometry.visual = trimesh.visual.color.ColorVisuals(geometry, face_colors=face_colours)
-                    else:
-                        hexcolour = rgba_to_hex(geometry.visual.material.main_color)[:7]
-                        main_colour = Brickcolour(hexcolour)
-                        geometry.visual = geometry.visual.to_color()
-                if multicolour:
-                    try:
-                        geometry.visual.face_colors
-                    except Exception:
-                        # Invalid Color Data -> can occur when loading step files
-                        geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * 255
-                        main_colour = Brickcolour("16")
-                else:
+                if not multicolour:
                     geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * 255
                     main_colour = Brickcolour("16")
+                else:
+                    c_check = geometry.visual.main_color == [102, 102, 102, 255]
+                    default_colour = c_check[0] and c_check[1] and c_check[2] and c_check[3]
+                    if default_colour:
+                        main_colour = Brickcolour("16")
+                    else:
+                        hexcolour = rgba_to_hex(geometry.visual.main_color)[:7]
+                        main_colour = Brickcolour(hexcolour)
                 if "matrix" in scene_graph.edge_data[("world", node)]:
                     transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
                 else:
