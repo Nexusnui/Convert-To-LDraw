@@ -99,6 +99,10 @@ class LdrawObject:
             if "license" in metadata:
                 self.part_license = metadata["license"]
 
+        if unit_conversion == LDrawConversionFactor.Auto:
+            unit_conversion = LDrawConversionFactor.from_string(scene.units)
+        scene_units = scene.units
+
         # Convert TextureVisuals to ColorVisuals before further processing
         for geometry in scene.geometry.values():
             if hasattr(geometry, "visual") and isinstance(geometry.visual, trimesh.visual.texture.TextureVisuals):
@@ -177,9 +181,6 @@ class LdrawObject:
                     geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
-        if unit_conversion == LDrawConversionFactor.Auto:
-            unit_conversion = LDrawConversionFactor.from_string(scene.units)
-
         if use_ldraw_rotation:
             # LDraw co-ordinate system is right-handed where -Y is "up"
             # For this reason the entire scene is rotated by 90° around the X-axis
@@ -198,9 +199,17 @@ class LdrawObject:
 
         if unit_conversion == LDrawConversionFactor.Auto:
             if scale == 1:
-                scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value)
+                if scene_units is not None and scene.units is None:
+                    to_millimeters = trimesh.units.unit_conversion(scene_units, "millimeter")
+                    scene = scene.scaled(to_millimeters * LDrawConversionFactor.Millimeter.value)
+                else:
+                    scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value)
             else:
-                scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value * scale)
+                if scene_units is not None and scene.units is None:
+                    to_millimeters = trimesh.units.unit_conversion(scene_units, "millimeter")
+                    scene = scene.scaled(to_millimeters * LDrawConversionFactor.Millimeter.value * scale)
+                else:
+                    scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value * scale)
         elif unit_conversion != LDrawConversionFactor.LDraw:
             if scale == 1:
                 scene = scene.scaled(unit_conversion.value)
