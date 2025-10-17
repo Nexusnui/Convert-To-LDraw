@@ -1,5 +1,6 @@
 import os
 import platform
+import traceback
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
@@ -22,6 +23,7 @@ from PyQt6.QtWidgets import (
     QTabWidget
 )
 
+from ConvertToLDraw.appexcetions import *
 from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart, default_part_licenses, LDrawConversionFactor
 from ConvertToLDraw.brick_data.brick_categories import brick_categories
 from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel, ColourPanel
@@ -320,8 +322,18 @@ class MainWindow(QMainWindow):
                                        use_threemfloader=use_threemfloader,
                                        unit_conversion=unit_conversion
                                        )
+            except FileTypeUnsupportedError:
+                QMessageBox.critical(self, "Unsupported Filetype", "Not a 3D object or unsupported filetype")
+                self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
+                self.enable_load_settings()
+            except LoaderError:
+                print(traceback.format_exc())
+                QMessageBox.critical(self, "Failed to load file", "Exception during the loading of the file")
+                self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
+                self.enable_load_settings()
             except Exception:
-                QMessageBox.critical(self, "Failed to load file", "Not a 3D object or unsupported file format")
+                print(traceback.format_exc())
+                QMessageBox.critical(self, "Failed to process file", "Exception during the processing of the 3D model")
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
                 self.enable_load_settings()
             else:
