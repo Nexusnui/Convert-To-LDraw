@@ -6,6 +6,7 @@ from zipfile import ZipFile
 from lxml import etree
 import numpy as np
 import re
+from ConvertToLDraw.appexcetions import Missing3mfElementError
 from ConvertToLDraw.model_loaders.modelloader import Modelloader
 
 
@@ -152,9 +153,13 @@ class Threemfloader(Modelloader):
             if self.model_config_name is not None:
                 with file_3mf.open(self.model_config_name) as model_config_file:
                     self.model_config = etree.parse(model_config_file).getroot()
-        if self.resources is None or self.build is None:
+        if self.resources is None and self.build is None:
             # Todo: Raise correct exception
-            raise Exception("No build or resources in 3mf file")
+            raise Missing3mfElementError("No build and resources elements in 3mf file")
+        if self.resources is None:
+            raise Missing3mfElementError("No resources element in 3mf file")
+        if self.build is None:
+            raise Missing3mfElementError("No build element in 3mf file")
 
         # Collect colour definitions from color and material groups
         for resource in self.resources.getchildren():
@@ -251,8 +256,7 @@ class Threemfloader(Modelloader):
             content_tag = _get_tag_type(content)
             if content_tag == "components":
                 if depth >= 32:
-                    # Todo: Raise correct exception
-                    raise Exception("3mf component depth exceeds 32.")
+                    raise RecursionError("3mf component depth exceeds 32.")
                 for component in content.getchildren():
                     component_transform = transform
                     if component.attrib.has_key("transform"):
