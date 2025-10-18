@@ -94,7 +94,6 @@ class LdrawObject:
             scene, metadata = loader.load_model(filepath)
         except NotImplementedError as exc:
             raise FileTypeUnsupportedError("The filetype is not supported by Trimesh") from exc
-            # Todo: validate if exception was thrown by trimesh
         except (Missing3mfElementError, RecursionError) as exc:
             if use_threemfloader and file_extension == ".3mf":
                 raise LoaderError("Bad 3mf file") from exc
