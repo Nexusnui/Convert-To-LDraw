@@ -2,6 +2,7 @@
 import trimesh
 import trimesh.visual.material
 import os
+from ConvertToLDraw.appexcetions import *
 from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_closest_brickcolour_by_rgb_colour, \
     get_all_brickcolours
 import numpy as np
@@ -89,7 +90,17 @@ class LdrawObject:
         else:
             loader = Trimeshloader()
 
-        scene, metadata = loader.load_model(filepath)
+        try:
+            scene, metadata = loader.load_model(filepath)
+        except NotImplementedError as exc:
+            raise FileTypeUnsupportedError("The filetype is not supported by Trimesh") from exc
+        except (Missing3mfElementError, RecursionError) as exc:
+            if use_threemfloader and file_extension == ".3mf":
+                raise LoaderError("Bad 3mf file") from exc
+            else:
+                raise LoaderError("Recursion Error in Trimesh") from exc
+        except Exception as exc:
+            raise LoaderError("Exception in Loader") from exc
 
         if override_metadata:
             if "name" in metadata:

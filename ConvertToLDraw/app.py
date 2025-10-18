@@ -1,8 +1,10 @@
 import os
 import platform
+import traceback
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QClipboard
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -22,12 +24,14 @@ from PyQt6.QtWidgets import (
     QTabWidget
 )
 
+from ConvertToLDraw.appexcetions import *
 from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart, default_part_licenses, LDrawConversionFactor
 from ConvertToLDraw.brick_data.brick_categories import brick_categories
 from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel, ColourPanel
 from ConvertToLDraw.ui_elements.previewPanel import PreviewPanel, register_scheme
 from ConvertToLDraw.ui_elements.line_generation_dialog import LineGenerationDialog, LinePreset
 from ConvertToLDraw.ui_elements.brickcolourwidget import ColourCategoriesDialog
+from ConvertToLDraw.ui_elements.exceptiondialog import ExceptionDialog
 
 basedir = os.path.dirname(__file__)
 
@@ -44,9 +48,10 @@ if platform.system() == "Windows":
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, clipboard: QClipboard):
         super().__init__()
 
+        self.clipboard = clipboard
         self.ldraw_object = None
         self.file_loaded = False
         self.reload_preview = False
@@ -320,8 +325,31 @@ class MainWindow(QMainWindow):
                                        use_threemfloader=use_threemfloader,
                                        unit_conversion=unit_conversion
                                        )
+            except FileTypeUnsupportedError:
+                QMessageBox.critical(self, "Unsupported Filetype", "Not a 3D object or unsupported filetype")
+                self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
+                self.enable_load_settings()
+            except LoaderError as exc:
+                # Only Display the traceback from the loader
+                formatted_traceback = traceback.format_exc()
+                exception_info = ExceptionDialog(
+                                                 clipboard=self.clipboard,
+                                                 title="Failed to load file",
+                                                 message="Exception during the loading of the file",
+                                                 traceback_str=formatted_traceback
+                                                 )
+                exception_info.exec()
+                self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
+                self.enable_load_settings()
             except Exception:
-                QMessageBox.critical(self, "Failed to load file", "Not a 3D object or unsupported file format")
+                formatted_traceback = traceback.format_exc()
+                exception_info = ExceptionDialog(
+                                                 clipboard=self.clipboard,
+                                                 title="Failed to process file",
+                                                 message="Exception during the processing of the 3D model",
+                                                 traceback_str=formatted_traceback
+                                                 )
+                exception_info.exec()
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
                 self.enable_load_settings()
             else:
@@ -558,7 +586,7 @@ def run():
     app = QApplication([0])
     app.setWindowIcon(QIcon(os.path.join(basedir, "icons", "ConvertToLDraw_icon.ico")))
 
-    window = MainWindow()
+    window = MainWindow(app.clipboard())
 
     window.show()
 
