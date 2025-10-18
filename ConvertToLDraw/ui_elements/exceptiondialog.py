@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import (
     QApplication,
+    QHBoxLayout,
     QVBoxLayout,
     QDialog,
     QDialogButtonBox,
@@ -9,6 +10,7 @@ from PyQt6.QtWidgets import (
     QPushButton
 )
 
+from PyQt6.QtWidgets import QStyle
 from PyQt6.QtGui import QClipboard
 
 
@@ -24,9 +26,15 @@ class ExceptionDialog(QDialog):
         self.setWindowTitle(title)
         main_layout = QVBoxLayout()
 
-        # Todo: Add Warning Icon
+        message_layout = QHBoxLayout()
+        warning_pixmap = QStyle.StandardPixmap.SP_MessageBoxCritical
+        warning_icon = QLabel()
+        warning_icon.setPixmap(self.style().standardPixmap(warning_pixmap))
+        message_layout.addWidget(warning_icon)
         message_label = QLabel(message)
-        main_layout.addWidget(message_label)
+        message_layout.addWidget(message_label)
+        message_layout.addStretch()
+        main_layout.addLayout(message_layout)
 
         traceback_area = QGroupBox("Exception Traceback")
         traceback_layout = QVBoxLayout()
