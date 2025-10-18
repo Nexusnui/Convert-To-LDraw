@@ -30,6 +30,7 @@ from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel, ColourPanel
 from ConvertToLDraw.ui_elements.previewPanel import PreviewPanel, register_scheme
 from ConvertToLDraw.ui_elements.line_generation_dialog import LineGenerationDialog, LinePreset
 from ConvertToLDraw.ui_elements.brickcolourwidget import ColourCategoriesDialog
+from ConvertToLDraw.ui_elements.exceptiondialog import ExceptionDialog
 
 basedir = os.path.dirname(__file__)
 
@@ -326,14 +327,21 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "Unsupported Filetype", "Not a 3D object or unsupported filetype")
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
                 self.enable_load_settings()
-            except LoaderError:
-                print(traceback.format_exc())
-                QMessageBox.critical(self, "Failed to load file", "Exception during the loading of the file")
+            except LoaderError as exc:
+                # Only Display the traceback from the loader
+                formatted_traceback = "".join(traceback.format_exception(exc)[:-5])
+                exception_info = ExceptionDialog(title="Failed to load file",
+                                       message="Exception during the loading of the file",
+                                       traceback_str=formatted_traceback)
+                exception_info.exec()
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
                 self.enable_load_settings()
             except Exception:
-                print(traceback.format_exc())
-                QMessageBox.critical(self, "Failed to process file", "Exception during the processing of the 3D model")
+                formatted_traceback = traceback.format_exc()
+                exception_info = ExceptionDialog(title="Failed to process file",
+                                                 message="Exception during the processing of the 3D model",
+                                                 traceback_str=formatted_traceback)
+                exception_info.exec()
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
                 self.enable_load_settings()
             else:
