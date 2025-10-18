@@ -4,6 +4,7 @@ import traceback
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QClipboard
 from PyQt6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -47,9 +48,10 @@ if platform.system() == "Windows":
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, clipboard: QClipboard):
         super().__init__()
 
+        self.clipboard = clipboard
         self.ldraw_object = None
         self.file_loaded = False
         self.reload_preview = False
@@ -329,18 +331,24 @@ class MainWindow(QMainWindow):
                 self.enable_load_settings()
             except LoaderError as exc:
                 # Only Display the traceback from the loader
-                formatted_traceback = "".join(traceback.format_exception(exc)[:-5])
-                exception_info = ExceptionDialog(title="Failed to load file",
-                                       message="Exception during the loading of the file",
-                                       traceback_str=formatted_traceback)
+                formatted_traceback = traceback.format_exc()
+                exception_info = ExceptionDialog(
+                                                 clipboard=self.clipboard,
+                                                 title="Failed to load file",
+                                                 message="Exception during the loading of the file",
+                                                 traceback_str=formatted_traceback
+                                                 )
                 exception_info.exec()
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
                 self.enable_load_settings()
             except Exception:
                 formatted_traceback = traceback.format_exc()
-                exception_info = ExceptionDialog(title="Failed to process file",
+                exception_info = ExceptionDialog(
+                                                 clipboard=self.clipboard,
+                                                 title="Failed to process file",
                                                  message="Exception during the processing of the 3D model",
-                                                 traceback_str=formatted_traceback)
+                                                 traceback_str=formatted_traceback
+                                                 )
                 exception_info.exec()
                 self.loaded_file_status_label.setText(f"Failed to Load: {filename}")
                 self.enable_load_settings()
@@ -578,7 +586,7 @@ def run():
     app = QApplication([0])
     app.setWindowIcon(QIcon(os.path.join(basedir, "icons", "ConvertToLDraw_icon.ico")))
 
-    window = MainWindow()
+    window = MainWindow(app.clipboard())
 
     window.show()
 
