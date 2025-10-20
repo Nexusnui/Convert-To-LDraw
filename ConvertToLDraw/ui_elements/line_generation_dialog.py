@@ -116,11 +116,7 @@ class LineGenerationDialog(QDialog):
         self.merge_vertices = not self.merge_vertices
 
     def delete_button_pressed(self):
-        dlg = QMessageBox(self)
-        dlg.setWindowTitle("Delete Outline?")
-        dlg.setText("Do you want delete the outlines?")
-        dlg.setStandardButtons(QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        answer = dlg.exec()
+        answer = QMessageBox.question(self, "Delete Outline?", "Do you want delete the outlines?")
 
         if answer == QMessageBox.StandardButton.Yes:
             print("Delete")
