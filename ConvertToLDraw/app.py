@@ -547,6 +547,7 @@ class MainWindow(QMainWindow):
             self.line_angle = outline_dialog.angle
             self.merge_vertices = outline_dialog.merge_vertices
             self.ldraw_object.generate_outlines(self.line_angle, self.merge_vertices)
+            self.subpart_panel.update_children()
             self.enable_reload()
 
     def map_to_ldraw_colours(self):

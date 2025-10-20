@@ -108,9 +108,9 @@ class SubpartTab(QWidget):
         self.main_settings.addRow(self.colour_inputs)
         self.colour_inputs.setLayout(self.colour_inputs_layout)
 
-        generate_outlines_button = QPushButton("Generate Outlines")
-        generate_outlines_button.clicked.connect(self.generate_outlines)
-        self.colour_inputs_layout.addWidget(generate_outlines_button)
+        self.generate_outlines_button = QPushButton("Generate Outlines")
+        self.generate_outlines_button.clicked.connect(self.generate_outlines)
+        self.colour_inputs_layout.addWidget(self.generate_outlines_button)
 
         if self.subpart.multicolour:
             self.multicolour_view_enabled = True
@@ -152,10 +152,16 @@ class SubpartTab(QWidget):
                 new_widget_height = (len(self.subpart.colours) + 1) * row_height
             self.multicolour_widget.setMinimumSize(width, new_widget_height)
             # Model Info Label
-            self.info_label = QLabel(f"{len(self.subpart.colours)} Different Colours")
-            self.info_label.setAlignment(Qt.AlignmentFlag.AlignVCenter|Qt.AlignmentFlag.AlignRight)
+            self.right_info_label = QLabel(f"{len(self.subpart.mesh.faces)} Triangles "
+                                           f"with {len(self.subpart.colours)} Different Colours")
         else:
+            self.right_info_label = QLabel(f"{len(self.subpart.mesh.faces)} Triangles")
             self.main_colour_input.colour_changed.connect(self.apply_main_colour)
+        infolabels_layout = QHBoxLayout()
+        self.left_info_label = QLabel("No Outlines Generated")
+        infolabels_layout.addWidget(self.left_info_label)
+        infolabels_layout.addStretch()
+        infolabels_layout.addWidget(self.right_info_label)
 
 
 
@@ -163,7 +169,8 @@ class SubpartTab(QWidget):
         self.mainlayout.addLayout(self.main_settings)
         if self.subpart.multicolour:
             self.mainlayout.addWidget(self.multicolour_widget)
-            self.mainlayout.addWidget(self.info_label)
+        self.mainlayout.addStretch()
+        self.mainlayout.addLayout(infolabels_layout)
         if not single_part:
             self.mainlayout.addWidget(self.preview_button)
 
@@ -195,7 +202,6 @@ class SubpartTab(QWidget):
                 self.setDisabled(False)
                 return
         elif colour is None:
-            print("Invalid Colour")
             return
         else:
             self.subpart.apply_color(colour)
@@ -225,8 +231,10 @@ class SubpartTab(QWidget):
             self.subpartcolourlist.refresh_data()
             if not self.subpart.multicolour:
                 self._change_to_single_colour_view()
+                self.right_info_label.setText(f"{len(self.subpart.mesh.faces)} Triangles")
             else:
-                self.info_label.setText(f"{len(self.subpart.colours)} Different Colours")
+                self.right_info_label.setText(f"{len(self.subpart.mesh.faces)} Triangles "
+                                              f"with {len(self.subpart.colours)} Different Colours")
         self.setDisabled(False)
 
     def map_colours_to_LDraw(self):
@@ -252,13 +260,20 @@ class SubpartTab(QWidget):
             self.colour_changed.emit()
 
     def generate_outlines(self):
-        outline_dialog = LineGenerationDialog(self, self.line_preset, self.line_angle, self.merge_vertices)
+        if len(self.subpart.outlines) == 0:
+            outline_dialog = LineGenerationDialog(self, self.line_preset, self.line_angle, self.merge_vertices)
+        else:
+            outline_dialog = LineGenerationDialog(self, self.line_preset, self.line_angle, self.merge_vertices, True)
         if outline_dialog.exec():
-            self.line_preset = outline_dialog.preset
-            self.line_angle = outline_dialog.angle
-            self.merge_vertices = outline_dialog.merge_vertices
-            self.subpart.generate_outlines(self.line_angle, self.merge_vertices)
-            self.colour_changed.emit()
+            if outline_dialog.delete_flag:
+                self.subpart.outlines = []
+            else:
+                self.line_preset = outline_dialog.preset
+                self.line_angle = outline_dialog.angle
+                self.merge_vertices = outline_dialog.merge_vertices
+                self.subpart.generate_outlines(self.line_angle, self.merge_vertices)
+                self.colour_changed.emit()
+            self.refresh_content()
 
     def _on_select_brickcolour(self, index):
         if index.column() in [0, 2]:
@@ -281,8 +296,6 @@ class SubpartTab(QWidget):
         self.colour_inputs_layout.removeWidget(self.merge_colours_button)
         self.map_colours_button.deleteLater()
         self.merge_colours_button.deleteLater()
-        self.mainlayout.removeWidget(self.info_label)
-        self.info_label.deleteLater()
         self.main_colour_input.label.setText("Subpart Colour")
         self.main_colour_input.changecolour(self.subpart.main_colour, False)
         self.multicolour_view_enabled = False
@@ -292,9 +305,17 @@ class SubpartTab(QWidget):
             if self.multicolour_view_enabled:
                 self._change_to_single_colour_view()
             self.main_colour_input.changecolour(self.subpart.main_colour, send_emit=False, set_text=True)
+            self.right_info_label.setText(f"{len(self.subpart.mesh.faces)} Triangles")
         elif self.subpart.multicolour:
             self.subpartcolourlist.refresh_data()
-            self.info_label.setText(f"{len(self.subpart.colours)} Different Colours")
+            self.right_info_label.setText(f"{len(self.subpart.mesh.faces)} Triangles "
+                                          f"with {len(self.subpart.colours)} Different Colours")
+        if len(self.subpart.outlines) > 0:
+            self.left_info_label.setText(f"{len(self.subpart.outlines)} Outlines")
+            self.generate_outlines_button.setText("Edit Outlines")
+        else:
+            self.left_info_label.setText("No Outlines Generated")
+            self.generate_outlines_button.setText("Generate Outlines")
 
 
 class Subpartcolourlistmodel(QAbstractTableModel):

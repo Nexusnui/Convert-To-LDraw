@@ -8,7 +8,9 @@ from PyQt6.QtWidgets import (
     QDoubleSpinBox,
     QFormLayout,
     QGroupBox,
-    QCheckBox
+    QCheckBox,
+    QPushButton,
+    QMessageBox
 )
 
 from enum import Enum
@@ -29,13 +31,18 @@ class LineGenerationDialog(QDialog):
     def __init__(self, parent=None,
                  initial_preset: LinePreset = LinePreset.Low,
                  initial_angle: float = 0,
-                 merge_vertices: bool = False):
+                 merge_vertices: bool = False,
+                 is_edit: bool = False):
         super().__init__(parent)
-        self.setWindowTitle("Generate Outlines Colour")
+        if is_edit:
+            self.setWindowTitle("Edit Outlines")
+        else:
+            self.setWindowTitle("Generate Outlines")
 
         self.merge_vertices = merge_vertices
 
         self.preset = initial_preset
+        self.delete_flag = False
         if self.preset == LinePreset.Custom:
             self.angle = initial_angle
         else:
@@ -76,6 +83,11 @@ class LineGenerationDialog(QDialog):
         advanced_section.setLayout(advanced_layout)
 
         main_layout.addWidget(advanced_section)
+        if is_edit:
+            delete_button = QPushButton("Delete Outlines")
+            delete_button.setStyleSheet("color: white; background-color: red;")
+            delete_button.clicked.connect(self.delete_button_pressed)
+            main_layout.addWidget(delete_button)
 
         bottom_layout = QHBoxLayout()
         buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
@@ -103,11 +115,27 @@ class LineGenerationDialog(QDialog):
     def merge_check_changed(self, check):
         self.merge_vertices = not self.merge_vertices
 
+    def delete_button_pressed(self):
+        answer = QMessageBox.question(self, "Delete Outline?", "Do you want delete the outlines?")
+
+        if answer == QMessageBox.StandardButton.Yes:
+            print("Delete")
+            self.delete_flag = True
+            self.accept()
+
 
 if __name__ == "__main__":
     app = QApplication([])
 
-    line_dia = LineGenerationDialog(initial_preset=LinePreset.Custom, initial_angle=45, merge_vertices=True)
+    line_dia = LineGenerationDialog(
+        initial_preset=LinePreset.Custom,
+        initial_angle=45,
+        merge_vertices=True,
+        is_edit=True
+    )
     line_dia.exec()
 
-    print(line_dia.preset, line_dia.angle, line_dia.merge_vertices)
+    print(f"{line_dia.preset=}\n"
+          f"{line_dia.angle=}\n"
+          f"{line_dia.merge_vertices}\n"
+          f"{line_dia.delete_flag=}")
