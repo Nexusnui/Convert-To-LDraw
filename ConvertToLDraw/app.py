@@ -3,7 +3,7 @@ import platform
 import traceback
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QPixmap
 from PyQt6.QtGui import QClipboard
 from PyQt6.QtWidgets import (
     QApplication,
@@ -264,9 +264,16 @@ class MainWindow(QMainWindow):
         loading_widget = QGroupBox("Loading Screen")
         loading_widget.setStyleSheet("background-color:rgba(128, 128, 128, 0.1);")
         loading_layout = QVBoxLayout()
-        # Todo: Loading Animation GIF or WEBM
+        loading_pixmap = QPixmap(os.path.join(basedir, "icons", "Loading_Symbol.png"))
+        loading_symbol_label = QLabel()
+        loading_symbol_label.setPixmap(loading_pixmap)
+        loading_symbol_label.setAlignment(Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
+        loading_layout.addWidget(loading_symbol_label)
         self.loading_label = QLabel("Loading...")
-        self.loading_label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
+        label_font = self.loading_label.font()
+        label_font.setPointSize(label_font.pointSize()*2)
+        self.loading_label.setFont(label_font)
+        self.loading_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
         loading_layout.addWidget(self.loading_label)
         loading_widget.setLayout(loading_layout)
 
