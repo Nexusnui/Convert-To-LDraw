@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QHBoxLayout,
     QVBoxLayout,
+    QStackedLayout,
     QWidget,
     QLabel,
     QLineEdit,
@@ -21,7 +22,8 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QFormLayout,
     QGroupBox,
-    QTabWidget
+    QTabWidget,
+    QGraphicsBlurEffect
 )
 
 from ConvertToLDraw.appexcetions import *
@@ -60,6 +62,7 @@ class MainWindow(QMainWindow):
         self.merge_vertices = False
 
         self.setWindowTitle(f"Convert To LDraw {app_version}")
+        self.loading_stack = QStackedLayout()
         self.main_layout = QVBoxLayout()
         self.settings_tabs = QTabWidget()
 
@@ -257,6 +260,16 @@ class MainWindow(QMainWindow):
         hex_bg_color = self.palette().window().color().name()
         self.preview_panel = PreviewPanel(background_color=hex_bg_color)
 
+    # Loading Animation
+        loading_widget = QGroupBox("Loading Screen")
+        loading_widget.setStyleSheet("background-color:rgba(128, 128, 128, 0.1);")
+        loading_layout = QVBoxLayout()
+        # Todo: Loading Animation GIF or WEBM
+        self.loading_label = QLabel("Loading...")
+        self.loading_label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
+        loading_layout.addWidget(self.loading_label)
+        loading_widget.setLayout(loading_layout)
+
     # Add Elements to Main Layout
         top_layout.addLayout(part_area)
         file_select_area.addWidget(load_file_area)
@@ -275,7 +288,14 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addWidget(self.loaded_file_status_label)
         widget = QWidget()
-        widget.setLayout(self.main_layout)
+        widget.setLayout(self.loading_stack)
+        self.main_widget = QWidget()
+        self.main_widget.setLayout(self.main_layout)
+        self.main_widget.setObjectName("main_widget")
+        self.main_widget.setStyleSheet(f"QWidget#main_widget {{background-color:{hex_bg_color};}}")
+        self.loading_stack.addWidget(self.main_widget)
+        self.loading_stack.addWidget(loading_widget)
+        self.loading_stack.setStackingMode(QStackedLayout.StackingMode.StackAll)
         self.disable_settings(True)
         self.enable_load_settings()
         self.setCentralWidget(widget)
@@ -293,8 +313,7 @@ class MainWindow(QMainWindow):
             if answer == QMessageBox.StandardButton.No:
                 return
         self.disable_settings(True)
-        previous_status_text = self.loaded_file_status_label.text()
-        self.loaded_file_status_label.setText(f"Loading File")
+        self.start_loading_animation("Loading File ...")
         if not reload:
             dialog = QFileDialog(self)
             dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
@@ -399,11 +418,11 @@ class MainWindow(QMainWindow):
         # No file Selected
         else:
             if self.file_loaded:
-                self.loaded_file_status_label.setText(previous_status_text)
                 self.disable_settings(False)
             else:
                 self.loaded_file_status_label.setText("No file loaded")
                 self.enable_load_settings()
+        self.stop_loading_animation()
 
     def select_output_file(self):
         current_path = self.output_file_line.text()
@@ -556,21 +575,31 @@ class MainWindow(QMainWindow):
                     "(Only Reversible by reloading and may take a while)"
         )
 
-        previous_text = self.loaded_file_status_label.text()
-        self.loaded_file_status_label.setText("Mapping Colours\nCould take a bit of time")
+        self.start_loading_animation("Mapping Colours\nCould take a bit of time")
 
         if categories_dialog.exec():
             colour_categories = categories_dialog.get_selected_items()
             if len(colour_categories) == 0:
                 QMessageBox.warning(self, "Nothing Selected", "No Categories selected\nMapping Aborted")
-                self.loaded_file_status_label.setText(previous_text)
                 return
             self.disable_settings(True)
             self.ldraw_object.map_to_ldraw_colours(colour_categories)
             self.subpart_panel.update_children()
-            self.loaded_file_status_label.setText(previous_text)
             self.disable_settings(False)
             self.enable_reload()
+        self.stop_loading_animation()
+
+    def start_loading_animation(self, message: str = "Loading ..."):
+        loading_blurr = QGraphicsBlurEffect()
+        loading_blurr.setBlurRadius(5)
+        loading_blurr.setBlurHints(QGraphicsBlurEffect.BlurHint.QualityHint)
+        self.main_widget.setGraphicsEffect(loading_blurr)
+        self.loading_label.setText(message)
+        self.loading_stack.setCurrentIndex(1)
+
+    def stop_loading_animation(self):
+        self.main_widget.setGraphicsEffect(None)
+        self.loading_stack.setCurrentIndex(0)
 
 
 def ldu_float_to_string(number: float | int):
