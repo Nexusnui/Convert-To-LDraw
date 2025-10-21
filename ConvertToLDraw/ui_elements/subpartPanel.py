@@ -243,7 +243,7 @@ class SubpartTab(QWidget):
                     "(Only Reversible by reloading and may take a while)"
         )
 
-        self.main_window.start_loading_animation("Mapping Colours\nCould take a bit of time")
+        self.main_window.show_loading_screen("Mapping Colours\nCould take a bit of time")
 
         if categories_dialog.exec():
             colour_categories = categories_dialog.get_selected_items()
@@ -255,7 +255,7 @@ class SubpartTab(QWidget):
             self.refresh_content()
             self.main_window.disable_settings(False)
             self.colour_changed.emit()
-        self.main_window.stop_loading_animation()
+        self.main_window.hide_loading_screen()
 
     def generate_outlines(self):
         if len(self.subpart.outlines) == 0:

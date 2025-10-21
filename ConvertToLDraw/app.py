@@ -320,7 +320,7 @@ class MainWindow(QMainWindow):
             if answer == QMessageBox.StandardButton.No:
                 return
         self.disable_settings(True)
-        self.start_loading_animation("Loading File ...")
+        self.show_loading_screen("Loading File ...")
         if not reload:
             dialog = QFileDialog(self)
             dialog.setFileMode(QFileDialog.FileMode.ExistingFile)
@@ -429,7 +429,7 @@ class MainWindow(QMainWindow):
             else:
                 self.loaded_file_status_label.setText("No file loaded")
                 self.enable_load_settings()
-        self.stop_loading_animation()
+        self.hide_loading_screen()
 
     def select_output_file(self):
         current_path = self.output_file_line.text()
@@ -582,7 +582,7 @@ class MainWindow(QMainWindow):
                     "(Only Reversible by reloading and may take a while)"
         )
 
-        self.start_loading_animation("Mapping Colours\nCould take a bit of time")
+        self.show_loading_screen("Mapping Colours\nCould take a bit of time")
 
         if categories_dialog.exec():
             colour_categories = categories_dialog.get_selected_items()
@@ -594,9 +594,9 @@ class MainWindow(QMainWindow):
             self.subpart_panel.update_children()
             self.disable_settings(False)
             self.enable_reload()
-        self.stop_loading_animation()
+        self.hide_loading_screen()
 
-    def start_loading_animation(self, message: str = "Loading ..."):
+    def show_loading_screen(self, message: str = "Loading ..."):
         loading_blurr = QGraphicsBlurEffect()
         loading_blurr.setBlurRadius(5)
         loading_blurr.setBlurHints(QGraphicsBlurEffect.BlurHint.QualityHint)
@@ -604,7 +604,7 @@ class MainWindow(QMainWindow):
         self.loading_label.setText(message)
         self.loading_stack.setCurrentIndex(1)
 
-    def stop_loading_animation(self):
+    def hide_loading_screen(self):
         self.main_widget.setGraphicsEffect(None)
         self.loading_stack.setCurrentIndex(0)
 
