@@ -18,7 +18,8 @@ setup(
     package_data={
         'ConvertToLDraw.brick_data': ['colour_definitions.csv'],
         'ConvertToLDraw.icons': ['ConvertToLDraw_icon.ico', 'ConvertToLDraw_icon*.png',
-                                 'reload-icon.svg', 'loading_animation.webm'],
+                                 'reload-icon.svg', 'loading_animation.webm',
+                                 'Loading_Symbol.png'],
         'ConvertToLDraw.ui_elements': ['viewer_template.html'],
         'ConvertToLDraw.ui_elements.js-libraries': ['*']
     },

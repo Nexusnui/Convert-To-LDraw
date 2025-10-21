@@ -243,21 +243,19 @@ class SubpartTab(QWidget):
                     "(Only Reversible by reloading and may take a while)"
         )
 
-        previous_text = self.main_window.loaded_file_status_label.text()
-        self.main_window.loaded_file_status_label.setText("Mapping Colours\nCould take a bit of time")
+        self.main_window.show_loading_screen("Mapping Colours\nCould take a bit of time")
 
         if categories_dialog.exec():
             colour_categories = categories_dialog.get_selected_items()
             if len(colour_categories) == 0:
                 QMessageBox.warning(self, "Nothing Selected", "No Categories selected\nMapping Aborted")
-                self.main_window.loaded_file_status_label.setText(previous_text)
                 return
             self.main_window.disable_settings(True)
             self.subpart.map_to_ldraw_colours(colour_categories)
             self.refresh_content()
-            self.main_window.loaded_file_status_label.setText(previous_text)
             self.main_window.disable_settings(False)
             self.colour_changed.emit()
+        self.main_window.hide_loading_screen()
 
     def generate_outlines(self):
         if len(self.subpart.outlines) == 0:
