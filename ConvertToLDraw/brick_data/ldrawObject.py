@@ -1,6 +1,7 @@
 # Todo: Import Modules instead of complete trimesh
 import trimesh
 import trimesh.visual.material
+from trimesh.base import Trimesh
 import os
 from ConvertToLDraw.appexcetions import *
 from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_closest_brickcolour_by_rgb_colour, \
@@ -258,7 +259,7 @@ class LdrawObject:
                 else:
                     transformation_matrix = trimesh.transformations.identity_matrix()
                 self.subparts.append(
-                    Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions)
+                    Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions, key)
                 )
         self.scene = scene
         self.model_loaded = True
@@ -389,19 +390,37 @@ class LdrawObject:
         for subpart in self.subparts:
             subpart.map_to_ldraw_colours(included_colour_categories)
 
+    def delete_subpart(self, subpart):
+        self.subparts.remove(subpart)
+        self.scene.delete_geometry(subpart.node_key)
+
 
 class Subpart:
-    def __init__(self, mesh: trimesh.base.Trimesh,
+    def __init__(self, mesh: Trimesh,
                  transformation_matrix,
-                 name,
+                 name: str,
                  main_colour: Brickcolour = None,
-                 cached_colour_definitions: OrderedDict = OrderedDict()):
+                 cached_colour_definitions: OrderedDict = OrderedDict(),
+                 node_key: str = None,
+                 colours: OrderedDict = None,
+                 outlines: list = None
+                 ):
         self.mesh = mesh
         self.name = name
         self.transformation_matrix = transformation_matrix
         self.cached_colour_definitions = cached_colour_definitions
-        self.outlines = []
+        self.node_key = node_key
+        if outlines is None:
+            self.outlines = []
+        else:
+            self.outlines = outlines
         self.multicolour = False
+        if colours is None:
+            self._colour_from_mesh(main_colour)
+        else:
+            self._colour_from_dict(colours, main_colour)
+
+    def _colour_from_mesh(self, main_colour: Brickcolour):
         if not self.mesh.visual.defined:
             if main_colour is not None:
                 self.main_colour = main_colour
@@ -436,7 +455,8 @@ class Subpart:
                     self.main_colour = main_colour
                     if self.main_colour:
                         if self.main_colour.colour_type == "LDraw" and self.main_colour.ldrawname != "Undefined":
-                            self.cached_colour_definitions[self.main_colour.colour_code] = self.main_colour.get_ldraw_line()
+                            self.cached_colour_definitions[
+                                self.main_colour.colour_code] = self.main_colour.get_ldraw_line()
             else:
                 if main_colour is not None:
                     self.main_colour = main_colour
@@ -449,6 +469,18 @@ class Subpart:
                 for key, value in self.colours.items():
                     value[0].alpha = "255"
                     self.apply_color(key=key)
+
+    def _colour_from_dict(self, colours: OrderedDict, main_colour: Brickcolour):
+        self.main_colour = Brickcolour("16")
+        self.cached_colour_definitions["16"] = self.main_colour.get_ldraw_line()
+        if len(colours) == 1:
+            self.main_colour = colours.popitem()[1][0]
+        elif len(colours) > 1:
+            if main_colour is not None:
+                self.main_colour = main_colour
+            self.multicolour = True
+            self.colours = colours
+
 
     def apply_color(self, colour: Brickcolour = None, key=None):
         if colour is not None:
@@ -554,6 +586,48 @@ class Subpart:
             mesh.merge_vertices()
         edges = mesh.face_adjacency_angles >= np.radians(angle_threshold)
         self.outlines = mesh.vertices[mesh.face_adjacency_edges[edges]]
+
+    def split_by_colours(self, keys: list[list[str]], parent: LdrawObject) -> list:
+        split_subparts = []
+        for split_keys in keys:
+            colours = OrderedDict()
+            faces = []
+            outlines = None
+            for colour_key in split_keys:
+                if colour_key == "outlines":
+                    outlines = self.outlines
+                else:
+                    if colour_key not in self.colours:
+                        raise ValueError(f"Colour key '{colour_key}' not in subpart.colours")
+                    face_count = len(faces)
+                    coloured_count = len(self.colours[colour_key][1])
+                    colours[colour_key] = [
+                        self.colours[colour_key][0],
+                        list(range(face_count, face_count+coloured_count))
+                    ]
+                    for face_index in self.colours[colour_key][1]:
+                        faces.append(self.mesh.faces[face_index])
+
+            new_geometry = Trimesh(vertices=self.mesh.vertices, faces=faces)
+            node_key = parent.scene.add_geometry(new_geometry, transform=self.transformation_matrix)
+            # Todo: Better Name
+            new_name = self.name
+            if len(faces) == 0 and outlines is not None:
+                new_name = f"{self.name}-Outlines"
+            new_subpart = Subpart(
+                new_geometry,
+                self.transformation_matrix,
+                new_name,
+                self.main_colour,
+                self.cached_colour_definitions,
+                node_key,
+                colours,
+                outlines
+            )
+            split_subparts.append(new_subpart)
+        parent.delete_subpart(self)
+        parent.subparts.extend(split_subparts)
+        return split_subparts
 
 
 class ResultWriter:
