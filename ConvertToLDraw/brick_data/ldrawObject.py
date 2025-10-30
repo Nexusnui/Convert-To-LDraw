@@ -587,7 +587,13 @@ class Subpart:
         edges = mesh.face_adjacency_angles >= np.radians(angle_threshold)
         self.outlines = mesh.vertices[mesh.face_adjacency_edges[edges]]
 
-    def split_by_colours(self, keys: list[list[str]], parent: LdrawObject) -> list:
+    def split_by_colours(self, parent: LdrawObject, keys: list[list[str]] = None) -> list:
+        if keys is None:
+            keys = []
+            for key in self.colours.keys():
+                keys.append([key])
+            if len(self.outlines) > 0:
+                keys.append(["outlines"])
         split_subparts = []
         for split_keys in keys:
             colours = OrderedDict()
