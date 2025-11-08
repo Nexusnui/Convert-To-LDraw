@@ -22,6 +22,7 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QTableView,
     QHeaderView,
+    QTreeView,
     QComboBox,
     QDialog,
     QDialogButtonBox,
@@ -29,8 +30,12 @@ from PyQt6.QtWidgets import (
     QListWidgetItem
 )
 
-from PyQt6.QtCore import pyqtSignal, QAbstractTableModel, Qt
+from PyQt6.QtCore import Qt, pyqtSignal, QAbstractTableModel, QAbstractItemModel, QModelIndex
 from PyQt6.QtGui import QColor
+
+from collections import OrderedDict
+
+from numpy import array_split
 
 import re
 
@@ -146,7 +151,7 @@ class BrickcolourDialog(QDialog):
         self.ldraw_colour_table.setCornerButtonEnabled(False)
 
         self.all_colours = get_all_brickcolours()
-        self.colourslistmodel = Brickcolourlistmodel(self.all_colours)
+        self.colourslistmodel = BrickcolourListmodel(self.all_colours)
         self.ldraw_colour_table.setModel(self.colourslistmodel)
         self.ldraw_colour_table.clicked.connect(self.on_select_brickcolour)
         self.ldraw_colour_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
@@ -246,7 +251,7 @@ class BrickcolourDialog(QDialog):
         self.tab_widget.setCurrentIndex(0)
 
 
-class Brickcolourlistmodel(QAbstractTableModel):
+class BrickcolourListmodel(QAbstractTableModel):
     def __init__(self, colorlist):
         super().__init__()
         self._data = colorlist
@@ -352,6 +357,119 @@ class ColourCategoriesDialog(QDialog):
     def check_all_items(self):
         for item in self.items:
             item.setCheckState(Qt.CheckState.Checked)
+
+
+class SplitColourDialog(QDialog):
+    def __init__(self, colours: OrderedDict, has_outlines: bool = False):
+        super().__init__()
+        self.input_colours = colours
+        self.has_outline = has_outlines
+
+        self.setWindowTitle("Split Subpart by Colours")
+        self.main_layout = QVBoxLayout()
+        # Todo: Ask for initial split
+        self.splitcoloursmodel = None
+        self.splitview = None
+        self.setLayout(self.main_layout)
+        self.show_colours()
+
+    def show_colours(self):
+        self.splitcoloursmodel = SplitColourTreemodel(self.input_colours, self.has_outline)
+        # Todo: Add initial split
+        self.splitview = QTreeView()
+        self.main_layout.addWidget(self.splitview)
+        self.splitview.setModel(self.splitcoloursmodel)
+        self.splitview.expandAll()
+        # Todo: Add or change buttons
+
+
+class SplitColourTreemodel(QAbstractItemModel):
+    def __init__(self, colours: OrderedDict, has_outlines: bool = False, splits: int = 2):
+        super().__init__()
+        self.colours = colours
+        colour_keys = list(colours.keys())
+        if has_outlines:
+            colour_keys.append("outlines")
+
+        # Creates a list containing lists of colour keys
+        self._data = [arr.tolist() for arr in array_split(colour_keys, splits)]
+        self.pointers = []
+
+    def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()):
+        if parent.isValid():
+            if parent.internalPointer()[1] is None:
+                pointer = (parent.internalPointer()[0], row)
+                if pointer in self.pointers:
+                    pointer = self.pointers[self.pointers.index(pointer)]
+                else:
+                    self.pointers.append(pointer)
+                return self.createIndex(row, 0, pointer)
+            raise NotImplementedError("index: Return on valid index not list")
+        else:
+            pointer = (row, None)
+            if pointer in self.pointers:
+                pointer = self.pointers[self.pointers.index(pointer)]
+            else:
+                self.pointers.append(pointer)
+            return self.createIndex(row, 0, pointer)
+
+    def parent(self, index):
+        if index.isValid:
+            if index.internalPointer()[1] is None:
+                return QModelIndex()
+            else:
+                pointer = self.pointers[self.pointers.index((index.internalPointer()[0], None))]
+                return self.createIndex(pointer[0], 0, pointer)
+        else:
+            return QModelIndex()
+
+    def rowCount(self, index: QModelIndex = QModelIndex()):
+        if index.isValid():
+            if index.internalPointer()[1] is None:
+                return len(self._data[index.internalPointer()[0]])
+            else:
+                return 0
+        else:
+            return len(self._data)
+
+    def columnCount(self, parent: QModelIndex = QModelIndex()):
+        return 1
+
+    def data(self, index: QModelIndex, role=Qt.ItemDataRole.DisplayRole):
+        if not index.isValid():
+            return None
+        if role == Qt.ItemDataRole.DisplayRole:
+            if index.internalPointer()[1] is None:
+                return f"Group {index.internalPointer()[0]+1}"
+            else:
+                colour_index = self._data[index.internalPointer()[0]][index.internalPointer()[1]]
+                if colour_index != "outlines":
+                    return str(self.colours[colour_index][0])
+                else:
+                    return "Outlines"
+        elif role == Qt.ItemDataRole.BackgroundRole:
+            if index.internalPointer()[1] is not None:
+                colour_index = self._data[index.internalPointer()[0]][index.internalPointer()[1]]
+                if colour_index != "outlines":
+                    brick_colour: Brickcolour = self.colours[colour_index][0]
+                    return QColor(brick_colour.rgb_values)
+                else:
+                    return QColor(Brickcolour("24").rgb_values)
+        elif role == Qt.ItemDataRole.ForegroundRole:
+
+            if index.internalPointer()[1] is not None:
+                colour_index = self._data[index.internalPointer()[0]][index.internalPointer()[1]]
+                if colour_index != "outlines":
+                    brick_colour: Brickcolour = self.colours[colour_index][0]
+                    return QColor(get_contrast_colour(brick_colour.rgb_values))
+                else:
+                    return QColor(get_contrast_colour(Brickcolour("24").rgb_values))
+
+    def headerData(self, section, orientation, role):
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                print(f"{section=}, {orientation=}, {role=},")
+                return "Colour Groups"
 
 
 if __name__ == "__main__":
