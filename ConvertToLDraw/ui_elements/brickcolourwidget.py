@@ -27,10 +27,11 @@ from PyQt6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QListWidget,
-    QListWidgetItem
+    QListWidgetItem,
+    QAbstractItemView
 )
 
-from PyQt6.QtCore import Qt, pyqtSignal, QAbstractTableModel, QAbstractItemModel, QModelIndex
+from PyQt6.QtCore import Qt, pyqtSignal, QAbstractTableModel, QAbstractItemModel, QModelIndex, QMimeData, QByteArray
 from PyQt6.QtGui import QColor
 
 from collections import OrderedDict
@@ -380,7 +381,13 @@ class SplitColourDialog(QDialog):
         self.main_layout.addWidget(self.splitview)
         self.splitview.setModel(self.splitcoloursmodel)
         self.splitview.expandAll()
+        self.splitview.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+        self.splitview.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
+        self.splitcoloursmodel.modelReset.connect(self.rows_moved)
         # Todo: Add or change buttons
+
+    def rows_moved(self):
+        self.splitview.expandAll()
 
 
 class SplitColourTreemodel(QAbstractItemModel):
@@ -404,6 +411,8 @@ class SplitColourTreemodel(QAbstractItemModel):
                 else:
                     self.pointers.append(pointer)
                 return self.createIndex(row, 0, pointer)
+            else:
+                print(f"index requested\n{row=}, {column=}\n{parent.internalPointer()=}\n{parent.data()}")
             raise NotImplementedError("index: Return on valid index not list")
         else:
             pointer = (row, None)
@@ -468,8 +477,52 @@ class SplitColourTreemodel(QAbstractItemModel):
     def headerData(self, section, orientation, role):
         if role == Qt.ItemDataRole.DisplayRole:
             if orientation == Qt.Orientation.Horizontal:
-                print(f"{section=}, {orientation=}, {role=},")
                 return "Colour Groups"
+
+    def supportedDropActions(self):
+        return Qt.DropAction.MoveAction
+
+    def flags(self, index: QModelIndex):
+        if index.isValid():
+            if index.internalPointer()[1] is None:
+                return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsDropEnabled
+            else:
+                return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | \
+                    Qt.ItemFlag.ItemIsDragEnabled | Qt.ItemFlag.ItemIsUserCheckable
+        return Qt.ItemFlag.ItemIsEnabled
+
+    def mimeTypes(self):
+        return ['text/plain', "custom/indices"]
+
+    def mimeData(self, indexes):
+        indexes.sort(key=lambda e: e.internalPointer())
+        data = []
+        for index in indexes:
+            data.append(f"{index.internalPointer()[0]},{index.internalPointer()[1]}")
+        data_text = ";".join(data)
+        mimedata = QMimeData()
+        mimedata.setText(data_text)
+        return mimedata
+
+    def dropMimeData(self, data, action, row, column, parent):
+        # Rebuilt 'move from' pointers from string
+        from_pointers = [tuple(int(idx_str) for idx_str in ptr_str.split(",")) for ptr_str in data.text().split(";")]
+        if row > 0:
+            upper_item = self._data[parent.internalPointer()[0]][row-1]
+        values = [self._data[ptr[0]][ptr[1]] for ptr in from_pointers]
+        from_pointers.reverse()
+        for ptr in from_pointers:
+            self._data[ptr[0]].pop(ptr[1])
+        if row > 0:
+            insert_index = self._data[parent.internalPointer()[0]].index(upper_item) + 1
+            self._data[parent.internalPointer()[0]][insert_index:insert_index] = values
+        elif row == 0:
+            self._data[parent.internalPointer()[0]][0:0] = values
+        else:
+            self._data[parent.internalPointer()[0]].extend(values)
+        self.beginResetModel()
+        self.endResetModel()
+        return True
 
 
 if __name__ == "__main__":
