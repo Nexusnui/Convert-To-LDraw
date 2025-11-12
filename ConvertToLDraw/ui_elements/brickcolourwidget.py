@@ -28,7 +28,9 @@ from PyQt6.QtWidgets import (
     QDialogButtonBox,
     QListWidget,
     QListWidgetItem,
-    QAbstractItemView
+    QAbstractItemView,
+    QSpinBox,
+    QSlider
 )
 
 from PyQt6.QtCore import Qt, pyqtSignal, QAbstractTableModel, QAbstractItemModel, QModelIndex, QMimeData, QByteArray
@@ -364,19 +366,60 @@ class SplitColourDialog(QDialog):
     def __init__(self, colours: OrderedDict, has_outlines: bool = False):
         super().__init__()
         self.input_colours = colours
-        self.has_outline = has_outlines
+        self.has_outlines = has_outlines
+        self.item_count = len(colours) + int(self.has_outlines)
+        self.colour_groups = None
 
         self.setWindowTitle("Split Subpart by Colours")
         self.main_layout = QVBoxLayout()
-        # Todo: Ask for initial split
+
+        self.number_label = QLabel("Choose the number of groups to split into:\n"
+                                   "(Groups can be added/removed in the next step)")
+        self.main_layout.addWidget(self.number_label)
+
+        self.number_input = QSpinBox()
+        self.number_input.setRange(2, self.item_count)
+        self.number_input.setSingleStep(1)
+        self.main_layout.addWidget(self.number_input)
+
+        self.number_slider = QSlider(Qt.Orientation.Horizontal)
+        self.number_slider.setRange(2, self.item_count)
+        self.number_slider.setSingleStep(1)
+        self.number_slider.setPageStep(1)
+        self.number_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.number_slider.valueChanged.connect(self.number_input.setValue)
+        self.number_input.valueChanged.connect(self.number_slider.setValue)
+        self.main_layout.addWidget(self.number_slider)
+
+        if self.has_outlines:
+            self.item_count_label = QLabel(f"There are {len(self.input_colours)} colours + outlines")
+        else:
+            self.item_count_label = QLabel(f"There are {len(self.input_colours)} colours")
+        self.main_layout.addWidget(self.item_count_label)
+
+        buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        self.number_button_box = QDialogButtonBox(buttons)
+        self.number_button_box.buttons()[0].setText("Next")
+        self.number_button_box.accepted.connect(self.show_colours)
+        self.number_button_box.rejected.connect(self.reject)
+        self.main_layout.addWidget(self.number_button_box)
         self.splitcoloursmodel = None
         self.splitview = None
         self.setLayout(self.main_layout)
-        self.show_colours()
 
     def show_colours(self):
-        self.splitcoloursmodel = SplitColourTreemodel(self.input_colours, self.has_outline)
-        # Todo: Add initial split
+        splits = self.number_input.value()
+        self.main_layout.removeWidget(self.number_label)
+        self.main_layout.removeWidget(self.number_input)
+        self.main_layout.removeWidget(self.number_slider)
+        self.main_layout.removeWidget(self.item_count_label)
+        self.main_layout.removeWidget(self.number_button_box)
+        self.number_label.deleteLater()
+        self.number_input.deleteLater()
+        self.number_slider.deleteLater()
+        self.item_count_label.deleteLater()
+        self.number_button_box.deleteLater()
+        self.splitcoloursmodel = SplitColourTreemodel(self.input_colours, self.has_outlines, splits)
         self.splitview = QTreeView()
         self.main_layout.addWidget(self.splitview)
         self.splitview.setModel(self.splitcoloursmodel)
@@ -384,13 +427,26 @@ class SplitColourDialog(QDialog):
         self.splitview.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
         self.splitview.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
         self.splitcoloursmodel.modelReset.connect(self.rows_moved)
-        # Todo: Add or change buttons
+
+        # Todo: Add buttons for removing/adding groups
+
+        buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        button_box = QDialogButtonBox(buttons)
+        button_box.accepted.connect(self.dialog_accepted)
+        button_box.rejected.connect(self.reject)
+        self.main_layout.addWidget(button_box)
 
     def rows_moved(self):
         self.splitview.expandAll()
 
+    def dialog_accepted(self):
+        self.colour_groups = self.splitcoloursmodel.get_data()
+        self.accept()
+
 
 class SplitColourTreemodel(QAbstractItemModel):
+    modelChanged = pyqtSignal(int, bool)  # groupcount, has empty groups
+
     def __init__(self, colours: OrderedDict, has_outlines: bool = False, splits: int = 2):
         super().__init__()
         self.colours = colours
@@ -412,8 +468,9 @@ class SplitColourTreemodel(QAbstractItemModel):
                     self.pointers.append(pointer)
                 return self.createIndex(row, 0, pointer)
             else:
-                print(f"index requested\n{row=}, {column=}\n{parent.internalPointer()=}\n{parent.data()}")
-            raise NotImplementedError("index: Return on valid index not list")
+                raise NotImplementedError(f"index requested:\n"
+                                          f"row: {row}\n"
+                                          f"Parent Internal Pointer {parent.internalPointer()}")
         else:
             pointer = (row, None)
             if pointer in self.pointers:
@@ -520,9 +577,37 @@ class SplitColourTreemodel(QAbstractItemModel):
             self._data[parent.internalPointer()[0]][0:0] = values
         else:
             self._data[parent.internalPointer()[0]].extend(values)
+        self.update_model()
+        return True
+
+    def add_groups(self, count: int = 1):
+        for i in range(count):
+            self._data.append([])
+        self.update_model()
+
+    def remove_empty_groups(self):
+        indexes = []
+        for index, group in enumerate(self._data):
+            if len(group):
+                indexes.append(index)
+        indexes.reverse()
+        for index in indexes:
+            self._data.pop(index)
+        self.update_model()
+
+    def update_model(self):
+        group_count = len(self._data)
+        has_empty_groups = False
+        for group in self._data:
+            if len(group) == 0:
+                has_empty_groups = True
+                break
+        self.modelChanged.emit(group_count, has_empty_groups)
         self.beginResetModel()
         self.endResetModel()
-        return True
+
+    def get_data(self):
+        return self._data
 
 
 if __name__ == "__main__":
