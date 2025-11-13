@@ -1,3 +1,5 @@
+import math
+
 from ConvertToLDraw.brick_data.brickcolour import (
     Brickcolour,
     get_contrast_colour,
@@ -428,7 +430,23 @@ class SplitColourDialog(QDialog):
         self.splitview.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
         self.splitcoloursmodel.modelReset.connect(self.rows_moved)
 
-        # Todo: Add buttons for removing/adding groups
+        group_button_layout = QHBoxLayout()
+
+        self.add_group_button = QPushButton("+Add Group")
+        self.add_group_button.clicked.connect(lambda: self.splitcoloursmodel.add_groups())
+        group_button_layout.addWidget(self.add_group_button)
+
+        self.remove_empty_groups_button = QPushButton("-Remove Empty Groups")
+        self.remove_empty_groups_button.clicked.connect(self.splitcoloursmodel.remove_empty_groups)
+        group_button_layout.addWidget(self.remove_empty_groups_button)
+
+        self.remove_empty_groups_button.setDisabled(True)
+        if splits == self.item_count:
+            self.add_group_button.setDisabled(True)
+
+        self.main_layout.addLayout(group_button_layout)
+
+        self.splitcoloursmodel.modelChanged.connect(self.on_model_updated)
 
         buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         button_box = QDialogButtonBox(buttons)
@@ -436,12 +454,22 @@ class SplitColourDialog(QDialog):
         button_box.rejected.connect(self.reject)
         self.main_layout.addWidget(button_box)
 
+        header_height = self.splitview.header().size().height()
+        row_height = self.splitview.rowHeight(self.splitcoloursmodel.index(0, 0))
+        new_height = row_height * (self.item_count + splits + 1) + header_height
+        max_height = int(math.floor(self.screen().size().height()*3/5))
+        self.splitview.setMinimumHeight(min(new_height, max_height))
+
     def rows_moved(self):
         self.splitview.expandAll()
 
     def dialog_accepted(self):
         self.colour_groups = self.splitcoloursmodel.get_data()
         self.accept()
+
+    def on_model_updated(self, group_count: int, has_empty_groups: bool):
+        self.add_group_button.setDisabled(group_count >= self.item_count)
+        self.remove_empty_groups_button.setEnabled(has_empty_groups)
 
 
 class SplitColourTreemodel(QAbstractItemModel):
@@ -588,7 +616,7 @@ class SplitColourTreemodel(QAbstractItemModel):
     def remove_empty_groups(self):
         indexes = []
         for index, group in enumerate(self._data):
-            if len(group):
+            if len(group) == 0:
                 indexes.append(index)
         indexes.reverse()
         for index in indexes:
