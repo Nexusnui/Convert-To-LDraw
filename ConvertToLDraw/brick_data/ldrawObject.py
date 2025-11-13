@@ -10,6 +10,7 @@ import numpy as np
 from collections import OrderedDict
 from ConvertToLDraw.model_loaders.trimeshloader import Trimeshloader
 from ConvertToLDraw.model_loaders.threemfloader import Threemfloader
+from ConvertToLDraw.matrix_functions import is_identity_matrix
 from enum import Enum
 
 
@@ -147,8 +148,18 @@ class LdrawObject:
                 # Invalid Color Data -> can occur when loading some step files
                 geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
 
-        if len(scene.geometry) == 1 or not multi_object:
-            # Todo: Do not automatically merge if only one object
+        if len(scene.geometry) == 1:
+            geometry = list(scene.geometry.values())[0]
+            first_colour = geometry.visual.face_colors[0]
+            for colour in geometry.visual.face_colors:
+                c_check = first_colour == colour
+                if not (c_check[0] and c_check[1] and c_check[2] and c_check[3]):
+                    break
+            else:
+                # Only One Object with one colour
+                geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
+
+        if len(scene.geometry) > 1 and not multi_object:
             if len(scene.geometry) > 1 and multicolour:
                 recolour = True
                 if len(scene.geometry) == 1:
@@ -182,16 +193,6 @@ class LdrawObject:
                         r = colorrange[int(index / 5 % 5)]
                         b = colorrange[int(index / 25 % 5)]
                         geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [r, g, b, 255]
-            if len(scene.geometry) == 1:
-                geometry = list(scene.geometry.values())[0]
-                first_colour = geometry.visual.face_colors[0]
-                for colour in geometry.visual.face_colors:
-                    c_check = first_colour == colour
-                    if not (c_check[0] and c_check[1] and c_check[2] and c_check[3]):
-                        break
-                else:
-                    # Only One Object with one colour
-                    geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
             # Merges all submodels
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
@@ -316,13 +317,11 @@ class LdrawObject:
         with ResultWriter(filepath) as file:
             file.write(header)
             if len(self.subparts) == 1:
-                # Todo: Case multi subpart Part was reduced to one by deletion of subparts
-                # (transform) X [x,y,z,1]
                 subpart = self.subparts[0]
                 color_code = "16"
                 if not subpart.multicolour:
                     color_code = subpart.main_colour.colour_code
-                for line in subpart.to_ldraw_lines(color_code):
+                for line in subpart.to_ldraw_lines(color_code, apply_transform=True):
                     file.write(line)
             else:
                 if one_file:
@@ -412,6 +411,7 @@ class Subpart:
         self.mesh = mesh
         self.name = name
         self.transformation_matrix = transformation_matrix
+        self.vertices_with_transform = None
         self.cached_colour_definitions = cached_colour_definitions
         self.node_key = node_key
         if outlines is None:
@@ -565,25 +565,34 @@ class Subpart:
                   f"0 BFC CERTIFY CCW\n")
         return header
 
-    def to_ldraw_lines(self, color_code="16"):
+    def to_ldraw_lines(self, color_code="16", apply_transform=False):
+        vertices = self.mesh.vertices
+        if apply_transform and not is_identity_matrix(self.transformation_matrix):
+            if self.vertices_with_transform is None:
+                self.vertices_with_transform = trimesh.transformations.transform_points(
+                    self.mesh.vertices.copy(),
+                    self.transformation_matrix,
+                    True)
+            vertices = self.vertices_with_transform
+
         if self.multicolour:
             for colour, faces in self.colours.values():
                 code = colour.colour_code
                 for index in faces:
                     face = self.mesh.faces[index]
-                    coordinate_a = ' '.join(map(str, self.mesh.vertices[face[0]]))
-                    coordinate_b = ' '.join(map(str, self.mesh.vertices[face[1]]))
-                    coordinate_c = ' '.join(map(str, self.mesh.vertices[face[2]]))
+                    coordinate_a = ' '.join(map(str, vertices[face[0]]))
+                    coordinate_b = ' '.join(map(str, vertices[face[1]]))
+                    coordinate_c = ' '.join(map(str, vertices[face[2]]))
                     yield f"3 {code} {coordinate_a} {coordinate_b} {coordinate_c}\n"
         else:
             for face in self.mesh.faces:  # faces vertices
-                coordinate_a = ' '.join(map(str, self.mesh.vertices[face[0]]))
-                coordinate_b = ' '.join(map(str, self.mesh.vertices[face[1]]))
-                coordinate_c = ' '.join(map(str, self.mesh.vertices[face[2]]))
+                coordinate_a = ' '.join(map(str, vertices[face[0]]))
+                coordinate_b = ' '.join(map(str, vertices[face[1]]))
+                coordinate_c = ' '.join(map(str, vertices[face[2]]))
                 yield f"3 {color_code} {coordinate_a} {coordinate_b} {coordinate_c}\n"
         for outline in self.outlines:
-            yield (f"2 24 {outline[0][0]} {outline[0][1]} {outline[0][2]} "
-                   f"{outline[1][0]} {outline[1][1]} {outline[1][2]}\n")
+            yield (f"2 24 {vertices[outline[0]][0]} {vertices[outline[0]][1]} {vertices[outline[0]][2]} "
+                   f"{vertices[outline[1]][0]} {vertices[outline[1]][1]} {vertices[outline[1]][2]}\n")
 
     def generate_outlines(self, angle_threshold=85, merge_vertices=False):
         mesh = self.mesh
@@ -591,7 +600,7 @@ class Subpart:
             mesh = self.mesh.copy()
             mesh.merge_vertices()
         edges = mesh.face_adjacency_angles >= np.radians(angle_threshold)
-        self.outlines = mesh.vertices[mesh.face_adjacency_edges[edges]]
+        self.outlines = mesh.face_adjacency_edges[edges]
 
     def split_by_colours(self, parent: LdrawObject, keys: list[list[str]] = None) -> list:
         if keys is None:
