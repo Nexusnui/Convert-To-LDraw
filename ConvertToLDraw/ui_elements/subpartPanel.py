@@ -1,3 +1,4 @@
+import traceback
 from PyQt6.QtCore import pyqtSignal, QAbstractTableModel, Qt
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
@@ -19,6 +20,7 @@ from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart
 from ConvertToLDraw.brick_data.brickcolour import Brickcolour, is_brickcolour, get_contrast_colour
 from ConvertToLDraw.ui_elements.brickcolourwidget import BrickcolourWidget, BrickcolourDialog, ColourCategoriesDialog, SplitColourDialog
 from ConvertToLDraw.ui_elements.line_generation_dialog import LineGenerationDialog, LinePreset
+from ConvertToLDraw.ui_elements.exceptiondialog import ExceptionDialog
 
 
 class SubpartPanel(QTabWidget):
@@ -301,9 +303,19 @@ class SubpartTab(QWidget):
     def split_by_colour(self):
         has_outlines = len(self.subpart.outlines) > 0
         split_dialog = SplitColourDialog(self.subpart.colours, has_outlines)
-        if split_dialog.exec():
-            new_subparts = self.subpart.split_by_colours(self.main_window.ldraw_object, split_dialog.colour_groups)
-            self.subpart_split.emit(new_subparts)
+        try:
+            if split_dialog.exec():
+                new_subparts = self.subpart.split_by_colours(self.main_window.ldraw_object, split_dialog.colour_groups)
+                self.subpart_split.emit(new_subparts)
+        except Exception:
+            formatted_traceback = traceback.format_exc()
+            exception_info = ExceptionDialog(
+                clipboard=self.clipboard,
+                title="Split by Colour Dialog Failed",
+                message="If you know how to replicate this open an issue on the repo",
+                traceback_str=formatted_traceback
+            )
+            exception_info.exec()
 
     def _on_select_brickcolour(self, index):
         if index.column() in [0, 2]:
