@@ -610,7 +610,7 @@ class Subpart:
             if len(self.outlines) > 0:
                 keys.append(["outlines"])
         split_subparts = []
-        for split_keys in keys:
+        for group, split_keys in enumerate(keys):
             colours = OrderedDict()
             faces = []
             outlines = None
@@ -631,8 +631,7 @@ class Subpart:
 
             new_geometry = Trimesh(vertices=self.mesh.vertices, faces=faces)
             node_key = parent.scene.add_geometry(new_geometry, transform=self.transformation_matrix)
-            # Todo: Better Name
-            new_name = self.name
+            new_name = f"{self.name}-{group+1}"
             if len(faces) == 0 and outlines is not None:
                 new_name = f"{self.name}-Outlines"
             new_subpart = Subpart(
