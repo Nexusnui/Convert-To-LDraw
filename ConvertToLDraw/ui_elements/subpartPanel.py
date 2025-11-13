@@ -24,6 +24,7 @@ from ConvertToLDraw.ui_elements.line_generation_dialog import LineGenerationDial
 class SubpartPanel(QTabWidget):
     model_updated = pyqtSignal()
     show_preview = pyqtSignal(Subpart)
+    show_main_part = pyqtSignal()
 
     def __init__(self, mainmodel: LdrawObject, main_window):
         super().__init__()
@@ -64,13 +65,12 @@ class SubpartPanel(QTabWidget):
             tab.refresh_content()
 
     def remove_current_tab(self):
-        # Todo: Case Removed Tab is displayed in Preview
         self.removeTab(self.currentIndex())
         self.is_single_part = len(self.mainmodel.subparts) == 1
         if self.is_single_part:
             self.tabBar().hide()
             self.currentWidget().change_to_single_part_view()
-        self.model_updated.emit()
+        self.show_main_part.emit()
 
     def subpart_split(self, new_subparts: list[Subpart]):
         if self.is_single_part:

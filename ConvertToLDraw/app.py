@@ -409,6 +409,7 @@ class MainWindow(QMainWindow):
                 self.subpart_panel.show_preview.connect(self.show_preview)
                 self.subpart_area_layout.addWidget(self.subpart_panel)
                 self.subpart_panel.model_updated.connect(self.enable_reload)
+                self.subpart_panel.show_main_part.connect(self.preview_panel.load_main_model)
 
                 x_length = ldu_float_to_string(self.ldraw_object.size[0])
                 y_length = ldu_float_to_string(self.ldraw_object.size[1])
