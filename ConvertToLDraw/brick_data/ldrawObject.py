@@ -195,6 +195,8 @@ class LdrawObject:
                         geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [r, g, b, 255]
             # Merges all submodels
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
+            # Merge duplicate vertices
+            list(scene.geometry.values())[0].merge_vertices()
 
         if use_ldraw_rotation:
             # LDraw co-ordinate system is right-handed where -Y is "up"
@@ -574,7 +576,7 @@ class Subpart:
                     self.transformation_matrix,
                     True)
             vertices = self.vertices_with_transform
-
+        print(f"{len(vertices)=}")
         if self.multicolour:
             for colour, faces in self.colours.values():
                 code = colour.colour_code
@@ -597,8 +599,7 @@ class Subpart:
     def generate_outlines(self, angle_threshold=85, merge_vertices=False):
         mesh = self.mesh
         if merge_vertices:
-            mesh = self.mesh.copy()
-            mesh.merge_vertices()
+            self.mesh.merge_vertices()
         edges = mesh.face_adjacency_angles >= np.radians(angle_threshold)
         self.outlines = mesh.face_adjacency_edges[edges]
 
