@@ -1,13 +1,12 @@
 from trimesh.scene.scene import Scene
 from trimesh.base import Trimesh
-from trimesh.transformations import is_same_transform
-from trimesh.transformations import identity_matrix
 from zipfile import ZipFile
 from lxml import etree
 import numpy as np
 import re
 from ConvertToLDraw.appexcetions import Missing3mfElementError
 from ConvertToLDraw.model_loaders.modelloader import Modelloader
+from ConvertToLDraw.matrix_functions import is_identity_matrix
 
 
 def _get_tag_type(element) -> str:
@@ -35,8 +34,7 @@ def _is_identity_matrix(transform: str | list) -> bool:
     if transform is None:
         return True
     matrix = _transform_to_matrix(transform)
-    result = is_same_transform(identity_matrix(), matrix)
-    return result
+    return is_identity_matrix(matrix)
 
 
 def _combine_transforms(transform_a: str | list, transform_b: str | list) -> str | list:
