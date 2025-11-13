@@ -124,10 +124,10 @@ class SubpartTab(QWidget):
         self.main_settings.addRow(self.colour_inputs)
         self.colour_inputs.setLayout(self.colour_inputs_layout)
 
-        # Todo: Do not add button if model has only outlines
-        self.generate_outlines_button = QPushButton("Generate Outlines")
-        self.generate_outlines_button.clicked.connect(self.generate_outlines)
-        self.colour_inputs_layout.addWidget(self.generate_outlines_button)
+        if not self.subpart.outlines_only:
+            self.generate_outlines_button = QPushButton("Generate Outlines")
+            self.generate_outlines_button.clicked.connect(self.generate_outlines)
+            self.colour_inputs_layout.addWidget(self.generate_outlines_button)
 
         if self.subpart.multicolour:
             self.multicolour_view_enabled = True
@@ -149,8 +149,9 @@ class SubpartTab(QWidget):
             self.multicolour_view_enabled = False
             main_colour_text = "Subpart Colour"
             brick_colour = self.subpart.main_colour
-        self.main_colour_input = BrickcolourWidget(main_colour_text, brick_colour)
-        self.main_settings.addRow(self.main_colour_input)
+        if not self.subpart.outlines_only:
+            self.main_colour_input = BrickcolourWidget(main_colour_text, brick_colour)
+            self.main_settings.addRow(self.main_colour_input)
         if self.subpart.multicolour:
             self.apply_colour_button = QPushButton("Apply Override Colour")
             self.apply_colour_button.clicked.connect(self.apply_main_colour)
@@ -175,9 +176,11 @@ class SubpartTab(QWidget):
             # Model Info Label
             self.right_info_label = QLabel(f"{len(self.subpart.mesh.faces)} Triangles "
                                            f"with {len(self.subpart.colours)} Different Colours")
-        else:
+        elif not self.subpart.outlines_only:
             self.right_info_label = QLabel(f"{len(self.subpart.mesh.faces)} Triangles")
             self.main_colour_input.colour_changed.connect(self.apply_main_colour)
+        else:
+            self.right_info_label = QLabel(f"No Geometry")
         infolabels_layout = QHBoxLayout()
         self.left_info_label = QLabel("No Outlines Generated")
         if len(self.subpart.outlines) > 0:

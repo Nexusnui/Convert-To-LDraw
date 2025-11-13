@@ -148,6 +148,7 @@ class LdrawObject:
                 geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
 
         if len(scene.geometry) == 1 or not multi_object:
+            # Todo: Do not automatically merge if only one object
             if len(scene.geometry) > 1 and multicolour:
                 recolour = True
                 if len(scene.geometry) == 1:
@@ -191,6 +192,7 @@ class LdrawObject:
                 else:
                     # Only One Object with one colour
                     geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
+            # Merges all submodels
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
 
         if use_ldraw_rotation:
@@ -314,6 +316,8 @@ class LdrawObject:
         with ResultWriter(filepath) as file:
             file.write(header)
             if len(self.subparts) == 1:
+                # Todo: Case multi subpart Part was reduced to one by deletion of subparts
+                # (transform) X [x,y,z,1]
                 subpart = self.subparts[0]
                 color_code = "16"
                 if not subpart.multicolour:
@@ -414,6 +418,7 @@ class Subpart:
             self.outlines = []
         else:
             self.outlines = outlines
+        self.outlines_only = False
         self.multicolour = False
         if colours is None:
             self._colour_from_mesh(main_colour)
@@ -480,7 +485,8 @@ class Subpart:
                 self.main_colour = main_colour
             self.multicolour = True
             self.colours = colours
-
+        elif len(colours) == 0:
+            self.outlines_only = True
 
     def apply_color(self, colour: Brickcolour = None, key=None):
         if colour is not None:
