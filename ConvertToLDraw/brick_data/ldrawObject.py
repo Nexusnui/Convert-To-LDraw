@@ -1,6 +1,7 @@
 # Todo: Import Modules instead of complete trimesh
 import trimesh
 import trimesh.visual.material
+from trimesh.base import Trimesh
 import os
 from ConvertToLDraw.appexcetions import *
 from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_closest_brickcolour_by_rgb_colour, \
@@ -9,6 +10,7 @@ import numpy as np
 from collections import OrderedDict
 from ConvertToLDraw.model_loaders.trimeshloader import Trimeshloader
 from ConvertToLDraw.model_loaders.threemfloader import Threemfloader
+from ConvertToLDraw.matrix_functions import is_identity_matrix
 from enum import Enum
 
 
@@ -146,7 +148,18 @@ class LdrawObject:
                 # Invalid Color Data -> can occur when loading some step files
                 geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
 
-        if len(scene.geometry) == 1 or not multi_object:
+        if len(scene.geometry) == 1:
+            geometry = list(scene.geometry.values())[0]
+            first_colour = geometry.visual.face_colors[0]
+            for colour in geometry.visual.face_colors:
+                c_check = first_colour == colour
+                if not (c_check[0] and c_check[1] and c_check[2] and c_check[3]):
+                    break
+            else:
+                # Only One Object with one colour
+                geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
+
+        if len(scene.geometry) > 1 and not multi_object:
             if len(scene.geometry) > 1 and multicolour:
                 recolour = True
                 if len(scene.geometry) == 1:
@@ -180,17 +193,10 @@ class LdrawObject:
                         r = colorrange[int(index / 5 % 5)]
                         b = colorrange[int(index / 25 % 5)]
                         geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [r, g, b, 255]
-            if len(scene.geometry) == 1:
-                geometry = list(scene.geometry.values())[0]
-                first_colour = geometry.visual.face_colors[0]
-                for colour in geometry.visual.face_colors:
-                    c_check = first_colour == colour
-                    if not (c_check[0] and c_check[1] and c_check[2] and c_check[3]):
-                        break
-                else:
-                    # Only One Object with one colour
-                    geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
+            # Merges all submodels
             scene = trimesh.scene.scene.Scene(scene.to_mesh())
+            # Merge duplicate vertices
+            list(scene.geometry.values())[0].merge_vertices()
 
         if use_ldraw_rotation:
             # LDraw co-ordinate system is right-handed where -Y is "up"
@@ -258,7 +264,7 @@ class LdrawObject:
                 else:
                     transformation_matrix = trimesh.transformations.identity_matrix()
                 self.subparts.append(
-                    Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions)
+                    Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions, key)
                 )
         self.scene = scene
         self.model_loaded = True
@@ -317,7 +323,7 @@ class LdrawObject:
                 color_code = "16"
                 if not subpart.multicolour:
                     color_code = subpart.main_colour.colour_code
-                for line in subpart.to_ldraw_lines(color_code):
+                for line in subpart.to_ldraw_lines(color_code, apply_transform=True):
                     file.write(line)
             else:
                 if one_file:
@@ -389,19 +395,39 @@ class LdrawObject:
         for subpart in self.subparts:
             subpart.map_to_ldraw_colours(included_colour_categories)
 
+    def delete_subpart(self, subpart):
+        self.subparts.remove(subpart)
+        self.scene.delete_geometry(subpart.node_key)
+
 
 class Subpart:
-    def __init__(self, mesh: trimesh.base.Trimesh,
+    def __init__(self, mesh: Trimesh,
                  transformation_matrix,
-                 name,
+                 name: str,
                  main_colour: Brickcolour = None,
-                 cached_colour_definitions: OrderedDict = OrderedDict()):
+                 cached_colour_definitions: OrderedDict = OrderedDict(),
+                 node_key: str = None,
+                 colours: OrderedDict = None,
+                 outlines: list = None
+                 ):
         self.mesh = mesh
         self.name = name
         self.transformation_matrix = transformation_matrix
+        self.vertices_with_transform = None
         self.cached_colour_definitions = cached_colour_definitions
-        self.outlines = []
+        self.node_key = node_key
+        if outlines is None:
+            self.outlines = []
+        else:
+            self.outlines = outlines
+        self.outlines_only = False
         self.multicolour = False
+        if colours is None:
+            self._colour_from_mesh(main_colour)
+        else:
+            self._colour_from_dict(colours, main_colour)
+
+    def _colour_from_mesh(self, main_colour: Brickcolour):
         if not self.mesh.visual.defined:
             if main_colour is not None:
                 self.main_colour = main_colour
@@ -436,7 +462,8 @@ class Subpart:
                     self.main_colour = main_colour
                     if self.main_colour:
                         if self.main_colour.colour_type == "LDraw" and self.main_colour.ldrawname != "Undefined":
-                            self.cached_colour_definitions[self.main_colour.colour_code] = self.main_colour.get_ldraw_line()
+                            self.cached_colour_definitions[
+                                self.main_colour.colour_code] = self.main_colour.get_ldraw_line()
             else:
                 if main_colour is not None:
                     self.main_colour = main_colour
@@ -449,6 +476,19 @@ class Subpart:
                 for key, value in self.colours.items():
                     value[0].alpha = "255"
                     self.apply_color(key=key)
+
+    def _colour_from_dict(self, colours: OrderedDict, main_colour: Brickcolour):
+        self.main_colour = Brickcolour("16")
+        self.cached_colour_definitions["16"] = self.main_colour.get_ldraw_line()
+        if len(colours) == 1:
+            self.main_colour = colours.popitem()[1][0]
+        elif len(colours) > 1:
+            if main_colour is not None:
+                self.main_colour = main_colour
+            self.multicolour = True
+            self.colours = colours
+        elif len(colours) == 0:
+            self.outlines_only = True
 
     def apply_color(self, colour: Brickcolour = None, key=None):
         if colour is not None:
@@ -527,33 +567,88 @@ class Subpart:
                   f"0 BFC CERTIFY CCW\n")
         return header
 
-    def to_ldraw_lines(self, color_code="16"):
+    def to_ldraw_lines(self, color_code="16", apply_transform=False):
+        vertices = self.mesh.vertices
+        if apply_transform and not is_identity_matrix(self.transformation_matrix):
+            if self.vertices_with_transform is None:
+                self.vertices_with_transform = trimesh.transformations.transform_points(
+                    self.mesh.vertices.copy(),
+                    self.transformation_matrix,
+                    True)
+            vertices = self.vertices_with_transform
+        print(f"{len(vertices)=}")
         if self.multicolour:
             for colour, faces in self.colours.values():
                 code = colour.colour_code
                 for index in faces:
                     face = self.mesh.faces[index]
-                    coordinate_a = ' '.join(map(str, self.mesh.vertices[face[0]]))
-                    coordinate_b = ' '.join(map(str, self.mesh.vertices[face[1]]))
-                    coordinate_c = ' '.join(map(str, self.mesh.vertices[face[2]]))
+                    coordinate_a = ' '.join(map(str, vertices[face[0]]))
+                    coordinate_b = ' '.join(map(str, vertices[face[1]]))
+                    coordinate_c = ' '.join(map(str, vertices[face[2]]))
                     yield f"3 {code} {coordinate_a} {coordinate_b} {coordinate_c}\n"
         else:
             for face in self.mesh.faces:  # faces vertices
-                coordinate_a = ' '.join(map(str, self.mesh.vertices[face[0]]))
-                coordinate_b = ' '.join(map(str, self.mesh.vertices[face[1]]))
-                coordinate_c = ' '.join(map(str, self.mesh.vertices[face[2]]))
+                coordinate_a = ' '.join(map(str, vertices[face[0]]))
+                coordinate_b = ' '.join(map(str, vertices[face[1]]))
+                coordinate_c = ' '.join(map(str, vertices[face[2]]))
                 yield f"3 {color_code} {coordinate_a} {coordinate_b} {coordinate_c}\n"
         for outline in self.outlines:
-            yield (f"2 24 {outline[0][0]} {outline[0][1]} {outline[0][2]} "
-                   f"{outline[1][0]} {outline[1][1]} {outline[1][2]}\n")
+            yield (f"2 24 {vertices[outline[0]][0]} {vertices[outline[0]][1]} {vertices[outline[0]][2]} "
+                   f"{vertices[outline[1]][0]} {vertices[outline[1]][1]} {vertices[outline[1]][2]}\n")
 
     def generate_outlines(self, angle_threshold=85, merge_vertices=False):
         mesh = self.mesh
         if merge_vertices:
-            mesh = self.mesh.copy()
-            mesh.merge_vertices()
+            self.mesh.merge_vertices()
         edges = mesh.face_adjacency_angles >= np.radians(angle_threshold)
-        self.outlines = mesh.vertices[mesh.face_adjacency_edges[edges]]
+        self.outlines = mesh.face_adjacency_edges[edges]
+
+    def split_by_colours(self, parent: LdrawObject, keys: list[list[str]] = None) -> list:
+        if keys is None:
+            keys = []
+            for key in self.colours.keys():
+                keys.append([key])
+            if len(self.outlines) > 0:
+                keys.append(["outlines"])
+        split_subparts = []
+        for group, split_keys in enumerate(keys):
+            colours = OrderedDict()
+            faces = []
+            outlines = None
+            for colour_key in split_keys:
+                if colour_key == "outlines":
+                    outlines = self.outlines
+                else:
+                    if colour_key not in self.colours:
+                        raise ValueError(f"Colour key '{colour_key}' not in subpart.colours")
+                    face_count = len(faces)
+                    coloured_count = len(self.colours[colour_key][1])
+                    colours[colour_key] = [
+                        self.colours[colour_key][0],
+                        list(range(face_count, face_count+coloured_count))
+                    ]
+                    for face_index in self.colours[colour_key][1]:
+                        faces.append(self.mesh.faces[face_index])
+
+            new_geometry = Trimesh(vertices=self.mesh.vertices, faces=faces)
+            node_key = parent.scene.add_geometry(new_geometry, transform=self.transformation_matrix)
+            new_name = f"{self.name}-{group+1}"
+            if len(faces) == 0 and outlines is not None:
+                new_name = f"{self.name}-Outlines"
+            new_subpart = Subpart(
+                new_geometry,
+                self.transformation_matrix,
+                new_name,
+                self.main_colour,
+                self.cached_colour_definitions,
+                node_key,
+                colours,
+                outlines
+            )
+            split_subparts.append(new_subpart)
+        parent.delete_subpart(self)
+        parent.subparts.extend(split_subparts)
+        return split_subparts
 
 
 class ResultWriter:

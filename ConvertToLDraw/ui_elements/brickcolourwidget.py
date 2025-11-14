@@ -1,3 +1,5 @@
+import math
+
 from ConvertToLDraw.brick_data.brickcolour import (
     Brickcolour,
     get_contrast_colour,
@@ -22,15 +24,23 @@ from PyQt6.QtWidgets import (
     QTabWidget,
     QTableView,
     QHeaderView,
+    QTreeView,
     QComboBox,
     QDialog,
     QDialogButtonBox,
     QListWidget,
-    QListWidgetItem
+    QListWidgetItem,
+    QAbstractItemView,
+    QSpinBox,
+    QSlider
 )
 
-from PyQt6.QtCore import pyqtSignal, QAbstractTableModel, Qt
+from PyQt6.QtCore import Qt, pyqtSignal, QAbstractTableModel, QAbstractItemModel, QModelIndex, QMimeData, QByteArray
 from PyQt6.QtGui import QColor
+
+from collections import OrderedDict
+
+from numpy import array_split
 
 import re
 
@@ -146,7 +156,7 @@ class BrickcolourDialog(QDialog):
         self.ldraw_colour_table.setCornerButtonEnabled(False)
 
         self.all_colours = get_all_brickcolours()
-        self.colourslistmodel = Brickcolourlistmodel(self.all_colours)
+        self.colourslistmodel = BrickcolourListmodel(self.all_colours)
         self.ldraw_colour_table.setModel(self.colourslistmodel)
         self.ldraw_colour_table.clicked.connect(self.on_select_brickcolour)
         self.ldraw_colour_table.horizontalHeader().setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
@@ -246,7 +256,7 @@ class BrickcolourDialog(QDialog):
         self.tab_widget.setCurrentIndex(0)
 
 
-class Brickcolourlistmodel(QAbstractTableModel):
+class BrickcolourListmodel(QAbstractTableModel):
     def __init__(self, colorlist):
         super().__init__()
         self._data = colorlist
@@ -352,6 +362,280 @@ class ColourCategoriesDialog(QDialog):
     def check_all_items(self):
         for item in self.items:
             item.setCheckState(Qt.CheckState.Checked)
+
+
+class SplitColourDialog(QDialog):
+    def __init__(self, colours: OrderedDict, has_outlines: bool = False):
+        super().__init__()
+        self.input_colours = colours
+        self.has_outlines = has_outlines
+        self.item_count = len(colours) + int(self.has_outlines)
+        self.colour_groups = None
+
+        self.setWindowTitle("Split Subpart by Colours")
+        self.main_layout = QVBoxLayout()
+
+        self.number_label = QLabel("Choose the number of groups to split into:\n"
+                                   "(Groups can be added/removed in the next step)")
+        self.main_layout.addWidget(self.number_label)
+
+        self.number_input = QSpinBox()
+        self.number_input.setRange(2, self.item_count)
+        self.number_input.setSingleStep(1)
+        self.main_layout.addWidget(self.number_input)
+
+        self.number_slider = QSlider(Qt.Orientation.Horizontal)
+        self.number_slider.setRange(2, self.item_count)
+        self.number_slider.setSingleStep(1)
+        self.number_slider.setPageStep(1)
+        self.number_slider.setTickPosition(QSlider.TickPosition.TicksBelow)
+        self.number_slider.valueChanged.connect(self.number_input.setValue)
+        self.number_input.valueChanged.connect(self.number_slider.setValue)
+        self.main_layout.addWidget(self.number_slider)
+
+        if self.has_outlines:
+            self.item_count_label = QLabel(f"There are {len(self.input_colours)} colours + outlines")
+        else:
+            self.item_count_label = QLabel(f"There are {len(self.input_colours)} colours")
+        self.main_layout.addWidget(self.item_count_label)
+
+        buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        self.number_button_box = QDialogButtonBox(buttons)
+        self.number_button_box.buttons()[0].setText("Next")
+        self.number_button_box.accepted.connect(self.show_colours)
+        self.number_button_box.rejected.connect(self.reject)
+        self.main_layout.addWidget(self.number_button_box)
+        self.splitcoloursmodel = None
+        self.splitview = None
+        self.setLayout(self.main_layout)
+
+    def show_colours(self):
+        splits = self.number_input.value()
+        self.main_layout.removeWidget(self.number_label)
+        self.main_layout.removeWidget(self.number_input)
+        self.main_layout.removeWidget(self.number_slider)
+        self.main_layout.removeWidget(self.item_count_label)
+        self.main_layout.removeWidget(self.number_button_box)
+        self.number_label.deleteLater()
+        self.number_input.deleteLater()
+        self.number_slider.deleteLater()
+        self.item_count_label.deleteLater()
+        self.number_button_box.deleteLater()
+        self.splitcoloursmodel = SplitColourTreemodel(self.input_colours, self.has_outlines, splits)
+        self.splitview = QTreeView()
+        self.main_layout.addWidget(self.splitview)
+        self.splitview.setModel(self.splitcoloursmodel)
+        self.splitview.expandAll()
+        self.splitview.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+        self.splitview.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
+        self.splitcoloursmodel.modelReset.connect(self.rows_moved)
+
+        group_button_layout = QHBoxLayout()
+
+        self.add_group_button = QPushButton("+Add Group")
+        self.add_group_button.clicked.connect(lambda: self.splitcoloursmodel.add_groups())
+        group_button_layout.addWidget(self.add_group_button)
+
+        self.remove_empty_groups_button = QPushButton("-Remove Empty Groups")
+        self.remove_empty_groups_button.clicked.connect(self.splitcoloursmodel.remove_empty_groups)
+        group_button_layout.addWidget(self.remove_empty_groups_button)
+
+        self.remove_empty_groups_button.setDisabled(True)
+        if splits == self.item_count:
+            self.add_group_button.setDisabled(True)
+
+        self.main_layout.addLayout(group_button_layout)
+
+        self.splitcoloursmodel.modelChanged.connect(self.on_model_updated)
+
+        buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        button_box = QDialogButtonBox(buttons)
+        button_box.accepted.connect(self.dialog_accepted)
+        button_box.rejected.connect(self.reject)
+        self.main_layout.addWidget(button_box)
+
+        header_height = self.splitview.header().size().height()
+        row_height = self.splitview.rowHeight(self.splitcoloursmodel.index(0, 0))
+        new_height = row_height * (self.item_count + splits + 1) + header_height
+        max_height = int(math.floor(self.screen().size().height()*3/5))
+        self.splitview.setMinimumHeight(min(new_height, max_height))
+
+    def rows_moved(self):
+        self.splitview.expandAll()
+
+    def dialog_accepted(self):
+        self.colour_groups = self.splitcoloursmodel.get_data()
+        self.accept()
+
+    def on_model_updated(self, group_count: int, has_empty_groups: bool):
+        self.add_group_button.setDisabled(group_count >= self.item_count)
+        self.remove_empty_groups_button.setEnabled(has_empty_groups)
+
+
+class SplitColourTreemodel(QAbstractItemModel):
+    modelChanged = pyqtSignal(int, bool)  # groupcount, has empty groups
+
+    def __init__(self, colours: OrderedDict, has_outlines: bool = False, splits: int = 2):
+        super().__init__()
+        self.colours = colours
+        colour_keys = list(colours.keys())
+        if has_outlines:
+            colour_keys.append("outlines")
+
+        # Creates a list containing lists of colour keys
+        self._data = [arr.tolist() for arr in array_split(colour_keys, splits)]
+        self.pointers = []
+
+    def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()):
+        if parent.isValid():
+            if parent.internalPointer()[1] is None:
+                pointer = (parent.internalPointer()[0], row)
+                if pointer in self.pointers:
+                    pointer = self.pointers[self.pointers.index(pointer)]
+                else:
+                    self.pointers.append(pointer)
+                return self.createIndex(row, 0, pointer)
+            else:
+                raise NotImplementedError(f"index requested:\n"
+                                          f"row: {row}\n"
+                                          f"Parent Internal Pointer {parent.internalPointer()}")
+        else:
+            pointer = (row, None)
+            if pointer in self.pointers:
+                pointer = self.pointers[self.pointers.index(pointer)]
+            else:
+                self.pointers.append(pointer)
+            return self.createIndex(row, 0, pointer)
+
+    def parent(self, index):
+        if index.isValid:
+            if index.internalPointer()[1] is None:
+                return QModelIndex()
+            else:
+                pointer = self.pointers[self.pointers.index((index.internalPointer()[0], None))]
+                return self.createIndex(pointer[0], 0, pointer)
+        else:
+            return QModelIndex()
+
+    def rowCount(self, index: QModelIndex = QModelIndex()):
+        if index.isValid():
+            if index.internalPointer()[1] is None:
+                return len(self._data[index.internalPointer()[0]])
+            else:
+                return 0
+        else:
+            return len(self._data)
+
+    def columnCount(self, parent: QModelIndex = QModelIndex()):
+        return 1
+
+    def data(self, index: QModelIndex, role=Qt.ItemDataRole.DisplayRole):
+        if not index.isValid():
+            return None
+        if role == Qt.ItemDataRole.DisplayRole:
+            if index.internalPointer()[1] is None:
+                return f"Group {index.internalPointer()[0]+1}"
+            else:
+                colour_index = self._data[index.internalPointer()[0]][index.internalPointer()[1]]
+                if colour_index != "outlines":
+                    return str(self.colours[colour_index][0])
+                else:
+                    return "Outlines"
+        elif role == Qt.ItemDataRole.BackgroundRole:
+            if index.internalPointer()[1] is not None:
+                colour_index = self._data[index.internalPointer()[0]][index.internalPointer()[1]]
+                if colour_index != "outlines":
+                    brick_colour: Brickcolour = self.colours[colour_index][0]
+                    return QColor(brick_colour.rgb_values)
+                else:
+                    return QColor(Brickcolour("24").rgb_values)
+        elif role == Qt.ItemDataRole.ForegroundRole:
+
+            if index.internalPointer()[1] is not None:
+                colour_index = self._data[index.internalPointer()[0]][index.internalPointer()[1]]
+                if colour_index != "outlines":
+                    brick_colour: Brickcolour = self.colours[colour_index][0]
+                    return QColor(get_contrast_colour(brick_colour.rgb_values))
+                else:
+                    return QColor(get_contrast_colour(Brickcolour("24").rgb_values))
+
+    def headerData(self, section, orientation, role):
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return "Colour Groups"
+
+    def supportedDropActions(self):
+        return Qt.DropAction.MoveAction
+
+    def flags(self, index: QModelIndex):
+        if index.isValid():
+            if index.internalPointer()[1] is None:
+                return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsDropEnabled
+            else:
+                return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable | \
+                    Qt.ItemFlag.ItemIsDragEnabled | Qt.ItemFlag.ItemIsUserCheckable
+        return Qt.ItemFlag.ItemIsEnabled
+
+    def mimeTypes(self):
+        return ['text/plain', "custom/indices"]
+
+    def mimeData(self, indexes):
+        indexes.sort(key=lambda e: e.internalPointer())
+        data = []
+        for index in indexes:
+            data.append(f"{index.internalPointer()[0]},{index.internalPointer()[1]}")
+        data_text = ";".join(data)
+        mimedata = QMimeData()
+        mimedata.setText(data_text)
+        return mimedata
+
+    def dropMimeData(self, data, action, row, column, parent):
+        # Rebuilt 'move from' pointers from string
+        from_pointers = [tuple(int(idx_str) for idx_str in ptr_str.split(",")) for ptr_str in data.text().split(";")]
+        if row > 0:
+            upper_item = self._data[parent.internalPointer()[0]][row-1]
+        values = [self._data[ptr[0]][ptr[1]] for ptr in from_pointers]
+        from_pointers.reverse()
+        for ptr in from_pointers:
+            self._data[ptr[0]].pop(ptr[1])
+        if row > 0:
+            insert_index = self._data[parent.internalPointer()[0]].index(upper_item) + 1
+            self._data[parent.internalPointer()[0]][insert_index:insert_index] = values
+        elif row == 0:
+            self._data[parent.internalPointer()[0]][0:0] = values
+        else:
+            self._data[parent.internalPointer()[0]].extend(values)
+        self.update_model()
+        return True
+
+    def add_groups(self, count: int = 1):
+        for i in range(count):
+            self._data.append([])
+        self.update_model()
+
+    def remove_empty_groups(self):
+        indexes = []
+        for index, group in enumerate(self._data):
+            if len(group) == 0:
+                indexes.append(index)
+        indexes.reverse()
+        for index in indexes:
+            self._data.pop(index)
+        self.update_model()
+
+    def update_model(self):
+        group_count = len(self._data)
+        has_empty_groups = False
+        for group in self._data:
+            if len(group) == 0:
+                has_empty_groups = True
+                break
+        self.modelChanged.emit(group_count, has_empty_groups)
+        self.beginResetModel()
+        self.endResetModel()
+
+    def get_data(self):
+        return self._data
 
 
 if __name__ == "__main__":

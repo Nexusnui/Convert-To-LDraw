@@ -1,3 +1,4 @@
+import traceback
 from PyQt6.QtCore import pyqtSignal, QAbstractTableModel, Qt
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import (
@@ -17,29 +18,37 @@ from PyQt6.QtWidgets import (
 
 from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart
 from ConvertToLDraw.brick_data.brickcolour import Brickcolour, is_brickcolour, get_contrast_colour
-from ConvertToLDraw.ui_elements.brickcolourwidget import BrickcolourWidget, BrickcolourDialog, ColourCategoriesDialog
+from ConvertToLDraw.ui_elements.brickcolourwidget import BrickcolourWidget, BrickcolourDialog, ColourCategoriesDialog, SplitColourDialog
 from ConvertToLDraw.ui_elements.line_generation_dialog import LineGenerationDialog, LinePreset
+from ConvertToLDraw.ui_elements.exceptiondialog import ExceptionDialog
 
 
 class SubpartPanel(QTabWidget):
     model_updated = pyqtSignal()
     show_preview = pyqtSignal(Subpart)
+    show_main_part = pyqtSignal()
 
     def __init__(self, mainmodel: LdrawObject, main_window):
         super().__init__()
 
         self.main_window = main_window
-        for sp in mainmodel.subparts:
+        self.mainmodel = mainmodel
+        self.is_single_part = len(self.mainmodel.subparts) == 1
+        for sp in self.mainmodel.subparts:
             self.__add_tab(sp)
         self.setMovable(True)
         self.tabBar().tabMoved.connect(mainmodel.subpart_order_changed)
+        if self.is_single_part:
+            self.tabBar().hide()
 
     def __add_tab(self, subpart: Subpart):
-        tab = SubpartTab(subpart, main_window=self.main_window)
+        tab = SubpartTab(subpart, self.main_window, self.is_single_part)
         index = self.addTab(tab, subpart.name)
         tab.name_changed.connect(lambda name: self.subpart_name_changed(self.indexOf(tab), name))
         tab.colour_changed.connect(self.model_updated.emit)
         tab.show_preview.connect(self.relay_preview_data)
+        tab.subpart_deleted.connect(self.remove_current_tab)
+        tab.subpart_split.connect(self.subpart_split)
 
     def subpart_name_changed(self, index, name):
         self.setTabText(index, name)
@@ -57,26 +66,29 @@ class SubpartPanel(QTabWidget):
             tab = self.widget(index)
             tab.refresh_content()
 
+    def remove_current_tab(self):
+        self.removeTab(self.currentIndex())
+        self.is_single_part = len(self.mainmodel.subparts) == 1
+        if self.is_single_part:
+            self.tabBar().hide()
+            self.currentWidget().change_to_single_part_view()
+        self.show_main_part.emit()
 
-class ColourPanel(QWidget):
-    model_updated = pyqtSignal()
+    def subpart_split(self, new_subparts: list[Subpart]):
+        if self.is_single_part:
+            self.tabBar().show()
+        self.is_single_part = False
+        for subpart in new_subparts:
+            self.__add_tab(subpart)
+        self.remove_current_tab()
 
-    def __init__(self, mainmodel: LdrawObject, main_window):
-        super().__init__()
-        mainlayout = QVBoxLayout()
-        self.setLayout(mainlayout)
-        subpart = mainmodel.subparts[0]
-        self.content = SubpartTab(subpart, single_part=True, main_window=main_window)
-        self.content.colour_changed.connect(self.model_updated.emit)
-        mainlayout.addWidget(self.content)
-
-    def update_children(self):
-        self.content.refresh_content()
 
 class SubpartTab(QWidget):
     name_changed = pyqtSignal(str)
     colour_changed = pyqtSignal()
     show_preview = pyqtSignal(Subpart)
+    subpart_deleted = pyqtSignal()
+    subpart_split = pyqtSignal(list)
 
     def __init__(self, subpart: Subpart, main_window, single_part=False, ):
         super().__init__()
@@ -99,8 +111,14 @@ class SubpartTab(QWidget):
             self.name_line.setText(self.subpart.name)
             self.main_settings.addRow("Name", self.name_line)
             self.name_line.textChanged.connect(self.apply_name_change)
+            self.multipart_inputs = QHBoxLayout()
             self.preview_button = QPushButton("Open Subpart in Preview")
             self.preview_button.clicked.connect(self.send_preview_data)
+            self.multipart_inputs.addWidget(self.preview_button)
+            self.delete_button = QPushButton("Delete Subpart")
+            self.delete_button.setStyleSheet("color: white; background-color: red;")
+            self.delete_button.clicked.connect(self.delete_subpart)
+            self.multipart_inputs.addWidget(self.delete_button)
 
         # Generate Outlines, Override / Set Colour
         self.colour_inputs = QWidget()
@@ -108,9 +126,10 @@ class SubpartTab(QWidget):
         self.main_settings.addRow(self.colour_inputs)
         self.colour_inputs.setLayout(self.colour_inputs_layout)
 
-        self.generate_outlines_button = QPushButton("Generate Outlines")
-        self.generate_outlines_button.clicked.connect(self.generate_outlines)
-        self.colour_inputs_layout.addWidget(self.generate_outlines_button)
+        if not self.subpart.outlines_only:
+            self.generate_outlines_button = QPushButton("Generate Outlines")
+            self.generate_outlines_button.clicked.connect(self.generate_outlines)
+            self.colour_inputs_layout.addWidget(self.generate_outlines_button)
 
         if self.subpart.multicolour:
             self.multicolour_view_enabled = True
@@ -122,14 +141,19 @@ class SubpartTab(QWidget):
             self.map_colours_button.clicked.connect(self.map_colours_to_LDraw)
             self.colour_inputs_layout.addWidget(self.map_colours_button)
 
+            self.split_by_colour_button = QPushButton("Split by Colour")
+            self.split_by_colour_button.clicked.connect(self.split_by_colour)
+            self.colour_inputs_layout.addWidget(self.split_by_colour_button)
+
             main_colour_text = "Override Colour"
             brick_colour = Brickcolour("16")
         else:
             self.multicolour_view_enabled = False
             main_colour_text = "Subpart Colour"
             brick_colour = self.subpart.main_colour
-        self.main_colour_input = BrickcolourWidget(main_colour_text, brick_colour)
-        self.main_settings.addRow(self.main_colour_input)
+        if not self.subpart.outlines_only:
+            self.main_colour_input = BrickcolourWidget(main_colour_text, brick_colour)
+            self.main_settings.addRow(self.main_colour_input)
         if self.subpart.multicolour:
             self.apply_colour_button = QPushButton("Apply Override Colour")
             self.apply_colour_button.clicked.connect(self.apply_main_colour)
@@ -154,15 +178,18 @@ class SubpartTab(QWidget):
             # Model Info Label
             self.right_info_label = QLabel(f"{len(self.subpart.mesh.faces)} Triangles "
                                            f"with {len(self.subpart.colours)} Different Colours")
-        else:
+        elif not self.subpart.outlines_only:
             self.right_info_label = QLabel(f"{len(self.subpart.mesh.faces)} Triangles")
             self.main_colour_input.colour_changed.connect(self.apply_main_colour)
+        else:
+            self.right_info_label = QLabel(f"No Geometry")
         infolabels_layout = QHBoxLayout()
         self.left_info_label = QLabel("No Outlines Generated")
+        if len(self.subpart.outlines) > 0:
+            self.left_info_label.setText(f"{len(self.subpart.outlines)} Outlines")
         infolabels_layout.addWidget(self.left_info_label)
         infolabels_layout.addStretch()
         infolabels_layout.addWidget(self.right_info_label)
-
 
 
     # Add Elements to Main Layout
@@ -172,7 +199,7 @@ class SubpartTab(QWidget):
         self.mainlayout.addStretch()
         self.mainlayout.addLayout(infolabels_layout)
         if not single_part:
-            self.mainlayout.addWidget(self.preview_button)
+            self.mainlayout.addLayout(self.multipart_inputs)
 
     def apply_name_change(self, new_name: str):
         self.subpart.name = new_name
@@ -273,6 +300,23 @@ class SubpartTab(QWidget):
                 self.colour_changed.emit()
             self.refresh_content()
 
+    def split_by_colour(self):
+        has_outlines = len(self.subpart.outlines) > 0
+        split_dialog = SplitColourDialog(self.subpart.colours, has_outlines)
+        try:
+            if split_dialog.exec():
+                new_subparts = self.subpart.split_by_colours(self.main_window.ldraw_object, split_dialog.colour_groups)
+                self.subpart_split.emit(new_subparts)
+        except Exception:
+            formatted_traceback = traceback.format_exc()
+            exception_info = ExceptionDialog(
+                clipboard=self.clipboard,
+                title="Split by Colour Dialog Failed",
+                message="If you know how to replicate this open an issue on the repo",
+                traceback_str=formatted_traceback
+            )
+            exception_info.exec()
+
     def _on_select_brickcolour(self, index):
         if index.column() in [0, 2]:
             self.multicolour_widget.clearSelection()
@@ -314,6 +358,24 @@ class SubpartTab(QWidget):
         else:
             self.left_info_label.setText("No Outlines Generated")
             self.generate_outlines_button.setText("Generate Outlines")
+
+    def delete_subpart(self):
+        answer = QMessageBox.question(self, "Delete Subpart?",
+                                      "Do you want delete this subpart?\n"
+                                      "(Can only be reveresed by reloading the model)"
+                                      )
+        if answer == QMessageBox.StandardButton.Yes:
+            main_part: LdrawObject = self.main_window.ldraw_object
+            main_part.delete_subpart(self.subpart)
+            self.subpart_deleted.emit()
+
+    def change_to_single_part_view(self):
+        self.main_settings.removeRow(self.name_line)
+        self.multipart_inputs.removeWidget(self.preview_button)
+        self.multipart_inputs.removeWidget(self.delete_button)
+        self.mainlayout.removeItem(self.multipart_inputs)
+        self.preview_button.deleteLater()
+        self.delete_button.deleteLater()
 
 
 class Subpartcolourlistmodel(QAbstractTableModel):
@@ -403,15 +465,13 @@ class Subpartcolourlistmodel(QAbstractTableModel):
         self._data_keys = list(self._data.colours.keys())
         self.endResetModel()
 
+
 if __name__ == "__main__":
     app = QApplication([])
     testfile = "Path/To/Testfile"
     testmodel = LdrawObject(testfile)
 
-    # subpartpanel = SubpartPanel(testmodel)
-    # subpartpanel.show()
-
-    colourpanel = ColourPanel(testmodel)
-    colourpanel.show()
+    subpartpanel = SubpartPanel(testmodel)
+    subpartpanel.show()
 
     app.exec()
