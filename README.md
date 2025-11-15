@@ -1,4 +1,4 @@
-![Image of Custom Part](ConvertToLDraw_Banner.png)
+![Image of Custom Part](3DToLD_Banner.png)
 
 This is a graphical Python program for converting various 3D file formats(stl,3mf,obj,stp, etc.)
 to the LDraw file format ([.dat](http://www.ldraw.org/article/218)).  
