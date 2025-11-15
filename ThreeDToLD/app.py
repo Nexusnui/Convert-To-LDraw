@@ -1,4 +1,4 @@
-import os
+import os,sys
 import platform
 import traceback
 
@@ -26,14 +26,14 @@ from PyQt6.QtWidgets import (
     QGraphicsBlurEffect
 )
 
-from ConvertToLDraw.appexcetions import *
-from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart, default_part_licenses, LDrawConversionFactor
-from ConvertToLDraw.brick_data.brick_categories import brick_categories
-from ConvertToLDraw.ui_elements.subpartPanel import SubpartPanel
-from ConvertToLDraw.ui_elements.previewPanel import PreviewPanel, register_scheme
-from ConvertToLDraw.ui_elements.line_generation_dialog import LineGenerationDialog, LinePreset
-from ConvertToLDraw.ui_elements.brickcolourwidget import ColourCategoriesDialog
-from ConvertToLDraw.ui_elements.exceptiondialog import ExceptionDialog
+from ThreeDToLD.appexcetions import *
+from ThreeDToLD.brick_data.ldrawObject import LdrawObject, Subpart, default_part_licenses, LDrawConversionFactor
+from ThreeDToLD.brick_data.brick_categories import brick_categories
+from ThreeDToLD.ui_elements.subpartPanel import SubpartPanel
+from ThreeDToLD.ui_elements.previewPanel import PreviewPanel, register_scheme
+from ThreeDToLD.ui_elements.line_generation_dialog import LineGenerationDialog, LinePreset
+from ThreeDToLD.ui_elements.brickcolourwidget import ColourCategoriesDialog
+from ThreeDToLD.ui_elements.exceptiondialog import ExceptionDialog
 
 basedir = os.path.dirname(__file__)
 
@@ -43,10 +43,21 @@ if platform.system() == "Windows":
     try:
         from ctypes import windll  # Only exists on Windows.
 
-        myappid = f"nexusnui.converttoldraw.{app_version}"
+        myappid = f"nexusnui.3dtold.{app_version}"
         windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
     except ImportError:
         pass
+
+sys._excepthook = sys.excepthook
+
+
+def exception_hook(exctype, value, traceback):
+    print(exctype, value, traceback)
+    sys._excepthook(exctype, value, traceback)
+    sys.exit(1)
+
+
+sys.excepthook = exception_hook
 
 
 class MainWindow(QMainWindow):
@@ -61,7 +72,7 @@ class MainWindow(QMainWindow):
         self.line_angle = LinePreset.Low.value
         self.merge_vertices = False
 
-        self.setWindowTitle(f"Convert To LDraw {app_version}")
+        self.setWindowTitle(f"3DToLD {app_version}")
         self.loading_stack = QStackedLayout()
         self.main_layout = QVBoxLayout()
         self.settings_tabs = QTabWidget()
@@ -619,7 +630,7 @@ def ldu_float_to_string(number: float | int):
 def run():
     register_scheme()
     app = QApplication([0])
-    app.setWindowIcon(QIcon(os.path.join(basedir, "icons", "ConvertToLDraw_icon.ico")))
+    app.setWindowIcon(QIcon(os.path.join(basedir, "icons", "3DToLD_icon.ico")))
 
     window = MainWindow(app.clipboard())
 

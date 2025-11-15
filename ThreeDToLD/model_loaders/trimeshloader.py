@@ -1,6 +1,6 @@
 from trimesh.scene.scene import Scene
 from trimesh import load_scene
-from ConvertToLDraw.model_loaders.modelloader import Modelloader
+from ThreeDToLD.model_loaders.modelloader import Modelloader
 
 
 class Trimeshloader(Modelloader):

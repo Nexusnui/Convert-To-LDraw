@@ -12,9 +12,9 @@ from PyQt6.QtGui import QIcon
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWebEngineCore import QWebEngineUrlSchemeHandler, QWebEngineUrlRequestJob, QWebEngineUrlScheme
 from PyQt6.QtCore import QBuffer, QIODevice, QUrl, Qt
-from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart
-from ConvertToLDraw.brick_data.brickcolour import Brickcolour
-from ConvertToLDraw.ui_elements.brickcolourwidget import BrickcolourDialog
+from ThreeDToLD.brick_data.ldrawObject import LdrawObject, Subpart
+from ThreeDToLD.brick_data.brickcolour import Brickcolour
+from ThreeDToLD.ui_elements.brickcolourwidget import BrickcolourDialog
 
 basedir = os.path.dirname(__file__).strip("ui_elements")
 template_html_path = os.path.join(os.path.dirname(__file__), "viewer_template.html")

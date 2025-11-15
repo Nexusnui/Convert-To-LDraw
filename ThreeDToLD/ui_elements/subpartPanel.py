@@ -16,11 +16,11 @@ from PyQt6.QtWidgets import (
     QLabel
 )
 
-from ConvertToLDraw.brick_data.ldrawObject import LdrawObject, Subpart
-from ConvertToLDraw.brick_data.brickcolour import Brickcolour, is_brickcolour, get_contrast_colour
-from ConvertToLDraw.ui_elements.brickcolourwidget import BrickcolourWidget, BrickcolourDialog, ColourCategoriesDialog, SplitColourDialog
-from ConvertToLDraw.ui_elements.line_generation_dialog import LineGenerationDialog, LinePreset
-from ConvertToLDraw.ui_elements.exceptiondialog import ExceptionDialog
+from ThreeDToLD.brick_data.ldrawObject import LdrawObject, Subpart
+from ThreeDToLD.brick_data.brickcolour import Brickcolour, is_brickcolour, get_contrast_colour
+from ThreeDToLD.ui_elements.brickcolourwidget import BrickcolourWidget, BrickcolourDialog, ColourCategoriesDialog, SplitColourDialog
+from ThreeDToLD.ui_elements.line_generation_dialog import LineGenerationDialog, LinePreset
+from ThreeDToLD.ui_elements.exceptiondialog import ExceptionDialog
 
 
 class SubpartPanel(QTabWidget):

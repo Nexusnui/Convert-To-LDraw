@@ -1,6 +1,6 @@
 import math
 
-from ConvertToLDraw.brick_data.brickcolour import (
+from ThreeDToLD.brick_data.brickcolour import (
     Brickcolour,
     get_contrast_colour,
     is_brickcolour,
@@ -9,7 +9,7 @@ from ConvertToLDraw.brick_data.brickcolour import (
     search_by_color_name
 )
 
-from ConvertToLDraw.brick_data.colour_categories import colour_categories
+from ThreeDToLD.brick_data.colour_categories import colour_categories
 
 from colorpicker import ColorPicker
 

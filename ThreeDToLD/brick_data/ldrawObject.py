@@ -3,14 +3,14 @@ import trimesh
 import trimesh.visual.material
 from trimesh.base import Trimesh
 import os
-from ConvertToLDraw.appexcetions import *
-from ConvertToLDraw.brick_data.brickcolour import Brickcolour, get_closest_brickcolour_by_rgb_colour, \
+from ThreeDToLD.appexcetions import *
+from ThreeDToLD.brick_data.brickcolour import Brickcolour, get_closest_brickcolour_by_rgb_colour, \
     get_all_brickcolours
 import numpy as np
 from collections import OrderedDict
-from ConvertToLDraw.model_loaders.trimeshloader import Trimeshloader
-from ConvertToLDraw.model_loaders.threemfloader import Threemfloader
-from ConvertToLDraw.matrix_functions import is_identity_matrix
+from ThreeDToLD.model_loaders.trimeshloader import Trimeshloader
+from ThreeDToLD.model_loaders.threemfloader import Threemfloader
+from ThreeDToLD.matrix_functions import is_identity_matrix
 from enum import Enum
 
 

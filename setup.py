@@ -1,27 +1,28 @@
 from setuptools import setup
 
 setup(
-    name='ConvertToLDraw',
+    name='3DToLD',
     version='1.6.0',
     description='This is a graphical Python program for converting various 3D file formats(stl,3mf,obj,stp, etc.) to the LDraw file format (.dat).',
     url='https://github.com/Nexusnui/Convert-To-LDraw',
     author='Nexusnui',
     author_email='developer@nexusnui.de',
     license='GPL 3.0',
-    packages=['ConvertToLDraw',
-              'ConvertToLDraw.brick_data',
-              'ConvertToLDraw.icons',
-              'ConvertToLDraw.ui_elements',
+    packages=['ThreeDToLD',
+              'ThreeDToLD.brick_data',
+              'ThreeDToLD.icons',
+              'ThreeDToLD.ui_elements',
+              'ThreeDToLD.model_loaders',
               'colorpicker',
-              'ConvertToLDraw.ui_elements.js-libraries'
+              'ThreeDToLD.ui_elements.js-libraries'
               ],
     package_data={
-        'ConvertToLDraw.brick_data': ['colour_definitions.csv'],
-        'ConvertToLDraw.icons': ['ConvertToLDraw_icon.ico', 'ConvertToLDraw_icon*.png',
+        'ThreeDToLD.brick_data': ['colour_definitions.csv'],
+        'ThreeDToLD.icons': ['3DToLD_icon.ico', '3DToLD_icon*.png',
                                  'reload-icon.svg', 'loading_animation.webm',
                                  'Loading_Symbol.png'],
-        'ConvertToLDraw.ui_elements': ['viewer_template.html'],
-        'ConvertToLDraw.ui_elements.js-libraries': ['*']
+        'ThreeDToLD.ui_elements': ['viewer_template.html'],
+        'ThreeDToLD.ui_elements.js-libraries': ['*']
     },
     install_requires=["numpy==2.3.2",
                       "cascadio==0.0.16",
@@ -39,7 +40,7 @@ setup(
                       ],
     entry_points={
         'gui_scripts': [
-            'ConvertToLDraw = ConvertToLDraw.app:run',
+            'ThreeDToLD = ThreeDToLD.app:run',
         ]
     },
 

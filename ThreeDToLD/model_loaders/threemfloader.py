@@ -4,9 +4,9 @@ from zipfile import ZipFile
 from lxml import etree
 import numpy as np
 import re
-from ConvertToLDraw.appexcetions import Missing3mfElementError
-from ConvertToLDraw.model_loaders.modelloader import Modelloader
-from ConvertToLDraw.matrix_functions import is_identity_matrix
+from ThreeDToLD.appexcetions import Missing3mfElementError
+from ThreeDToLD.model_loaders.modelloader import Modelloader
+from ThreeDToLD.matrix_functions import is_identity_matrix
 
 
 def _get_tag_type(element) -> str:

@@ -7,16 +7,16 @@ Type=Application
 Version=1.5
 
 # The name of the application
-Name=Convert To LDraw
+Name=3DToLD
 
 # A comment which can/will be used as a tooltip
 Comment=Convert 3D Model to the LDraw Part Format
 
 # The executable of the application, possibly with arguments.
-Exec=ConvertToLDraw
+Exec=3DToLD
 
 # The name of the icon that will be used to display this entry
-Icon=ConvertToLDraw_icon_256x256.png
+Icon=3DToLD_icon_256x256.png
 
 # Describes whether this application needs to be run in a terminal or not
 Terminal=false
