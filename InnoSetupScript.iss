@@ -32,8 +32,8 @@ DisableProgramGroupPage=yes
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
-OutputBaseFilename=Convert To LDraw Installer x86
-SetupIconFile=ConvertToLDraw\icons\ConvertToLDraw_icon.ico
+OutputBaseFilename=3DToLD Installer x86
+SetupIconFile=ThreeDToLD\icons\3DToLD_icon.ico
 SolidCompression=yes
 WizardStyle=modern
 
