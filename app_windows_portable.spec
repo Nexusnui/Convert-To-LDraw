@@ -1,14 +1,15 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_data_files
 
-datas=[('ConvertToLDraw\\icons\\ConvertToLDraw_icon.ico','icons'),
-           ('ConvertToLDraw\\icons\\reload-icon.svg','icons'),
-           ('ConvertToLDraw\\icons\\reload-icon.svg','ConvertToLDraw\\icons'),
-           ('ConvertToLDraw\\icons\\loading_animation.webm','icons'),
-           ('ConvertToLDraw\\brick_data\\colour_definitions.csv','ConvertToLDraw\\brick_data'),
+datas=[('ThreeDToLD\\icons\\3DToLD_icon.ico','icons'),
+           ('ThreeDToLD\\icons\\reload-icon.svg','icons'),
+           ('ThreeDToLD\\icons\\reload-icon.svg','ThreeDToLD\\icons'),
+           ('ThreeDToLD\\icons\\loading_animation.webm','icons'),
+           ('ThreeDToLD\\icons\\Loading_Symbol.png','icons'),
+           ('ThreeDToLD\\brick_data\\colour_definitions.csv','ThreeDToLD\\brick_data'),
            ('LICENSE','.'),
-           ('ConvertToLDraw\\ui_elements\\viewer_template.html','ConvertToLDraw\\ui_elements'),
-           ('ConvertToLDraw\\ui_elements\\js-libraries\\*','ConvertToLDraw\\ui_elements\\js-libraries')
+           ('ThreeDToLD\\ui_elements\\viewer_template.html','ThreeDToLD\\ui_elements'),
+           ('ThreeDToLD\\ui_elements\\js-libraries\\*','ThreeDToLD\\ui_elements\\js-libraries')
 ]
 datas += collect_data_files('collada')
 datas += collect_data_files('trimesh')
@@ -16,7 +17,7 @@ datas += collect_data_files('lxml')
 datas += collect_data_files('jsonschema_specifications')
 
 a = Analysis(
-    ['ConvertToLDraw\\app.py'],
+    ['ThreeDToLD\\app.py'],
     pathex=[],
     binaries=[],
     datas=datas,
@@ -36,7 +37,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='Convert to LDraw Portable',
+    name='3DToLD Portable',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -49,5 +50,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='ConvertToLDraw\\icons\\ConvertToLDraw_icon.ico',
+    icon='ThreeDToLD\\icons\\3DToLD_icon.ico',
 )

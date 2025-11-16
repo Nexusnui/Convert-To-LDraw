@@ -1,4 +1,4 @@
-![Image of Custom Part](ConvertToLDraw_Banner.png)
+![Image of Custom Part](3DToLD_Banner.png)
 
 This is a graphical Python program for converting various 3D file formats(stl,3mf,obj,stp, etc.)
 to the LDraw file format ([.dat](http://www.ldraw.org/article/218)).  
@@ -19,13 +19,14 @@ You can also select a html colour through the menu.
 
 You can create multicolour parts by loading either a coloured/textured or multipart model.
 Some notes about compatibility of multicolour/-part 3D file formats:
-- multipart 3mf files are supported, while multicolour objects are not
+- coloured multipart 3mf files are supported, but not multimaterial painting created in Slicer(Bambu, Prusa)
 - textures are converted to surface colours
 - not all file formats and the features are fully tested
+- there are some modes of step files trimesh can not load
 
 If a model has multiple objects, they are saved in a "s" folder, if you only want one file uncheck "Multiple Objects".
 
-This version has no commandline interface, that was available in the previous versions.
+This version has no commandline interface, that was one available in the previous versions(but I do not recommend using them).
 # Run/Install:  
 Currently there is only a installer for Windows Version(x86) and package installable through pipx/pip.  
 Under Releases you find an installer and portable version for Windows and the package for pipx/pip.
@@ -35,7 +36,7 @@ which explains the installation with pipx.
 # Supported filetypes:
 - types that should work:
   - *.stl  *.3mf *.obj *.off *.ply *.gltf *.glb *.xaml *.stp *.step *.dae
-- type that might work:
+- type that might work (they do not since the update to trimesh >4.7.0):
   - *.brep *.igs *.iges *.bdf *.msh *.inp *.diff *.mesh
 - +more types if trimesh can load them  
 
@@ -45,6 +46,7 @@ I cannot guaranty that all possible variations/features of these filetypes work.
 - The preview may not show objects properly if they are larger the 20 meters(for what could you need a piece that big anyway?).
 - On MacOS: Terminal window in the background, since pipx uses it to run a virtual environment
 ---
+Prior to release 1.6.0 this software was called "Convert To LDraw" (the repo will be renamed too).  
 This was originally a fork of a [python script of Hazen Babcock](https://github.com/HazenBabcock/stl-to-dat).  
 The code that was used from that script was completely rewritten for the 1.0 release of this software.  
 This application was also renamed from "stlToDat" to "Convert To LDraw" to reflect the added capabilities of the new version.

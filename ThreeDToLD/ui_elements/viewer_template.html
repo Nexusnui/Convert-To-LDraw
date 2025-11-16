@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>ConvertToLDraw: LDraw Viewer</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, 
+		   user-scalable=no, 
+		   minimum-scale=1.0, 
+		   maximum-scale=1.0">
+    <style>
+      body {
+      margin: 0px;
+      overflow: hidden;
+      }
+	  video {
+	  position: absolute;
+	  top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+	  z-index: 10;
+	  }
+    </style>
+  </head>
+<body>
+
+<video id="load_animation" width="300" height="300" autoplay loop muted>
+  <source src="../icons/loading_animation.webm" type="video/webm">
+</video>
+
+<script>
+  searchListParameters = new URLSearchParams(window.location.search);
+  var bg_color = searchListParameters.get("color");
+  document.body.style.backgroundColor = bg_color;
+  var is_smooth = Boolean(parseInt(searchListParameters.get("smooth")));
+  var axis_visible = Boolean(parseInt(searchListParameters.get("axis")));
+  var grid_visible = Boolean(parseInt(searchListParameters.get("grid")));
+  //Variables for functions accessible in Python
+  var reload_ldraw_model;
+  var set_smoothness;
+  var toggle_axis_visibility;
+  var toggle_grid_visibility;
+  var change_bg_colour;
+</script>
+
+<script type="importmap">
+  {
+    "imports": {
+      "three": "./js-libraries/three.module.min.js"
+    }
+  }
+</script>
+
+<script type="module">
+	import * as THREE from './js-libraries/three.module.min.js';
+	import { LDrawLoader } from './js-libraries/LDrawLoader.js';
+	import { LDrawConditionalLineMaterial } from './js-libraries/LDrawConditionalLineMaterial.js';
+	import { TrackballControls } from './js-libraries/TrackballControls.js';
+	var scene;
+	var tracklight;
+	var renderer;
+	var camera;
+	var controls;
+	var target;
+	var ldraw_model;
+	var ld_loader;
+	var axis_object;
+	var grid_object;
+	const part_data = "ldraw://model.dat";
+	const load_elem = document.getElementById("load_animation");
+	
+	reload_ldraw_model = function (){
+		show_load_animation();
+		scene.remove(ldraw_model);
+		ld_loader.load(part_data,function(group){
+			ldraw_model = group;
+			scene.add(group);
+			render();
+			hide_load_animation();
+		});
+	}
+
+	set_smoothness = function (is_smooth){
+	  ld_loader.smoothNormals = Boolean(parseInt(is_smooth));
+	}
+	
+	toggle_axis_visibility = function (){
+		if(axis_visible){
+			scene.remove(axis_object);
+			axis_visible = false;
+		}else{
+			scene.add(axis_object);
+			axis_visible = true;
+		}
+		render();
+	}
+	
+	toggle_grid_visibility = function (){
+		if(grid_visible){
+			scene.remove(grid_object);
+			grid_visible = false;
+		}else{
+			scene.add(grid_object);
+			grid_visible = true;
+		}
+		render();
+	}
+	
+	change_bg_colour = function (new_colour){
+		scene.background=new THREE.Color(new_colour);
+		bg_color=new_colour;
+		render();
+	}
+	
+	function show_load_animation(){
+		load_elem.style.display = 'block';
+		load_elem.play();
+	}
+	
+	function hide_load_animation(){
+		load_elem.pause();
+		load_elem.style.display = 'none';
+	} 
+
+	function centerControls(obj,camera,controls){
+		const boundingBox=new THREE.Box3().setFromObject(obj);
+		const boundingSphere=new THREE.Sphere();
+		boundingBox.getBoundingSphere((target=boundingSphere));
+		controls.update();
+		controls.target.set(boundingSphere.center.x,boundingSphere.center.y,boundingSphere.center.z);
+		//Setup Camera to look at object
+		let center = boundingBox.getCenter(new THREE.Vector3(0,0,0));
+		tracklight.target.position.copy(center);
+		let size = boundingBox.getSize(new THREE.Vector3(0,0,0));
+		let distance = Math.max(size.x,size.y)*1.45;
+		camera.lookAt(center);
+		camera.position.set( center.x, center.y, center.z-distance);
+		camera.up.set(0, -1, 0);
+		let boundary_max = boundingBox.max.clone();
+		let boundary_min = boundingBox.min.clone();
+		let axis_length = Math.max(Math.abs(boundary_max.x), Math.abs(boundary_min.y), Math.abs(boundary_max.z))+10;
+		if (axis_length <=0){
+			axis_length = 40;
+		}
+		axis_object = new THREE.AxesHelper(axis_length);
+		axis_object.rotation.x=Math.PI/2;
+		if (axis_visible){
+			scene.add(axis_object);
+		}
+		let grid_size = Math.ceil(Math.max(size.x,size.z)/20);
+		if (grid_size % 2 == 0){
+			grid_size += 2;
+		}else{
+			grid_size += 1;
+		}
+		grid_object = new THREE.GridHelper( grid_size*20, grid_size );
+		grid_object.translateX(Math.round(center.x/20)*20);
+		grid_object.translateZ(Math.round(center.z/20)*20);
+		if (grid_visible){
+			scene.add(grid_object);
+		}
+	}
+
+	function init(){
+		show_load_animation();
+		scene=new THREE.Scene();
+		scene.background=new THREE.Color(bg_color);
+		tracklight=new THREE.DirectionalLight(0xffffff,3.25);
+		scene.add(tracklight);
+		renderer=new THREE.WebGLRenderer({antialias:true});
+		renderer.setPixelRatio(window.devicePixelRatio);
+		renderer.setSize(window.innerWidth,window.innerHeight);
+		document.body.appendChild(renderer.domElement);
+
+		camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
+
+		ld_loader=new LDrawLoader();
+		ld_loader.setConditionalLineMaterial( LDrawConditionalLineMaterial );
+		ld_loader.smoothNormals = is_smooth;
+		ld_loader.load(part_data,function(group){
+			ldraw_model = group;
+			scene.add(group);
+			controls=new TrackballControls(camera,renderer.domElement);
+			controls.rotateSpeed=1.5;
+			controls.zoomSpeed=1.2;
+			controls.panSpeed=0.8;
+			controls.noZoom=false;
+			controls.noPan=false;
+			controls.staticMoving=true;
+			controls.dynamicDampingFactor=0.3;
+			controls.keys=[65,83,68];
+			controls.addEventListener("change",render);
+			centerControls(scene,camera,controls);
+			render();
+			window.addEventListener("resize",onWindowResize,false);
+			animate();
+			onWindowResize();
+			hide_load_animation();
+		});
+	}
+	
+	function onWindowResize(){
+		camera.aspect=window.innerWidth/window.innerHeight;
+		camera.updateProjectionMatrix();
+		renderer.setSize(window.innerWidth,window.innerHeight);
+		controls.handleResize();
+		render();
+	}
+	function animate(){
+		requestAnimationFrame(animate);
+		controls.update();
+	}
+	
+	function render(){
+		tracklight.position.copy(camera.position);
+		tracklight.target.updateMatrixWorld();
+		renderer.render(scene,camera);
+	}
+	init();
+</script>
+</body>
+</html>

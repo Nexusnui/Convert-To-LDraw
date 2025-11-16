@@ -1,0 +1,710 @@
+# Todo: Import Modules instead of complete trimesh
+import trimesh
+import trimesh.visual.material
+from trimesh.base import Trimesh
+import os
+from ThreeDToLD.appexcetions import *
+from ThreeDToLD.brick_data.brickcolour import Brickcolour, get_closest_brickcolour_by_rgb_colour, \
+    get_all_brickcolours
+import numpy as np
+from collections import OrderedDict
+from ThreeDToLD.model_loaders.trimeshloader import Trimeshloader
+from ThreeDToLD.model_loaders.threemfloader import Threemfloader
+from ThreeDToLD.matrix_functions import is_identity_matrix
+from enum import Enum
+
+
+# Todo: Change np print settings?
+
+
+class LDrawConversionFactor(Enum):
+    Auto = None
+    LDraw = 1
+    Micrometer = 0.0025
+    Millimeter = 2.5
+    Centimeter = 25
+    Decimeter = 250
+    Meter = 2500
+    Inch = 63.5
+    Foot = 762
+
+    @staticmethod
+    def from_string(unitname: str):
+        if unitname is None or len(unitname) == 0:
+            # If no Unit is given use Millimeter as default
+            return LDrawConversionFactor.Millimeter
+
+        unitname = unitname.lower()
+
+        if unitname in ["micrometer", "micrometers", "micrometre", "micrometres", "micron", "μm"]:
+            return LDrawConversionFactor.Micrometer
+        elif unitname in ["millimeter", "millimeters", "millimetre", "millimetres", "mm", None]:
+            return LDrawConversionFactor.Millimeter
+        elif unitname in ["centimeter", "centimeters", "centimetre", "centimetres", "cm"]:
+            return LDrawConversionFactor.Centimeter
+        elif unitname in ["decimeter", "decimeters", "decimetre", "decimetres", "dm"]:
+            return LDrawConversionFactor.Decimeter
+        elif unitname in ["meter", "meters", "metre", "metres", "m"]:
+            return LDrawConversionFactor.Meter
+        elif unitname in ["inch", "inches", "in", "″"]:
+            return LDrawConversionFactor.Inch
+        elif unitname in ["foot", "feet", "ft", "′"]:
+            return LDrawConversionFactor.Foot
+        elif unitname in ["ldraw", "ldraw_unit", "ldraw unit", "ldraw_units", "ldraw units" "ld", "ldu"]:
+            return LDrawConversionFactor.LDraw
+        else:
+            # Unknown/Uncommon Unit or set to Auto
+            return LDrawConversionFactor.Auto
+
+    @staticmethod
+    def get_membernames_as_string() -> list[str]:
+        return [member.name for member in list(LDrawConversionFactor)]
+
+
+class LdrawObject:
+    def __init__(self, filepath: str = None,
+                 name="", bricklinknumber="", author="", category="", keywords=None,
+                 part_license=None, autoload=True):
+        self.cached_colour_definitions = OrderedDict()
+        self.name = name
+        self.author = author
+        self.part_license = part_license
+        self.bricklinknumber = bricklinknumber
+        self.category = category
+        self.keywords = keywords
+        self.model_loaded = False
+
+        if autoload:
+            if filepath is None:
+                raise ValueError("No Filepath given with autoload activated")
+            self.load_scene(filepath)
+
+    def load_scene(self, filepath: str, scale=1, multi_object=True, multicolour=True,
+                   use_ldraw_rotation=True, override_metadata=True,
+                   use_threemfloader=True, unit_conversion=LDrawConversionFactor.Auto
+                   ):
+
+        # Todo: Pass unit conversion option as a parameter
+        _, file_extension = os.path.splitext(filepath)
+
+        if use_threemfloader and file_extension == ".3mf":
+            loader = Threemfloader()
+        else:
+            loader = Trimeshloader()
+
+        try:
+            scene, metadata = loader.load_model(filepath)
+        except NotImplementedError as exc:
+            raise FileTypeUnsupportedError("The filetype is not supported by Trimesh") from exc
+        except (Missing3mfElementError, RecursionError) as exc:
+            if use_threemfloader and file_extension == ".3mf":
+                raise LoaderError("Bad 3mf file") from exc
+            else:
+                raise LoaderError("Recursion Error in Trimesh") from exc
+        except Exception as exc:
+            raise LoaderError("Exception in Loader") from exc
+
+        if override_metadata:
+            if "name" in metadata:
+                self.name = metadata["name"]
+            if "author" in metadata:
+                self.author = metadata["author"]
+            if "license" in metadata:
+                self.part_license = metadata["license"]
+
+        if unit_conversion == LDrawConversionFactor.Auto:
+            unit_conversion = LDrawConversionFactor.from_string(scene.units)
+        scene_units = scene.units
+
+        # Convert TextureVisuals to ColorVisuals before further processing
+        for geometry in scene.geometry.values():
+            if hasattr(geometry, "visual") and isinstance(geometry.visual, trimesh.visual.texture.TextureVisuals):
+                if isinstance(geometry.visual.material, trimesh.visual.material.MultiMaterial):
+                    material_colours = []
+                    for material in geometry.visual.material.materials:
+                        material_colours.append(material.main_color)
+                    face_colours = []
+                    for material_idx in geometry.visual.face_materials:
+                        face_colours.append(material_colours[material_idx])
+                    geometry.visual = trimesh.visual.color.ColorVisuals(geometry, face_colors=face_colours)
+                else:
+                    material_colour = geometry.visual.material.main_color
+                    geometry.visual = geometry.visual.to_color()
+                    try:
+                        geometry.visual.face_colors
+                    except IndexError:
+                        # Invalid Color Data -> can occur when loading some step files
+                        geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
+                    for colour in geometry.visual.face_colors:
+                        c_check = [102, 102, 102, 255] == colour
+                        if not (c_check[0] and c_check[1] and c_check[2] and c_check[3]):
+                            break
+                    else:
+                        # Face Colors only include the Default colour
+                        geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * material_colour
+            try:
+                geometry.visual.face_colors
+            except IndexError:
+                # Invalid Color Data -> can occur when loading some step files
+                geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
+
+        if len(scene.geometry) == 1:
+            geometry = list(scene.geometry.values())[0]
+            first_colour = geometry.visual.face_colors[0]
+            for colour in geometry.visual.face_colors:
+                c_check = first_colour == colour
+                if not (c_check[0] and c_check[1] and c_check[2] and c_check[3]):
+                    break
+            else:
+                # Only One Object with one colour
+                geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [102, 102, 102, 255]
+
+        if len(scene.geometry) > 1 and not multi_object:
+            if len(scene.geometry) > 1 and multicolour:
+                recolour = True
+                if len(scene.geometry) == 1:
+                    recolour = False
+                for geometry in scene.geometry.values():
+                    if not recolour:
+                        break
+
+                    c_check = geometry.visual.main_color == [102, 102, 102, 255]
+                    default_colour = c_check[0] and c_check[1] and c_check[2] and c_check[3]
+                    if not default_colour:
+                        recolour = False
+                        break
+
+                    has_multiple_colours = False
+                    first_colour = geometry.visual.face_colors[0]
+                    for colour in geometry.visual.face_colors:
+                        c_check = first_colour == colour
+                        if not (c_check[0] and c_check[1] and c_check[2] and c_check[3]):
+                            has_multiple_colours = True
+                            break
+
+                    if has_multiple_colours:
+                        recolour = False
+                        break
+                if recolour:
+                    colorrange = [0, 63, 127, 191, 255]
+                    for index, geometry in enumerate(scene.geometry.values()):
+                        # only 125 different colors possible
+                        g = colorrange[index % 5]
+                        r = colorrange[int(index / 5 % 5)]
+                        b = colorrange[int(index / 25 % 5)]
+                        geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * [r, g, b, 255]
+            # Merges all submodels
+            scene = trimesh.scene.scene.Scene(scene.to_mesh())
+            # Merge duplicate vertices
+            list(scene.geometry.values())[0].merge_vertices()
+
+        if use_ldraw_rotation:
+            # LDraw co-ordinate system is right-handed where -Y is "up"
+            # For this reason the entire scene is rotated by 90° around the X-axis
+            scene = scene.apply_transform([
+                [1, 0, 0, 0],
+                [0, 0, -1, 0],
+                [0, 1, 0, 0],
+                [0, 0, 0, 1]
+            ])
+            if len(scene.geometry) == 1 and (
+                    unit_conversion == LDrawConversionFactor.Auto or unit_conversion == LDrawConversionFactor.LDraw
+            ) and scale == 1:
+                # "baking" rotation in case only one geometry exist
+                # not applied if any scaling/unit conversion is used as it also "bakes" the scene
+                scene = trimesh.scene.scene.Scene(scene.to_mesh())
+
+        if unit_conversion == LDrawConversionFactor.Auto:
+            if scale == 1:
+                if scene_units is not None and scene.units is None:
+                    to_millimeters = trimesh.units.unit_conversion(scene_units, "millimeter")
+                    scene = scene.scaled(to_millimeters * LDrawConversionFactor.Millimeter.value)
+                else:
+                    scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value)
+            else:
+                if scene_units is not None and scene.units is None:
+                    to_millimeters = trimesh.units.unit_conversion(scene_units, "millimeter")
+                    scene = scene.scaled(to_millimeters * LDrawConversionFactor.Millimeter.value * scale)
+                else:
+                    scene = scene.convert_units("millimeter").scaled(LDrawConversionFactor.Millimeter.value * scale)
+        elif unit_conversion != LDrawConversionFactor.LDraw:
+            if scale == 1:
+                scene = scene.scaled(unit_conversion.value)
+            else:
+                scene = scene.scaled(unit_conversion.value * scale)
+        elif scale != 1:
+            # Case unit set to LDraw and scaling is not 1
+            scene = scene.scaled(scale)
+
+        self.size = scene.extents
+
+        self.subparts = []
+
+        scene_graph = scene.graph.transforms
+        for node in scene_graph.nodes:
+            key = None
+            if node != "world":
+                if "geometry" in scene_graph.node_data[node]:
+                    key = scene_graph.node_data[node]["geometry"]
+            if key is not None:
+                geometry = scene.geometry[key]
+                if not multicolour:
+                    geometry.visual.face_colors = np.ones((len(geometry.faces), 4), np.uint8) * 255
+                    main_colour = Brickcolour("16")
+                else:
+                    c_check = geometry.visual.main_color == [102, 102, 102, 255]
+                    default_colour = c_check[0] and c_check[1] and c_check[2] and c_check[3]
+                    if default_colour:
+                        main_colour = Brickcolour("16")
+                    else:
+                        hexcolour = rgba_to_hex(geometry.visual.main_color)[:7]
+                        main_colour = Brickcolour(hexcolour)
+                if "matrix" in scene_graph.edge_data[("world", node)]:
+                    transformation_matrix = scene_graph.edge_data[("world", node)]["matrix"]
+                else:
+                    transformation_matrix = trimesh.transformations.identity_matrix()
+                self.subparts.append(
+                    Subpart(geometry, transformation_matrix, key, main_colour, self.cached_colour_definitions, key)
+                )
+        self.scene = scene
+        self.model_loaded = True
+
+    def convert_to_dat_file(self, filepath=None, one_file=False):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
+        if filepath is None:
+            one_file = True
+            filename = self.name.replace(" ", "_")
+        else:
+            filename = os.path.basename(filepath)
+        bricklinknumberline = ""
+        if len(self.bricklinknumber) > 0:
+            bricklinknumberline = f"0 BL_Item_No {self.bricklinknumber}\n\n"
+        categoryline = ""
+        if len(self.category) > 0:
+            categoryline = f"\n0 !CATEGORY {self.category}\n"
+        keyword_lines = ""
+        if self.keywords is not None and len(self.keywords) > 0:
+            keyword_lines = []
+            current_line = f"0 !KEYWORDS {self.keywords[0]}"
+            for kw in self.keywords[1:]:
+                if len(current_line + kw) > 80:
+                    keyword_lines.append(current_line)
+                    current_line = f"0 !KEYWORDS {kw}"
+                else:
+                    current_line = f"{current_line}, {kw}"
+            keyword_lines.append(f"{current_line}\n")
+            keyword_lines = "\n".join(keyword_lines)
+        license_line = ""
+        if self.part_license is not None and len(self.part_license) > 0:
+            license_line = f"0 !LICENSE {self.part_license}\n"
+        colour_definitions = ""
+        if one_file:
+            for definition_line in self.cached_colour_definitions.values():
+                colour_definitions += definition_line
+            if len(colour_definitions) > 0:
+                colour_definitions += "\n"
+        header = (f"0 FILE {filename}\n"
+                  f"0 {self.name}\n"
+                  f"0 Name:  {filename}\n"
+                  f"0 Author:  {self.author}\n"
+                  f"{bricklinknumberline}"
+                  f"0 !LDRAW_ORG Unofficial_Part\n"
+                  f"{license_line}\n"
+                  f"{colour_definitions}"
+                  f"0 BFC CERTIFY CCW\n"
+                  f"{categoryline}"
+                  f"{keyword_lines}\n")
+
+        with ResultWriter(filepath) as file:
+            file.write(header)
+            if len(self.subparts) == 1:
+                subpart = self.subparts[0]
+                color_code = "16"
+                if not subpart.multicolour:
+                    color_code = subpart.main_colour.colour_code
+                for line in subpart.to_ldraw_lines(color_code, apply_transform=True):
+                    file.write(line)
+            else:
+                if one_file:
+                    subparts_lines = []
+                else:
+                    sub_dir = f"{os.path.dirname(filepath)}/s/"
+                    os.makedirs(sub_dir, exist_ok=True)
+                basename = filename.split(".dat")[0]
+                for count, part in enumerate(self.subparts):
+                    subfilename = f"{basename}s{count:03d}.dat"
+                    if not one_file:
+                        # Todo: Case filepath = None
+                        subfilepath = f"{sub_dir}{subfilename}"
+                        part.convert_to_dat_file(subfilepath, filename, self.author, license_line)
+                    tm_a = f"{part.transformation_matrix[0][0]:f}"
+                    tm_b = f"{part.transformation_matrix[0][1]:f}"
+                    tm_c = f"{part.transformation_matrix[0][2]:f}"
+                    tm_d = f"{part.transformation_matrix[1][0]:f}"
+                    tm_e = f"{part.transformation_matrix[1][1]:f}"
+                    tm_f = f"{part.transformation_matrix[1][2]:f}"
+                    tm_g = f"{part.transformation_matrix[2][0]:f}"
+                    tm_h = f"{part.transformation_matrix[2][1]:f}"
+                    tm_i = f"{part.transformation_matrix[2][2]:f}"
+                    tm_x = f"{part.transformation_matrix[0][3]:f}"
+                    tm_y = f"{part.transformation_matrix[1][3]:f}"
+                    tm_z = f"{part.transformation_matrix[2][3]:f}"
+                    # Todo: Improve precision of floats to string conversion (np.float64(1))
+                    code = part.main_colour.colour_code
+                    if not one_file:
+                        subfilename = fr"s\{subfilename}"
+                    file.write(f"0 //~{part.name}\n"
+                               f"1 {code} {tm_x} {tm_y} {tm_z}"
+                               f" {tm_a} {tm_b} {tm_c}"
+                               f" {tm_d} {tm_e} {tm_f}"
+                               f" {tm_g} {tm_h} {tm_i}"
+                               f" {subfilename}\n")
+                    if one_file:
+                        subparts_lines.append(
+                            f"\n{part.get_ldraw_header(subfilename, filename, self.author, license_line)}")
+                        for line in part.to_ldraw_lines():
+                            subparts_lines.append(line)
+                if one_file:
+                    file.write_list(subparts_lines)
+            if filepath is None:
+                return file.get_result()
+
+    def set_main_colour(self, colour: Brickcolour):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
+        self.main_colour = colour
+        for part in self.subparts:
+            part.apply_color(colour, None)
+
+    def subpart_order_changed(self, from_index: int, to_index: int):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
+        moved_part = self.subparts.pop(from_index)
+        self.subparts.insert(to_index, moved_part)
+
+    def generate_outlines(self, angle_threshold=85, merge_vertices=False):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
+        for subpart in self.subparts:
+            subpart.generate_outlines(angle_threshold, merge_vertices)
+
+    def map_to_ldraw_colours(self, included_colour_categories):
+        if not self.model_loaded:
+            raise Exception("No model loaded")
+        for subpart in self.subparts:
+            subpart.map_to_ldraw_colours(included_colour_categories)
+
+    def delete_subpart(self, subpart):
+        self.subparts.remove(subpart)
+        self.scene.delete_geometry(subpart.node_key)
+
+
+class Subpart:
+    def __init__(self, mesh: Trimesh,
+                 transformation_matrix,
+                 name: str,
+                 main_colour: Brickcolour = None,
+                 cached_colour_definitions: OrderedDict = OrderedDict(),
+                 node_key: str = None,
+                 colours: OrderedDict = None,
+                 outlines: list = None
+                 ):
+        self.mesh = mesh
+        self.name = name
+        self.transformation_matrix = transformation_matrix
+        self.vertices_with_transform = None
+        self.cached_colour_definitions = cached_colour_definitions
+        self.node_key = node_key
+        if outlines is None:
+            self.outlines = []
+        else:
+            self.outlines = outlines
+        self.outlines_only = False
+        self.multicolour = False
+        if colours is None:
+            self._colour_from_mesh(main_colour)
+        else:
+            self._colour_from_dict(colours, main_colour)
+
+    def _colour_from_mesh(self, main_colour: Brickcolour):
+        if not self.mesh.visual.defined:
+            if main_colour is not None:
+                self.main_colour = main_colour
+                if self.main_colour.colour_type == "LDraw" and self.main_colour.ldrawname != "Undefined":
+                    self.cached_colour_definitions[self.main_colour.colour_code] = self.main_colour.get_ldraw_line()
+            else:
+                self.main_colour = Brickcolour("16")
+                self.cached_colour_definitions["16"] = self.main_colour.get_ldraw_line()
+            self.apply_color()
+        else:
+            self.colours = OrderedDict()
+            is_invisible = True
+            has_transparency = False
+            for index, colour in enumerate(self.mesh.visual.face_colors):
+                hex_colour = rgba_to_hex(colour)
+                if hex_colour in self.colours:
+                    self.colours[hex_colour][1].append(index)
+                else:
+                    brickcolour = Brickcolour(hex_colour[:7])
+                    brickcolour.alpha = str(colour[3])
+                    self.colours[hex_colour] = [brickcolour, [index]]
+                    if not has_transparency and colour[3] > 0 and colour[3] > 255:
+                        has_transparency = True
+                    if is_invisible and colour[3] > 0:
+                        is_invisible = False
+            if len(self.colours) > 1:
+                self.multicolour = True
+                if main_colour is None:
+                    self.main_colour = Brickcolour("16")
+                    self.cached_colour_definitions["16"] = self.main_colour.get_ldraw_line()
+                else:
+                    self.main_colour = main_colour
+                    if self.main_colour:
+                        if self.main_colour.colour_type == "LDraw" and self.main_colour.ldrawname != "Undefined":
+                            self.cached_colour_definitions[
+                                self.main_colour.colour_code] = self.main_colour.get_ldraw_line()
+            else:
+                if main_colour is not None:
+                    self.main_colour = main_colour
+                    if self.main_colour.colour_type == "LDraw" and self.main_colour.ldrawname != "Undefined":
+                        self.cached_colour_definitions[self.main_colour.colour_code] = self.main_colour.get_ldraw_line()
+                    self.apply_color()
+                else:
+                    self.main_colour = self.colours.popitem()[1][0]
+            if is_invisible:
+                for key, value in self.colours.items():
+                    value[0].alpha = "255"
+                    self.apply_color(key=key)
+
+    def _colour_from_dict(self, colours: OrderedDict, main_colour: Brickcolour):
+        self.main_colour = Brickcolour("16")
+        self.cached_colour_definitions["16"] = self.main_colour.get_ldraw_line()
+        if len(colours) == 1:
+            self.main_colour = colours.popitem()[1][0]
+        elif len(colours) > 1:
+            if main_colour is not None:
+                self.main_colour = main_colour
+            self.multicolour = True
+            self.colours = colours
+        elif len(colours) == 0:
+            self.outlines_only = True
+
+    def apply_color(self, colour: Brickcolour = None, key=None):
+        if colour is not None:
+            if (colour.colour_code not in self.cached_colour_definitions
+                    and colour.colour_type == "LDraw" and colour.ldrawname != "Undefined"):
+                self.cached_colour_definitions[colour.colour_code] = colour.get_ldraw_line()
+
+        if not self.multicolour or key is None:
+            if colour is None:
+                colour = self.main_colour
+            # self.mesh.visual.face_colors[0:] = np.array(colour.get_int_rgba())
+            self.main_colour = colour
+            if self.multicolour:
+                self.multicolour = False
+                self.colours = None
+        elif key is not None:
+            if colour is None:
+                colour = self.colours[key][0]
+                if (colour.colour_code not in self.cached_colour_definitions
+                        and colour.colour_type == "LDraw" and colour.ldrawname != "Undefined"):
+                    self.cached_colour_definitions[colour.colour_code] = colour.get_ldraw_line()
+            self.colours[key][0] = colour
+
+    def merge_duplicate_colours(self, apply_after=False):
+        new_colours = OrderedDict()
+        for key in self.colours:
+            colour = self.colours[key][0]
+            if colour.colour_code in new_colours:
+                new_colours[colour.colour_code][1].extend(self.colours[key][1])
+            else:
+                new_colours[colour.colour_code] = [colour, self.colours[key][1]]
+        self.colours = new_colours
+        if apply_after:
+            for key in self.colours:
+                self.apply_color(key=key)
+        if len(self.colours) == 1:
+            self.multicolour = False
+            self.main_colour = self.colours.popitem()[1][0]
+
+    def map_to_ldraw_colours(self, included_colour_categories):
+        colourlist = get_all_brickcolours(included_colour_categories)
+        if self.multicolour:
+            for key in self.colours:
+                if self.colours[key][0].colour_type == "Direct":
+                    rgb_values = self.colours[key][0].rgb_values
+                    mappedcolor = get_closest_brickcolour_by_rgb_colour(rgb_values, colourlist)
+                    self.colours[key][0] = mappedcolor
+            self.merge_duplicate_colours(True)
+        elif self.main_colour.colour_type != "LDraw":
+            rgb_values = self.main_colour.rgb_values
+            mappedcolor = get_closest_brickcolour_by_rgb_colour(rgb_values, colourlist)
+            self.apply_color(mappedcolor)
+
+    def convert_to_dat_file(self, filepath, main_file_name, author, license_line):
+        filename = fr"s\{os.path.basename(filepath)}"
+        header = self.get_ldraw_header(filename, main_file_name, author, license_line)
+        with open(filepath, "w", encoding="utf-8") as file:
+            file.write(header)
+            for line in self.to_ldraw_lines():
+                file.write(line)
+
+    def get_ldraw_header(self, filename, main_file_name, author, license_line, define_colours=False):
+        colour_definitions = ""
+        if define_colours:
+            for definition_line in self.cached_colour_definitions.values():
+                colour_definitions += definition_line
+            if len(colour_definitions) > 0:
+                colour_definitions += "\n"
+        header = (f"0 FILE {filename}\n"
+                  f"0 ~{self.name}: Subpart of {main_file_name}\n"
+                  f"0 Name: {filename}\n"
+                  f"0 Author:  {author}\n"
+                  f"0 !LDRAW_ORG Unofficial_Subpart\n"
+                  f"{license_line}\n"
+                  f"{colour_definitions}"
+                  f"0 BFC CERTIFY CCW\n")
+        return header
+
+    def to_ldraw_lines(self, color_code="16", apply_transform=False):
+        vertices = self.mesh.vertices
+        if apply_transform and not is_identity_matrix(self.transformation_matrix):
+            if self.vertices_with_transform is None:
+                self.vertices_with_transform = trimesh.transformations.transform_points(
+                    self.mesh.vertices.copy(),
+                    self.transformation_matrix,
+                    True)
+            vertices = self.vertices_with_transform
+        if self.multicolour:
+            for colour, faces in self.colours.values():
+                code = colour.colour_code
+                for index in faces:
+                    face = self.mesh.faces[index]
+                    coordinate_a = ' '.join(map(str, vertices[face[0]]))
+                    coordinate_b = ' '.join(map(str, vertices[face[1]]))
+                    coordinate_c = ' '.join(map(str, vertices[face[2]]))
+                    yield f"3 {code} {coordinate_a} {coordinate_b} {coordinate_c}\n"
+        else:
+            for face in self.mesh.faces:  # faces vertices
+                coordinate_a = ' '.join(map(str, vertices[face[0]]))
+                coordinate_b = ' '.join(map(str, vertices[face[1]]))
+                coordinate_c = ' '.join(map(str, vertices[face[2]]))
+                yield f"3 {color_code} {coordinate_a} {coordinate_b} {coordinate_c}\n"
+        for outline in self.outlines:
+            yield (f"2 24 {vertices[outline[0]][0]} {vertices[outline[0]][1]} {vertices[outline[0]][2]} "
+                   f"{vertices[outline[1]][0]} {vertices[outline[1]][1]} {vertices[outline[1]][2]}\n")
+
+    def generate_outlines(self, angle_threshold=85, merge_vertices=False):
+        mesh = self.mesh
+        if merge_vertices:
+            self.mesh.merge_vertices()
+        edges = mesh.face_adjacency_angles >= np.radians(angle_threshold)
+        self.outlines = mesh.face_adjacency_edges[edges]
+
+    def split_by_colours(self, parent: LdrawObject, keys: list[list[str]] = None) -> list:
+        if keys is None:
+            keys = []
+            for key in self.colours.keys():
+                keys.append([key])
+            if len(self.outlines) > 0:
+                keys.append(["outlines"])
+        split_subparts = []
+        for group, split_keys in enumerate(keys):
+            colours = OrderedDict()
+            faces = []
+            outlines = None
+            for colour_key in split_keys:
+                if colour_key == "outlines":
+                    outlines = self.outlines
+                else:
+                    if colour_key not in self.colours:
+                        raise ValueError(f"Colour key '{colour_key}' not in subpart.colours")
+                    face_count = len(faces)
+                    coloured_count = len(self.colours[colour_key][1])
+                    colours[colour_key] = [
+                        self.colours[colour_key][0],
+                        list(range(face_count, face_count+coloured_count))
+                    ]
+                    for face_index in self.colours[colour_key][1]:
+                        faces.append(self.mesh.faces[face_index])
+
+            new_geometry = Trimesh(vertices=self.mesh.vertices, faces=faces)
+            node_key = parent.scene.add_geometry(new_geometry, transform=self.transformation_matrix)
+            new_name = f"{self.name}-{group+1}"
+            if len(faces) == 0 and outlines is not None:
+                new_name = f"{self.name}-Outlines"
+            new_subpart = Subpart(
+                new_geometry,
+                self.transformation_matrix,
+                new_name,
+                self.main_colour,
+                self.cached_colour_definitions,
+                node_key,
+                colours,
+                outlines
+            )
+            split_subparts.append(new_subpart)
+        parent.delete_subpart(self)
+        parent.subparts.extend(split_subparts)
+        return split_subparts
+
+
+class ResultWriter:
+    def __init__(self, filepath: str = None):
+        self._is_file_writer = filepath is not None
+        self.filepath = filepath
+
+    def __enter__(self):
+        if self._is_file_writer:
+            self._result = open(self.filepath, "w", encoding="utf-8")
+        else:
+            self._result = []
+        return self
+
+    def __exit__(self, *args):
+        if self._is_file_writer:
+            self._result.close()
+
+    def write(self, lines: str):
+        if self._is_file_writer:
+            self._result.write(lines)
+        else:
+            self._result.append(lines)
+
+    def write_list(self, lines: list):
+        if self._is_file_writer:
+            for line in lines:
+                self._result.write(line)
+        else:
+            self._result.extend(lines)
+
+    def get_result(self):
+        if not self._is_file_writer:
+            return "".join(self._result)
+        return None
+
+
+def rgba_to_hex(color):
+    def __color_to_hex(number: int):
+        if number == 0:
+            hex_number = "00"
+        else:
+            hex_number = hex(number).lstrip("0x")
+        if len(hex_number) < 2:
+            hex_number = "0" + hex_number
+        return hex_number
+
+    r = __color_to_hex(color[0])
+    g = __color_to_hex(color[1])
+    b = __color_to_hex(color[2])
+    a = __color_to_hex(color[3])
+    return f"#{r}{g}{b}{a}"
+
+
+default_part_licenses = [
+    "Licensed under CC BY 4.0 : see CAreadme.txt ",
+    "Licensed under CC BY 2.0 and CC BY 4.0 : see CAreadme.txt",
+    "Redistributable under CCAL version 2.0 : see CAreadme.txt",
+    "Not redistributable : see NonCAreadme.txt"
+]
