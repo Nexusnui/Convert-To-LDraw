@@ -13,7 +13,7 @@ Name=3DToLD
 Comment=Convert 3D Model to the LDraw Part Format
 
 # The executable of the application, possibly with arguments.
-Exec=3DToLD
+Exec=ThreeDToLD
 
 # The name of the icon that will be used to display this entry
 Icon=3DToLD_icon_256x256.png
