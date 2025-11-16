@@ -14,13 +14,13 @@ or like this:
 `python -m pipx install https://github.com/Nexusnui/Convert-To-LDraw/releases/latest/download/3dtold.tar.gz`
 or on some Linux Distro like this:  
 `python3 -m pipx install https://github.com/Nexusnui/Convert-To-LDraw/releases/latest/download/3dtold.tar.gz`
-2. You can now run it by with typing `3DToLD`(Windows) or `ThreeDToLD`(Linux)
+2. You can now run it by with typing `3DToLD`
 
 Update:  
 For updating use the installation command and append `--force` to it.
 
 Troubleshooting:  
-If you run `3DToLD`/`ThreeDToLD` and it is not found you may have "ensurepath" not enabled.
+If you run `3DToLD` and it is not found you may have "ensurepath" not enabled.
 Fix it with:  
 `pipx ensurepath`  
 or on some Linux distros:  

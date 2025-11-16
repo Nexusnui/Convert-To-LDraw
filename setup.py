@@ -30,7 +30,7 @@ setup(
                       "lxml==6.0.2",
                       "manifold3d==3.2.1",
                       "meshio==5.3.5",
-                      "networkx>=3.4,<=3,5",
+                      "networkx>=3.4,<=3.5",
                       "pillow==11.3.0",
                       "pycollada==0.9.2",
                       "PyQt6==6.10.0",
@@ -40,7 +40,7 @@ setup(
                       ],
     entry_points={
         'gui_scripts': [
-            'ThreeDToLD = ThreeDToLD.app:run',
+            '3DToLD = ThreeDToLD.app:run',
         ]
     },
 
