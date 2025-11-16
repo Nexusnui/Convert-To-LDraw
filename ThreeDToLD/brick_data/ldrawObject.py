@@ -576,7 +576,6 @@ class Subpart:
                     self.transformation_matrix,
                     True)
             vertices = self.vertices_with_transform
-        print(f"{len(vertices)=}")
         if self.multicolour:
             for colour, faces in self.colours.values():
                 code = colour.colour_code
